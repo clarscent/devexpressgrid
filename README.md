@@ -1,2 +1,2 @@
-# devexpressgrid
+# DevExpress Grid
 
