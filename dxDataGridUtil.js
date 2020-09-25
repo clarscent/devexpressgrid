@@ -1,3 +1,9 @@
+// var dxDataGrid = {
+//     config:
+// }
+
+
+
 let gridType = {
 
     setGridColumns: function (gridId, columns) {
