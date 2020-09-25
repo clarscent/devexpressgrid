@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="js/jquery-3.4.1.min.js"></script>
+    <script src="js/lodash/lodash.min.js"></script>
+    <script src="dxDataGridUtil.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/dx.common.css" />
+    <link rel="dx-theme" data-theme="generic.light" href="css/dx.light.css" />
+    <link rel="stylesheet" type="text/css" href="css/grid.css" />
+    <script src="js/dx.all.js"></script>
+    <script src="gridData.js"></script>
+</head>
+<body class="dx-viewport">
+<div class="demo-container">
+    <div id="data-grid-demo">
+        <div id="gridContainer"></div>
+    </div>
+</div>
+
+<script>
+    var dataSource = [];
+    var colArr = [];
+
+    $(function(){
+        let gridType = {
+            width: "100%",
+            showBorders: true,
+        };
+
+        $("#gridContainer").dxDataGrid(gridType);
+
+        // console.log("dataGridOptions ", $("#gridContainer").dxDataGrid("option"));
+        // console.log("instance ", $("#gridContainer").dxDataGrid('instance'));
+    });
+
+
+/////////////////////// eventHandler start ///////////////////////
+
+    function onSetGridColumns(gridId) {
+        let colMap = new Map();
+        colMap.set("UserDpt","부서");
+        colMap.set("userPstn","직책");
+        colMap.set("apprState","결재 상태");
+        colMap.set("apprDate","결재 일자");
+        colMap.set("apprCmmt","의견");
+
+        setColumnsRequiredFields(colMap);
+        gridType.setGridColumns("gridContainer", colArr);
+
+        let alignment = setAllColumnsOptionalFields(gridId, "alignment");
+        let width = setOneColumnOptionalFields(gridId, "width");
+        let widthAll = setAllColumnsOptionalFields(gridId, "width");
+        let dataType = setOneColumnOptionalFields(gridId, "dataType");
+
+
+
+
+        alignment("center");
+        widthAll(100);
+        width(3, 150);
+        width(4, "auto");
+        dataType(3, "date");
+
+    }
+
+    function onSetGridDataClick(gridId) {
+        gridType.setGridData(gridId, userApprData);
+    }
+
+    function onSetGridEditMode(gridId) {
+        gridType.setEditMode(gridId);
+    }
+
+    function onSetGridRightAlignment(gridId) {
+        setAllColumnsOptionalFields(gridId, "alignment")("right");
+    }
+
+    function onSetGridReadOnly(gridId) {
+        setOneColumnOptionalFields(gridId, "allowEditing")(4, false);
+        console.log("dataGridOptions ", $("#gridContainer").dxDataGrid("option"));
+    }
+
+/////////////////////// eventHandler end ///////////////////////
+
+
+    function setColumnsRequiredFields(colMap) {
+        colArr = [];
+        colMap.forEach((value, key) => {
+            colArr.push(gridColumn.setColProperty(value, key));
+        });
+    }
+
+    // 특정 컬럼에만 적용
+    function setOneColumnOptionalFields(gridId, attr) {
+        let instance = $("#"+gridId).dxDataGrid('instance');
+
+        return (index, value) => {
+            instance.option(`columns[${index}].${attr}`, value);
+        };
+    }
+
+    // 모든 컬럼에 일괄 적용
+    function setAllColumnsOptionalFields(gridId, attr) {
+        let instance = $("#"+gridId).dxDataGrid('instance');
+        let columnsLength = $("#"+gridId).dxDataGrid("option").columns.length;
+
+        return (value) => {
+            for (let i = 0 ; i < columnsLength ; i++) {
+                instance.option(`columns[${i}].${attr}`, value);
+            }
+        };
+    }
+
+</script>
+<button onclick="onSetGridColumns('gridContainer');">컬럼추가</button>
+<button onclick="onSetGridDataClick('gridContainer');">데이터추가</button>
+<button onclick="onSetGridEditMode('gridContainer');">Edit모드로변경</button>
+<button onclick="onSetGridRightAlignment('gridContainer');">모든 컬럼을 오른쪽 정렬로</button>
+<button onclick="onSetGridReadOnly('gridContainer');">의견 컬럼만 읽기전용으로</button>
+</body>
+</html>
