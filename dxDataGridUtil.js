@@ -50,7 +50,7 @@ var dxDataGrid = {
                 colObjArr[i] = this.setColProperty(caption, dataField, colConfig[i]);
             }
 
-            // columns 의 depth 를 가진 배열을 가져와서 depth가 깊은 순대로 정렬
+            // columns 의 depth 를 가진 배열을 가져와서 depth가 깊은 순대로 정렬.
             let sortedColConfig = getColumnDepth(colConfig);
             sortedColConfig.sort(function (a, b) {
                 return b.depth - a.depth;

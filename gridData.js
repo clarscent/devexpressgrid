@@ -6,7 +6,7 @@ var countries = [{
     "Population_Rural": 0.15,
     "Population_Total": 205809000,
     "GDP_Agriculture": 0.054,
-    "GDP_Industry": 0.274,
+    "GDP_Industry": 0.275,
     "GDP_Services": 0.672,
     "GDP_Total": 2353025
 }, {
