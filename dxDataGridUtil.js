@@ -89,20 +89,10 @@ function getColumnDepth (colConfig) {
        if (parent != null) {
            if ( colConfig[parent].depth != null) {
                colConfig[i].depth = colConfig[parent].depth + 1;
-           } else {
-               colConfig[i].depth = getDepth(colConfig, colConfig[i].parent, 1);
            }
        } else {
            colConfig[i].depth = 0;
        }
    }
    return colConfig;
-}
-
-function getDepth (colConfig, parent, depth) {
-    if (colConfig[parent].parent == null) {
-        return depth;
-    } else {
-        getDepth(colConfig, colConfig[parent].parent, ++depth);
-    }
 }

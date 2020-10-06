@@ -35,20 +35,22 @@
 
         // 컬럼은 순서대로 작성하되 index는 0부터 시작
         // 필수요소: index, caption, dataField
-        // 옵션: parent(상위 그룹 인덱스),
+        // 옵션: parent(상위 그룹 인덱스), 기타
+        // Grouping 할 때, 상위 컬럼이 항상 먼저 작성되어야 함
         let gridId = "#headerTestContainer";
         let colConfig = new Array();
         colConfig.push({"index":"0", "caption":"Country", "dataField":"Country", "cssClass":"backGroundColor"});
         colConfig.push({"index":"1","caption":"Area, km<sup>2</sup>", "dataField":"Area"});
         colConfig.push({"index":"2","caption":"Population", "dataField":""});
         colConfig.push({"index":"3","caption":"Total", "dataField":"Population_Total", "parent":"2","format": "fixedPoint"});
-        colConfig.push({"index":"4","caption":"Urban", "dataField":"Population_Urban", "parent":"2","format": "percent"});
+        colConfig.push({"index":"4","caption":"Urb<br>an", "dataField":"Population_Urban", "parent":"2","format": "percent"});
         colConfig.push({"index":"5","caption":"Nominal\nGDP", "dataField":""});
         colConfig.push({"index":"6","caption":"Total, mln $", "dataField":"GDP_Total","parent":"5","format": "fixedPoint","sortOrder": "desc"});
         colConfig.push({"index":"7","caption":"By Sector", "dataField":"","parent":"5"});
         colConfig.push({"index":"8","caption":"Agriculture", "dataField":"GDP_Agriculture","parent":"7","width": "95","format": {"type": "percent","precision": "1"}});
         colConfig.push({"index":"9","caption":"Industry", "dataField":"GDP_Industry","parent":"7","width": "80","format": {"type": "percent","precision": "1"}});
         colConfig.push({"index":"10","caption":"Services", "dataField":"GDP_Services","parent":"7","width": "85","format": {"type": "percent","precision": "1"}});
+
         dxDataGrid.config.setColumns(gridId, colConfig);
         dxDataGrid.config.setGridData(gridId, countries);
 
