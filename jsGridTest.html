@@ -26,37 +26,91 @@
         <div id="headerTestContainer"></div>
     </div>
 </div>
+<p></p>
+<!--<button onclick="onSetGridAlignment(gridID)">Alignment</button>-->
+<!--<button onclick="onSetGridWidth(gridID)">width</button>-->
+<!--<button onclick="onSetGridDataType(gridID)">DataType</button>-->
+<!--<button onclick="onSetGridEditing(gridID)">False Editing</button>-->
+<!--<button onclick="onSetGridEditMode(gridID)">EditMode</button>-->
+<!--<button onclick="onSetGridReadOnlyMode(gridID)">ReadOnly</button>-->
 
 <script>
-    var dataSource = [];
-    var colArr = [];
 
     $(function () {
 
-        // 컬럼은 순서대로 작성하되 index는 0부터 시작
-        // 필수요소: index, caption, dataField
-        // 옵션: parent(상위 그룹 인덱스), 기타
-        // Grouping 할 때, 상위 컬럼이 항상 먼저 작성되어야 함
+        // header :: caption, dataField, columns(하위그룹) 으로 이루어진다.
+        // column :: dataField를 PK로 header와 연결된다.
         let gridId = "#headerTestContainer";
-        let colConfig = new Array();
-        colConfig.push({"index":"0", "caption":"Country", "dataField":"Country", "cssClass":"backGroundColor"});
-        colConfig.push({"index":"1","caption":"Area, km<sup>2</sup>", "dataField":"Area"});
-        colConfig.push({"index":"2","caption":"Population", "dataField":""});
-        colConfig.push({"index":"3","caption":"Total", "dataField":"Population_Total", "parent":"2","format": "fixedPoint"});
-        colConfig.push({"index":"4","caption":"Urb<br>an", "dataField":"Population_Urban", "parent":"2","format": "percent"});
-        colConfig.push({"index":"5","caption":"Nominal\nGDP", "dataField":""});
-        colConfig.push({"index":"6","caption":"Total, mln $", "dataField":"GDP_Total","parent":"5","format": "fixedPoint","sortOrder": "desc"});
-        colConfig.push({"index":"7","caption":"By Sector", "dataField":"","parent":"5"});
-        colConfig.push({"index":"8","caption":"Agriculture", "dataField":"GDP_Agriculture","parent":"7","width": "95","format": {"type": "percent","precision": "1"}});
-        colConfig.push({"index":"9","caption":"Industry", "dataField":"GDP_Industry","parent":"7","width": "80","format": {"type": "percent","precision": "1"}});
-        colConfig.push({"index":"10","caption":"Services", "dataField":"GDP_Services","parent":"7","width": "85","format": {"type": "percent","precision": "1"}});
+        let header  = new Array();
+        let column = new Array();
+        header = [
+            {
+                "caption":"Country", "dataField": "Country",
+            },
+            {
+                "caption":"Area, km<sup>2</sup>", "dataField": "Area",
+            },
+            {
+                "caption":"Population", "dataField": "",
+                "columns": [
+                    {"caption":"Total", "dataField": "Population_Total"},
+                    {"caption":"Urban", "dataField": "Population_Urban"},
+                ]
+            },
+            {
+                "caption":"Nominal\nGDP", "dataField": "",
+                "columns": [
+                    {"caption":"Total, mln $", "dataField": "GDP_Total"},
+                    {"caption":"By Sector", "dataField": "",
+                        "columns": [
+                            {"caption":"Agriculture", "dataField": "GDP_Agriculture"},
+                            {"caption":"Industry", "dataField": "GDP_Industry"},
+                            {"caption":"Services", "dataField": "GDP_Services"},
+                        ]
+                    },
+                ]
+            },
+        ];
 
-        dxDataGrid.config.setColumns(gridId, colConfig);
-        dxDataGrid.config.setGridData(gridId, countries);
 
-        // let columns = $("#headerTestContainer").dxDataGrid("option").columns
+        column.push({"dataField":"Country", "cssClass":"backGroundColor"});
+        column.push({"dataField":"Population_Total", "format": "fixedPoint", "alignment": "center"});
+        column.push({"dataField":"Population_Urban", "format": "percent"});
+        column.push({"dataField":"GDP_Total", "format": "fixedPoint","sortOrder": "desc","alignment":"left"});
+        column.push({"dataField":"GDP_Agriculture", "width": "95","format": {"type": "percent","precision": "1"}});
+        column.push({"dataField":"GDP_Industry", "width": "80", "format": {"type": "percent","precision": "1"}, "alignment": "center"});
+        column.push({"dataField":"GDP_Services", "width": "85","format": {"type": "percent","precision": "1"}});
+
+        // colConfig.push(new Column("Country", "Country Name", "backgroundColor", "fixedPoint", null, "desc", "left", "1"));
+
+        grid.config.setGridColumns(gridId, header);
+        grid.config.setGridData(gridId, countries);
 
     });
+
+    // function onSetGridAlignment(gridId) {
+    //     dxDataGrid.config.setOneColumnOptionalFields(gridId, "alignment")("1","center");
+    // }
+    // function onSetGridWidth(gridId) {
+    //     dxDataGrid.config.setOneColumnOptionalFields(gridId, "width")("1","20%");
+    // }
+    // function onSetGridDataType(gridId) {
+    //     dxDataGrid.config.setOneColumnOptionalFields(gridId, "dataType")("1","date");
+    // }
+    // function onSetGridEditing(gridId) {
+    //     dxDataGrid.config.setOneColumnOptionalFields(gridId, "allowEditing")("1",false);
+    // }
+    // function onSetGridEditMode(gridId) {
+    //     dxDataGrid.config.setEditMode(gridId, false, true, false, "none");
+    // }
+    // function onSetGridReadOnlyMode(gridId) {
+    //     dxDataGrid.config.setReadOnlyMode(gridId);
+    // }
+
+
+
+
+
 
 </script>
 
