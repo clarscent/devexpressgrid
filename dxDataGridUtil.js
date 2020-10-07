@@ -1,33 +1,11 @@
-var grid = {
+var Grid = {
     config: {
-        __mergeHeaderAndColumns: function (header, columns) {
-            for (let k = 0 ; k < header.length ; k++ ) {
-                header[k]["headerCellTemplate"] = function (header, info) { // 개행 가능.
-                    header.append($("<div>").html(info.column.caption.replace(/\n/g, "<br/>")));
-                }
-
-                if (columns != null) {
-                    for (let j = 0 ; j < columns.length ; j++ ) {
-                        if (columns[j].dataField === header[k].dataField) {
-                            delete columns[j].dataField;
-                            _.merge(header[k], columns[j]);
-                            break;
-                        }
-                    }
-                }
-
-                if (header[k]["columns"] != null) {
-                    header[k]["columns"] = this.__mergeHeaderAndColumns(header[k]["columns"], columns);
-                }
-            }
-
-            return header;
-        },
 
         setGridColumns: function (gridId, header, columns) {
-            header = this.__mergeHeaderAndColumns(header, columns);
+            header = Header.method.__mergeHeaderAndColumns(header, columns);
             $(gridId).dxDataGrid({columns: header});
             $(gridId).dxDataGrid("instance").repaint();
+            console.log("header", header);
         },
 
         setGridData: function (gridId, data) {
@@ -133,10 +111,48 @@ var grid = {
 }
 
 var Header = {
+    config: {
 
+    },
+
+    method: {
+        __mergeHeaderAndColumns: function (header, columns) {
+            for (let k = 0 ; k < header.length ; k++ ) {
+                header[k]["headerCellTemplate"] = function (header, info) { // 개행 가능.
+                    header.append($("<div>").html(info.column.caption.replace(/\n/g, "<br/>")));
+                }
+
+                if (columns != null) {
+                    for (let j = 0 ; j < columns.length ; j++ ) {
+                        if (columns[j].dataField === header[k].dataField) {
+                            _.merge(header[k], columns[j]);
+                            break;
+                        }
+                    }
+                }
+
+                if (header[k]["columns"] != null) {
+                    header[k]["columns"] = this.__mergeHeaderAndColumns(header[k]["columns"], columns);
+                }
+            }
+
+            return header;
+        },
+
+    }
 }
 
+
 var Column = {
+    config: {
+        set: function (dataField, width, alignment, option) {
+            this.dataField = dataField;
+            this.width = width;
+            this.alignment = alignment;
+            _.merge(this, option);
+        },
+    }
+
 
 }
 

@@ -72,19 +72,16 @@
             },
         ];
 
+        column = [
+            new Column.config.set("Country","30%","center",{"cssClass":"backGroundColor"}),
+            new Column.config.set("Population_Total","100px","center",{"format": "fixedPoint"}),
+            new Column.config.set("GDP_Agriculture","95","right",{"format": {"type": "percent","precision": "1"}}),
+            new Column.config.set("GDP_Industry","80","left",{"format": {"type": "percent","precision": "1"}}),
+            new Column.config.set("GDP_Services","85","center",{"format": {"type": "percent","precision": "1"}}),
+        ]
 
-        column.push({"dataField":"Country", "cssClass":"backGroundColor"});
-        column.push({"dataField":"Population_Total", "format": "fixedPoint", "alignment": "center"});
-        column.push({"dataField":"Population_Urban", "format": "percent"});
-        column.push({"dataField":"GDP_Total", "format": "fixedPoint","sortOrder": "desc","alignment":"left"});
-        column.push({"dataField":"GDP_Agriculture", "width": "95","format": {"type": "percent","precision": "1"}});
-        column.push({"dataField":"GDP_Industry", "width": "80", "format": {"type": "percent","precision": "1"}, "alignment": "center"});
-        column.push({"dataField":"GDP_Services", "width": "85","format": {"type": "percent","precision": "1"}});
-
-        // colConfig.push(new Column("Country", "Country Name", "backgroundColor", "fixedPoint", null, "desc", "left", "1"));
-
-        grid.config.setGridColumns(gridId, header);
-        grid.config.setGridData(gridId, countries);
+        Grid.config.setGridColumns(gridId, header, column);
+        Grid.config.setGridData(gridId, countries);
 
     });
 
