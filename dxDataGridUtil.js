@@ -2,7 +2,7 @@ var grid = {
     config: {
         __mergeHeaderAndColumns: function (header, columns) {
             for (let k = 0 ; k < header.length ; k++ ) {
-                header[k]["headerCellTemplate"] = function (header, info) { // 개행 가능
+                header[k]["headerCellTemplate"] = function (header, info) { // 개행 가능.
                     header.append($("<div>").html(info.column.caption.replace(/\n/g, "<br/>")));
                 }
 
