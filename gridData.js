@@ -8,7 +8,8 @@ var countries = [{
     "GDP_Agriculture": 0.054,
     "GDP_Industry": 0.275,
     "GDP_Services": 0.672,
-    "GDP_Total": 2353025
+    "GDP_Total": 2353025,
+    "Picture": "css/images/cat01.jpg"
 }, {
     "ID": 2,
     "Country": "China",
@@ -19,7 +20,8 @@ var countries = [{
     "GDP_Agriculture": 0.091,
     "GDP_Industry": 0.426,
     "GDP_Services": 0.483,
-    "GDP_Total": 10380380
+    "GDP_Total": 10380380,
+    "Picture": "css/images/cat02.jpg"
 }, {
     "ID": 3,
     "Country": "France",
@@ -30,7 +32,8 @@ var countries = [{
     "GDP_Agriculture": 0.019,
     "GDP_Industry": 0.183,
     "GDP_Services": 0.798,
-    "GDP_Total": 2846889
+    "GDP_Total": 2846889,
+    "Picture": "css/images/cat03.jpg"
 }, {
     "ID": 4,
     "Country": "Germany",
@@ -41,7 +44,8 @@ var countries = [{
     "GDP_Agriculture": 0.008,
     "GDP_Industry": 0.281,
     "GDP_Services": 0.711,
-    "GDP_Total": 3859547
+    "GDP_Total": 3859547,
+    "Picture": "css/images/dog01.jpg"
 }, {
     "ID": 5,
     "Country": "India",
@@ -52,7 +56,8 @@ var countries = [{
     "GDP_Agriculture": 0.174,
     "GDP_Industry": 0.258,
     "GDP_Services": 0.569,
-    "GDP_Total": 2047811
+    "GDP_Total": 2047811,
+    "Picture": "css/images/dog02.jpg"
 }, {
     "ID": 6,
     "Country": "Italy",
@@ -63,7 +68,8 @@ var countries = [{
     "GDP_Agriculture": 0.02,
     "GDP_Industry": 0.242,
     "GDP_Services": 0.738,
-    "GDP_Total": 2147952
+    "GDP_Total": 2147952,
+    "Picture": "css/images/dog03.jpg"
 }, {
     "ID": 7,
     "Country": "Japan",
@@ -74,7 +80,8 @@ var countries = [{
     "GDP_Agriculture": 0.012,
     "GDP_Industry": 0.275,
     "GDP_Services": 0.714,
-    "GDP_Total": 4616335
+    "GDP_Total": 4616335,
+    "Picture": "css/images/cat01.jpg"
 }, {
     "ID": 8,
     "Country": "Russia",
@@ -85,7 +92,8 @@ var countries = [{
     "GDP_Agriculture": 0.039,
     "GDP_Industry": 0.36,
     "GDP_Services": 0.601,
-    "GDP_Total": 1857461
+    "GDP_Total": 1857461,
+    "Picture": "css/images/cat01.jpg"
 }, {
     "ID": 9,
     "Country": "United States",
@@ -96,7 +104,8 @@ var countries = [{
     "GDP_Agriculture": 0.0112,
     "GDP_Industry": 0.191,
     "GDP_Services": 0.797,
-    "GDP_Total": 17418925
+    "GDP_Total": 17418925,
+    "Picture": "css/images/cat01.jpg"
 }, {
     "ID": 10,
     "Country": "United Kingdom",
@@ -107,5 +116,6 @@ var countries = [{
     "GDP_Agriculture": 0.007,
     "GDP_Industry": 0.21,
     "GDP_Services": 0.783,
-    "GDP_Total": 2945146
+    "GDP_Total": 2945146,
+    "Picture": "css/images/cat01.jpg"
 }];

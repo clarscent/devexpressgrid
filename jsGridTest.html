@@ -27,20 +27,29 @@
     </div>
 </div>
 <p></p>
-<!--<button onclick="onSetGridAlignment(gridID)">Alignment</button>-->
-<!--<button onclick="onSetGridWidth(gridID)">width</button>-->
-<!--<button onclick="onSetGridDataType(gridID)">DataType</button>-->
-<!--<button onclick="onSetGridEditing(gridID)">False Editing</button>-->
-<!--<button onclick="onSetGridEditMode(gridID)">EditMode</button>-->
-<!--<button onclick="onSetGridReadOnlyMode(gridID)">ReadOnly</button>-->
+<button onclick="onSetColumnAlignment(gridID)">Alignment</button>
+<button onclick="onSetColumnWidth(gridID)">width</button>
+<button onclick="onSetColumnDataType(gridID)">DataType</button>
+<button onclick="onSetColumnEditing(gridID)">False Editing</button>
+<button onclick="onSetGridReadOnlyMode(gridID)">ReadOnly</button>
+<button onclick="onSetGridEditMode(gridID)">EditMode</button>
+<button onclick="onSetColumnType(gridID, 'Area', 'button')">Button Type</button>
+<button onclick="onSetColumnType(gridID, 'GDP_Agriculture', 'checkBox')">CheckBox Type</button>
+<button onclick="onSetColumnType(gridID, 'Population_Total', 'comboBox')">ComboBox Type</button>
+<button onclick="onSetColumnType(gridID, 'GDP_Total', 'date')">Date Type</button>
+<button onclick="onSetColumnType(gridID, 'GDP_Services', 'mask')">Mask Type</button>
+<button onclick="onSetColumnType(gridID, 'Picture', 'image')">Image Type</button>
+<button onclick="onSetColumnType(gridID, 'Country', 'textarea')">Textarea Type</button>
 
 <script>
+
+    var gridID = "#headerTestContainer";
 
     $(function () {
 
         // header :: caption, dataField, columns(하위그룹)으로 이루어진다.
         // column :: dataField를 PK로 header와 연결된다.
-        let gridId = "#headerTestContainer";
+        let gridId = gridID;
         let header  = new Array();
         let column = new Array();
         header = [
@@ -70,6 +79,9 @@
                     },
                 ]
             },
+            {
+                "caption": "Picture", "dataField": "Picture"
+            }
         ];
 
         column = [
@@ -80,29 +92,37 @@
             new Column.config.set("GDP_Services","85","center",{"format": {"type": "percent","precision": "1"}}),
         ]
 
+
+
         Grid.config.setGridColumns(gridId, header, column);
         Grid.config.setGridData(gridId, countries);
 
     });
 
-    // function onSetGridAlignment(gridId) {
-    //     dxDataGrid.config.setOneColumnOptionalFields(gridId, "alignment")("1","center");
-    // }
-    // function onSetGridWidth(gridId) {
-    //     dxDataGrid.config.setOneColumnOptionalFields(gridId, "width")("1","20%");
-    // }
-    // function onSetGridDataType(gridId) {
-    //     dxDataGrid.config.setOneColumnOptionalFields(gridId, "dataType")("1","date");
-    // }
-    // function onSetGridEditing(gridId) {
-    //     dxDataGrid.config.setOneColumnOptionalFields(gridId, "allowEditing")("1",false);
-    // }
-    // function onSetGridEditMode(gridId) {
-    //     dxDataGrid.config.setEditMode(gridId, false, true, false, "none");
-    // }
-    // function onSetGridReadOnlyMode(gridId) {
-    //     dxDataGrid.config.setReadOnlyMode(gridId);
-    // }
+    function onSetColumnAlignment(gridId) {
+        Column.config.setOneColumnOptionalFields(gridId, "alignment")("Country","right");
+    }
+    function onSetColumnWidth(gridId) {
+        Column.config.setOneColumnOptionalFields(gridId, "width")("GDP_Agriculture","20%");
+    }
+    function onSetColumnDataType(gridId) {
+        Column.config.setOneColumnOptionalFields(gridId, "dataType")("GDP_Industry","date");
+    }
+    function onSetColumnEditing(gridId) {
+        Column.config.setOneColumnOptionalFields(gridId, "allowEditing")("GDP_Services",false);
+    }
+    function onSetColumnType(gridId, dataField, type) {
+        let editType = Column.config.setColumnType(gridId, type);
+        editType(dataField);
+    }
+
+    function onSetGridEditMode(gridId) {
+        Grid.config.setEditMode(gridId, false, true, false, "none");
+    }
+    function onSetGridReadOnlyMode(gridId) {
+        Grid.config.setEditMode(gridId, false, false, false, "none");
+    }
+
 
 
 
