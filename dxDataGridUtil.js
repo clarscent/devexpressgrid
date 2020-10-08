@@ -5,42 +5,27 @@ var Grid = {
             header = Header.method.__mergeHeaderAndColumns(header, columns);
             $(gridId).dxDataGrid({columns: header});
             $(gridId).dxDataGrid("instance").repaint();
-            console.log("header", header);
         },
 
         setGridData: function (gridId, data) {
             $(gridId).dxDataGrid({dataSource:data});
         },
 
-        // setEditMode : function (gridId, addMode, updateMode, deleteMode, selMode) {
-        //     $(gridId).dxDataGrid({
-        //         editing: {
-        //             mode: "batch",
-        //             allowAdding: addMode,
-        //             allowUpdating: updateMode,
-        //             allowDeleting: deleteMode
-        //         },
-        //         selection: {
-        //             mode: selMode
-        //         }
-        //     });
-        //     $(gridId).dxDataGrid("instance").repaintRows();
-        // },
-        //
-        // setReadOnlyMode : function (gridId) {
-        //     $(gridId).dxDataGrid({
-        //         editing: {
-        //             mode: "batch",
-        //             allowAdding: false,
-        //             allowUpdating: false,
-        //             allowDeleting: false
-        //         },
-        //         selection: {
-        //             mode:"none"
-        //         }
-        //     });
-        //     $(gridId).dxDataGrid("instance").repaintRows();
-        // },
+        setEditMode : function (gridId, addMode, updateMode, deleteMode, selMode) {
+            $(gridId).dxDataGrid({
+                editing: {
+                    mode: "batch",
+                    allowAdding: addMode,
+                    allowUpdating: updateMode,
+                    allowDeleting: deleteMode
+                },
+                selection: {
+                    mode: selMode
+                }
+            });
+            // $(gridId).dxDataGrid("instance").repaintRows();
+        },
+
 
         // __setColProperty: function (caption, dataField, ...option) {
         //     let obj = {
@@ -97,14 +82,7 @@ var Grid = {
         //     this.setGridColumns(gridId, colArr);
         // },
 
-        setOneColumnOptionalFields: function(gridId, attr) {
-            let instance = $(gridId).dxDataGrid("instance");
 
-            return (index, value) => {
-                console.log("columns: ", instance.option('columns'));
-                instance.option(`columns[${index}].${attr}`, value);
-            };
-        },
 
 
     },
@@ -151,8 +129,166 @@ var Column = {
             this.alignment = alignment;
             _.merge(this, option);
         },
-    }
 
+        setOneColumnOptionalFields: function(gridId, attr) {
+            let instance = $(gridId).dxDataGrid("instance");
+
+            return (dataField, value) => {
+                let result = Column.method.__findColumns(dataField, instance.option('columns'), {flag: 0, str: ""});
+                result.str = result.str.slice(1)
+                instance.option(result.str + "." + attr, value);
+            };
+        },
+
+        __setColumnAttributes: function (dataField, instance, arr) {
+            let result = Column.method.__findColumns(dataField, instance.option('columns'), {flag: 0, str: ""});
+            result.str = result.str.slice(1)
+            for (let k = 0 ; k < arr.length ; k++) {
+                instance.option(result.str + "." + arr[k].attr, arr[k].value);
+            }
+            console.log("instance", instance.option(result.str));
+        },
+
+        setColumnType: function (gridId, type) {
+            let instance = $(gridId).dxDataGrid("instance");
+            let attrArr = new Array();
+
+            switch (type) {
+                case "button":
+                    return (dataField) => {
+                        attrArr = [
+                            {attr: "type", value: "buttons"},
+                            {
+                                attr: "buttons",
+                                value: [{
+                                    icon: "edit",
+                                    visible: true,
+                                }]
+                            },
+                        ];
+                        this.__setColumnAttributes(dataField, instance, attrArr);
+                    };
+
+                case "checkBox":
+                    return (dataField) => {
+                        attrArr = [
+                            {attr: "dataType", value: "boolean"}
+                        ];
+                        this.__setColumnAttributes(dataField, instance, attrArr);
+                    };
+
+                case "comboBox":
+                    return (dataField) => {
+                        attrArr = [
+                            {
+                                attr: "lookup",
+                                value: {
+                                    dataSource: countries,
+                                    valueExpr: "ID",
+                                    displayExpr: "Country",
+                                    allowClearing: true
+                                }
+                            }
+                        ];
+                        this.__setColumnAttributes(dataField, instance, attrArr);
+                    };
+
+                case "date":
+                    return (dataField) => {
+                        attrArr = [
+                            {attr: "dataType", value: "date"}
+                        ];
+                        this.__setColumnAttributes(dataField, instance, attrArr);
+                    };
+
+                case "mask":
+                    return (dataField) => {
+                        attrArr = [
+                            {
+                                attr: "customizeText",
+                                value: function(cellInfo) {
+                                    return "******";
+                                }
+                            }
+                        ];
+                        this.__setColumnAttributes(dataField, instance, attrArr);
+                    };
+
+                case "image":
+                    return (dataField) => {
+                        attrArr = [
+                            {
+                                attr: "cellTemplate",
+                                value: function (container, options) {
+                                    $("<div>")
+                                        .append($("<img>", { "src": options.value, "width": "100" }))
+                                        .appendTo(container);
+                                }
+                            },
+                        ];
+                        this.__setColumnAttributes(dataField, instance, attrArr);
+                    };
+
+                case "textarea":
+                    return (dataField) => {
+                        $(gridId).dxDataGrid({
+                            onEditorPreparing : function (e) {
+                                if (e.dataField === dataField) {
+                                    e.editorName = "dxTextArea";
+                                }
+                            }
+                        });
+
+                        attrArr = [
+                            {
+                                attr: "cellTemplate",
+                                 value: function (container, options) { // 개행 가능.
+                                     container.append($("<div>").html(options.text.replace(/\n/g, "<br/>")));
+                                }
+                            },
+                            {
+                                attr: "editorOptions",
+                                value: {
+                                    onKeyDown: function(args){
+                                        if(args.event.keyCode == 13){
+                                            args.event.stopPropagation();
+                                        }
+                                    }
+                                }
+                            },
+                        ];
+                        this.__setColumnAttributes(dataField, instance, attrArr);
+                    };
+            }
+
+        },
+
+        __setButtonType: function (dataField) {
+
+        }
+    },
+
+    method: {
+        __findColumns: function (dataField, columns, result) {
+            for (let k = 0 ; k < columns.length ; k++) {
+                if (columns[k].dataField === dataField) {
+                    result.flag = 1;
+                    result.str += ".columns["+ k +"]"
+                    return result;
+                }
+                if (columns[k].columns != null) {
+                    result.str += ".columns["+ k +"]"
+                    result = this.__findColumns(dataField, columns[k].columns, result);
+                    if (result.flag == 1) {
+                        return result;
+                    } else {
+                        result.str = "";
+                    }
+                }
+            }
+            return result;
+        }
+    }
 
 }
 
