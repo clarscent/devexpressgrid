@@ -86,6 +86,25 @@ var Grid = {
 
 
     },
+
+    method: {
+        getGridData : function (gridId) {
+            let gridItems = $(gridId).dxDataGrid('instance')._controllers.data._dataSource._items;
+            console.log("gridItems", gridItems);
+        },
+
+        getCheckedData : function (gridId) {
+            let selectedRowsData = $(gridId).dxDataGrid("instance").getSelectedRowsData();
+            console.log("selectedRowsData", selectedRowsData);
+        },
+
+        addRow : function (gridId, data) {
+            var dataSource = $(gridId).dxDataGrid("instance").getDataSource();
+            dataSource.store().insert(data).then(function() {
+                dataSource.reload();
+            });
+        }
+    }
 }
 
 var Header = {
