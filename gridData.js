@@ -119,3 +119,10 @@ var countries = [{
     "GDP_Total": 2945146,
     "Picture": "css/images/cat01.jpg"
 }];
+
+
+var ComboData = [
+    {"Name":"Country"},
+    {"Name":"Area"},
+    {"Name":"Population_Urban"},
+]
