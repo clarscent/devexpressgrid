@@ -123,10 +123,11 @@ var Header = {
 
 var Column = {
     config: {
-        set: function (dataField, width, alignment, option) {
+        set: function (dataField, width, alignment, maxLength, option) {
             this.dataField = dataField;
             this.width = width;
             this.alignment = alignment;
+            this.editorOptions = {"maxLength": maxLength};
             _.merge(this, option);
         },
 
@@ -134,19 +135,25 @@ var Column = {
             let instance = $(gridId).dxDataGrid("instance");
 
             return (dataField, value) => {
-                let result = Column.method.__findColumns(dataField, instance.option('columns'), {flag: 0, str: ""});
-                result.str = result.str.slice(1)
-                instance.option(result.str + "." + attr, value);
+                instance.columnOption(dataField, attr, value);
+                // let result = Column.method.__findColumns(dataField, instance.option('columns'), {flag: 0, str: ""});
+                // result.str = result.str.slice(1)
+                // instance.option(result.str + "." + attr, value);
             };
         },
 
         __setColumnAttributes: function (dataField, instance, arr) {
-            let result = Column.method.__findColumns(dataField, instance.option('columns'), {flag: 0, str: ""});
-            result.str = result.str.slice(1)
             for (let k = 0 ; k < arr.length ; k++) {
-                instance.option(result.str + "." + arr[k].attr, arr[k].value);
+                instance.columnOption(dataField, arr[k].attr, arr[k].value);
             }
-            console.log("instance", instance.option(result.str));
+
+            // let result = Column.method.__findColumns(dataField, instance.option('columns'), {flag: 0, str: ""});
+            // result.str = result.str.slice(1)
+            // for (let k = 0 ; k < arr.length ; k++) {
+            //     instance.option(result.str + "." + arr[k].attr, arr[k].value);
+            // }
+
+            // console.log("instance.option(result.str)", instance.option(result.str));
         },
 
         setColumnType: function (gridId, type) {
@@ -155,139 +162,170 @@ var Column = {
 
             switch (type) {
                 case "button":
-                    return (dataField) => {
-                        attrArr = [
-                            {attr: "type", value: "buttons"},
-                            {
-                                attr: "buttons",
-                                value: [{
-                                    icon: "edit",
-                                    visible: true,
-                                }]
-                            },
-                        ];
-                        this.__setColumnAttributes(dataField, instance, attrArr);
-                    };
+                    attrArr = [
+                        {attr: "type", value: "buttons"},
+                        {
+                            attr: "buttons",
+                            value: [{
+                                icon: "edit",
+                                visible: true,
+                            }]
+                        },
+                    ];
+                    break;
 
                 case "checkBox":
-                    return (dataField) => {
-                        attrArr = [
-                            {attr: "dataType", value: "boolean"}
-                        ];
-                        this.__setColumnAttributes(dataField, instance, attrArr);
-                    };
+                    attrArr = [
+                        {attr: "dataType", value: "boolean"}
+                    ];
+                    break;
 
                 case "comboBox":
-                    return (dataField) => {
-                        attrArr = [
+                    return (dataField, dataSource, value, display, clearing) => {
+                        this.__setColumnAttributes(dataField, instance, [
                             {
                                 attr: "lookup",
                                 value: {
-                                    dataSource: countries,
-                                    valueExpr: "ID",
-                                    displayExpr: "Country",
-                                    allowClearing: true
+                                    dataSource: dataSource,
+                                    valueExpr: value,
+                                    displayExpr: display,
+                                    allowClearing: clearing,
                                 }
-                            }
-                        ];
-                        this.__setColumnAttributes(dataField, instance, attrArr);
+                            },
+                        ]);
                     };
 
                 case "date":
-                    return (dataField) => {
-                        attrArr = [
-                            {attr: "dataType", value: "date"}
-                        ];
-                        this.__setColumnAttributes(dataField, instance, attrArr);
-                    };
+                    attrArr = [
+                        {attr: "dataType", value: "date"}
+                    ];
+                    break;
 
                 case "mask":
-                    return (dataField) => {
-                        attrArr = [
-                            {
-                                attr: "customizeText",
-                                value: function(cellInfo) {
-                                    return "******";
-                                }
+                    attrArr = [
+                        {
+                            attr: "customizeText",
+                            value: function(cellInfo) {
+                                return "******";
                             }
-                        ];
-                        this.__setColumnAttributes(dataField, instance, attrArr);
-                    };
+                        }
+                    ];
+                    break;
 
                 case "image":
-                    return (dataField) => {
-                        attrArr = [
-                            {
-                                attr: "cellTemplate",
-                                value: function (container, options) {
-                                    $("<div>")
-                                        .append($("<img>", { "src": options.value, "width": "100" }))
-                                        .appendTo(container);
-                                }
-                            },
-                        ];
-                        this.__setColumnAttributes(dataField, instance, attrArr);
-                    };
+                    attrArr = [
+                        {
+                            attr: "cellTemplate",
+                            value: function (container, options) {
+                                $("<div>")
+                                    .append($("<img>", { "src": options.value, "width": "100" }))
+                                    .appendTo(container);
+                            }
+                        },
+                    ];
+                    break;
 
                 case "textarea":
-                    return (dataField) => {
-                        $(gridId).dxDataGrid({
-                            onEditorPreparing : function (e) {
-                                if (e.dataField === dataField) {
-                                    e.editorName = "dxTextArea";
-                                }
+                    attrArr = [
+                        {
+                            attr: "cellTemplate",
+                            value: function (container, options) { // 개행 가능.
+                                container.append($("<div>").html(options.text.replace(/\n/g, "<br/>")));
                             }
-                        });
-
-                        attrArr = [
-                            {
-                                attr: "cellTemplate",
-                                 value: function (container, options) { // 개행 가능.
-                                     container.append($("<div>").html(options.text.replace(/\n/g, "<br/>")));
-                                }
-                            },
-                            {
-                                attr: "editorOptions",
-                                value: {
-                                    onKeyDown: function(args){
-                                        if(args.event.keyCode == 13){
-                                            args.event.stopPropagation();
-                                        }
+                        },
+                        {
+                            attr: "editorOptions",
+                            value: {
+                                onKeyDown: function(args){
+                                    if(args.event.keyCode == 13){
+                                        args.event.stopPropagation();
                                     }
                                 }
-                            },
-                        ];
-                        this.__setColumnAttributes(dataField, instance, attrArr);
-                    };
+                            }
+                        },
+                    ];
+                    break;
             }
+
+            return (dataField) => {
+                if (type === "textarea") {
+                    $(gridId).dxDataGrid({
+                        onEditorPreparing : function (e) {
+                            if (e.dataField === dataField) {
+                                e.editorName = "dxTextArea";
+                            }
+                        }
+                    });
+                }
+                this.__setColumnAttributes(dataField, instance, attrArr);
+            };
 
         },
 
-        __setButtonType: function (dataField) {
-
-        }
     },
 
     method: {
-        __findColumns: function (dataField, columns, result) {
-            for (let k = 0 ; k < columns.length ; k++) {
-                if (columns[k].dataField === dataField) {
-                    result.flag = 1;
-                    result.str += ".columns["+ k +"]"
-                    return result;
-                }
-                if (columns[k].columns != null) {
-                    result.str += ".columns["+ k +"]"
-                    result = this.__findColumns(dataField, columns[k].columns, result);
-                    if (result.flag == 1) {
-                        return result;
-                    } else {
-                        result.str = "";
+        // __findColumns: function (dataField, columns, result) {
+        //     for (let k = 0 ; k < columns.length ; k++) {
+        //         if (columns[k].dataField === dataField) {
+        //             result.flag = 1;
+        //             result.str += ".columns["+ k +"]"
+        //             return result;
+        //         }
+        //         if (columns[k].columns != null) {
+        //             result.str += ".columns["+ k +"]"
+        //             result = this.__findColumns(dataField, columns[k].columns, result);
+        //             if (result.flag == 1) {
+        //                 return result;
+        //             } else {
+        //                 result.str = "";
+        //             }
+        //         }
+        //     }
+        //     return result;
+        // },
+
+
+
+        setComboBoxLookUp : function (gridId, dataField, dependentField) {
+            let instance = $(gridId).dxDataGrid("instance");
+            Column.config.__setColumnAttributes(dataField, instance, [
+                {
+                    attr: "editorOptions",
+                    value: {
+                        onValueChanged: function(data){
+                            // console.log("changed");
+                            // console.log("dependentField", dependentField);
+                            // console.log("data", data);
+                            // console.log("data.value", data.value);
+                            instance.columnOption(dependentField, "lookup.dataSource", function(options) {
+                                return {
+                                    store: cities,
+                                    filter: options.data ? ["StateID", "=", options.data.StateID] : null
+                                };
+                            });
+                            instance.columnOption(dependentField, "lookup.valueExpr", data.value);
+                            instance.columnOption(dependentField, "lookup.displayExpr", data.value);
+                            // instance.columnOption(dependentField, "lookup.allowClearing", false);
+                            // instance.columnOption(dataField, "value", data.value);
+                        }
                     }
                 }
+            ]);
+        },
+
+        __setLookUp : function (dataSource, value, display, clearing) {
+            return {
+                attr: "lookup",
+                value: {
+                    dataSource: dataSource,
+                    valueExpr: value,
+                    displayExpr: display,
+                    allowClearing: clearing,
+                }
             }
-            return result;
         }
+
     }
 
 }
