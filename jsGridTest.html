@@ -128,7 +128,7 @@
 
         Grid.config.setGridColumns(gridId, header, column);
         Grid.config.setGridData(gridId, countries);
-        onSetGridEditMode(gridId);
+        onSetGridReadOnlyMode(gridId);
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         let gridId2 = gridID2;
@@ -185,7 +185,7 @@
         Grid.config.setEditMode(gridId, true, true, true, "multiple");
     }
     function onSetGridReadOnlyMode(gridId) {
-        Grid.config.setEditMode(gridId, false, false, false, "none");
+        Grid.config.setEditMode(gridId, false, false, false, "multiple");
     }
 
     function onSetComboBoxLookUp(gridId, dataField, dependentField) {
