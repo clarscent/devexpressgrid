@@ -27,6 +27,11 @@
     </div>
 </div>
 <p></p>
+<button onclick="onGetGridData(gridID)">getGridData</button>
+<button onclick="onGetCheckedData(gridID)">onGetCheckedData</button>
+<button onclick="onAddRow(gridID, obj)">onAddRow</button>
+<button onclick="onAddRow(gridID, {})">onAddEmptyRow</button>
+<p></p>
 <button onclick="onSetColumnAlignment(gridID)">Alignment</button>
 <button onclick="onSetColumnWidth(gridID)">width</button>
 <button onclick="onSetColumnDataType(gridID)">DataType</button>
@@ -58,6 +63,19 @@
 
     var gridID = "#headerTestContainer";
     var gridID2 = "#headerTestContainer2";
+    var obj = {
+        "ID": 11,
+        "Country": "United",
+        "Area": 244820,
+        "Population_Urban": 0.82,
+        "Population_Rural": 0.18,
+        "Population_Total": 65097000,
+        "GDP_Agriculture": 0.007,
+        "GDP_Industry": 0.21,
+        "GDP_Services": 0.783,
+        "GDP_Total": 2945146,
+        "Picture": "css/images/cat01.jpg"
+    }
 
     $(function () {
 
@@ -110,7 +128,7 @@
 
         Grid.config.setGridColumns(gridId, header, column);
         Grid.config.setGridData(gridId, countries);
-
+        onSetGridEditMode(gridId);
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         let gridId2 = gridID2;
@@ -142,6 +160,16 @@
     function onSetColumnEditing(gridId) {
         Column.config.setOneColumnOptionalFields(gridId, "allowEditing")("GDP_Services",false);
     }
+    function onGetGridData(gridId) {
+        Grid.method.getGridData(gridId);
+    }
+    function onGetCheckedData(gridId) {
+        Grid.method.getCheckedData(gridId);
+    }
+    function onAddRow(gridId, obj) {
+        Grid.method.addRow(gridId, obj);
+    }
+
     function onSetColumnType(gridId, dataField, type, ...args) {
         let editType = Column.config.setColumnType(gridId, type);
         if (type === "comboBox") {
@@ -154,7 +182,7 @@
 
 
     function onSetGridEditMode(gridId) {
-        Grid.config.setEditMode(gridId, true, true, true, "multi");
+        Grid.config.setEditMode(gridId, true, true, true, "multiple");
     }
     function onSetGridReadOnlyMode(gridId) {
         Grid.config.setEditMode(gridId, false, false, false, "none");
@@ -168,6 +196,7 @@
         // instance.columnOption(dependentField, "lookup.displayExpr", 'Country');
         // instance.columnOption(dependentField, "lookup.allowClearing", false);
     }
+
 
 
 
