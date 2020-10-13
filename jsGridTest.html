@@ -41,10 +41,10 @@
 <button onclick="onSetGridEditMode(gridID)">EditMode</button>
 <button onclick="onSetColumnType(gridID, 'Country', 'textarea')">Textarea Type</button>
 <button onclick="onSetColumnType(gridID, 'Area', 'button')">Button Type</button>
-<button onclick="onSetColumnType(gridID, 'Population_Total', 'comboBox', countries, 'ID', 'Country', true)">ComboBox Type</button>
+<button onclick="onSetColumnType(gridID, 'Population_Total', 'selectBox', countries, 'ID', 'Country', false)">ComboBox Type</button>
 <button onclick="onSetColumnType(gridID, 'GDP_Total', 'date')">Date Type</button>
 <button onclick="onSetColumnType(gridID, 'GDP_Agriculture', 'checkBox')">CheckBox Type</button>
-<button onclick="onSetColumnType(gridID, 'GDP_Services', 'mask')">Mask Type</button>
+<button onclick="onSetColumnType(gridID, 'GDP_Services', 'mask', 0, 2)">Mask Type</button>
 <button onclick="onSetColumnType(gridID, 'Picture', 'image')">Image Type</button>
 <p></p>
 <div class="demo-container">
@@ -54,8 +54,8 @@
 </div>
 <p></p>
 <button onclick="onSetGridEditMode(gridID2)">EditMode</button>
-<button onclick="onSetColumnType(gridID2, 'Name', 'comboBox', ComboData, 'Name', 'Name', false)">Name ComboBox Type</button>
-<button onclick="onSetColumnType(gridID2, 'Test2', 'comboBox', ComboData, 'Name', 'Name', false)">Area ComboBox Type</button>
+<button onclick="onSetColumnType(gridID2, 'Name', 'selectBox', ComboData, 'Name', 'Name', false)">Name ComboBox Type</button>
+<button onclick="onSetColumnType(gridID2, 'Test2', 'selectBox', ComboData, 'Name', 'Name', false)">Area ComboBox Type</button>
 <button onclick="onSetComboBoxLookUp(gridID2, 'Name', 'Test2')">Name Change Selection Event</button>
 
 
@@ -84,6 +84,8 @@
         let gridId = gridID;
         let header  = new Array();
         let column = new Array();
+        let headerCss = new Array();
+
         header = [
             {
                 "caption":"Country", "dataField": "Country",
@@ -116,19 +118,36 @@
             }
         ];
 
-        column = [
-            new Column.config.set("Country","30%","center","10",{"cssClass":"backGroundColor"}),
-            new Column.config.set("Population_Total","100px","center",""),
-            new Column.config.set("GDP_Agriculture","95","right","",{"format": {"type": "percent","precision": "1"}},"sum"),
-            new Column.config.set("GDP_Industry","80","left","",{"format": {"type": "percent","precision": "1"}}),
-            new Column.config.set("GDP_Services","85","center","",{"format": {"type": "percent","precision": "1"}}),
+        headerCss = [
+            new Attribute("background-color", "#f5f5f5"),
         ]
-        console.log("obj",new Column.config.set("Country","30%","center",{"cssClass":"backGroundColor"}));
 
 
-        Grid.config.setGridColumns(gridId, header, column);
+        column = [
+            new Column.config.set("Country","300px","text"),
+            new Column.config.set("Area","100px","number"),
+            new Column.config.set("Population_Total","95px","check"),
+            new Column.config.set("Population_Urban","80px","date"),
+            // new Column.config.set("Agriculture","80px","number"),
+            // new Column.config.set("GDP_Industry","80px","number"),
+            // new Column.config.set("GDP_Services","80px","number"),
+        ]
+
+
+
+        Grid.config.setGrid(gridId, header, column, headerCss);
         Grid.config.setGridData(gridId, countries);
-        onSetGridReadOnlyMode(gridId);
+
+        let button = Column.config.setColumnType(gridId, "button");
+        let selectBox = Column.config.setColumnType(gridId, "selectBox");
+        let mask = Column.config.setColumnType(gridId, "mask");
+        let image = Column.config.setColumnType(gridId, "image");
+        let textarea = Column.config.setColumnType(gridId, "textarea");
+
+        button("Area", "edit", "edit", true);
+        selectBox("Country", countries, "Country", "Country", false);
+        // mask("Country", "edit", "edit", true);
+
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         let gridId2 = gridID2;
@@ -143,8 +162,9 @@
             }
         ];
 
-        Grid.config.setGridColumns(gridId2, header2, column2);
-        Grid.config.setGridData(gridId2, ComboData);
+
+        // Grid.config.setGridColumns(gridId2, header2, column2);
+        // Grid.config.setGridData(gridId2, ComboData);
 
     });
 
@@ -174,7 +194,10 @@
         let editType = Column.config.setColumnType(gridId, type);
         if (type === "comboBox") {
             editType(dataField, args[0], args[1], args[2], args[3]);
-        } else {
+        } else if (type === "mask") {
+            editType(dataField, args[0], args[1]);
+        }
+        else {
             editType(dataField);
         }
         // console.log("instance", $(gridId).dxDataGrid("instance").option('columns'));
