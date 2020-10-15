@@ -23,6 +23,10 @@ var Grid = {
                 },
 
             });
+
+            $(gridId).onRowclcikK(function() {
+                listener.grid.oncRowClick();
+            })
         },
 
     },

@@ -18,7 +18,7 @@
 
 <div class="demo-container">
     <div id="headerTest">
-        <div id="headerTestContainer"></div>
+        <div id="headerTestContainer" style="height: 500px"></div>
     </div>
 </div>
 <p>결과 값은 콘솔창</p>
@@ -45,47 +45,47 @@
 
     $(function () {
 
-        let header  = new Array();
+        let headers  = new Array();
+        let columns  = new Array();
         let headerCss = new Array();
 
-        header = [
-            {
-                "caption":"Country", "dataField": "Country",
-            },
-            {
-                "caption":"Area, km<sup>2</sup>", "dataField": "Area",
-            },
-            {
-                "caption":"Population", "dataField": "",
-                "columns": [
-                    {"caption":"Total", "dataField": "Population_Total"},
-                    {"caption":"Urban", "dataField": "Population_Urban"},
-                ]
-            },
-            {
-                "caption":"Nominal\nGDP", "dataField": "",
-                "columns": [
-                    {"caption":"Total, mln $", "dataField": "GDP_Total"},
-                    {"caption":"By Sector", "dataField": "",
-                        "columns": [
-                            {"caption":"Agriculture", "dataField": "GDP_Agriculture"},
-                            {"caption":"Industry", "dataField": "GDP_Industry"},
-                            {"caption":"Services", "dataField": "GDP_Services"},
-                        ]
-                    },
-                ]
-            },
-            {
-                "caption": "Picture", "dataField": "Picture"
-            }
-        ];//
-
-        headerCss = [
-            new Attribute("background-color", "#f5f5f5"),
+        headers = [
+            new Header.config.set("Country"),
+            new Header.config.set("Area"),
+            new Header.config.set("국가총생산", [
+                new Header.config.set("Population_Total"),
+                new Header.config.set("Population_Urban"),
+            ]),
+            new Header.config.set("일반\nGDP", [
+                new Header.config.set("GDP_Total"),
+                new Header.config.set("분야", [
+                    new Header.config.set("GDP_Agriculture"),
+                    new Header.config.set("GDP_Industry"),
+                    new Header.config.set("GDP_Services"),
+                ]),
+            ]),
         ];
 
-        Grid.config.setGrid(gridId, header, headerCss);
-        Grid.config.setGridData(gridId, countries);
+        columns = [
+            new Column.config.set("국가","Country","300px","text"),
+            new Column.config.set("지역","Area","100px","number"),
+            new Column.config.set("인구 합","Population_Total","150px","number"),
+            new Column.config.set("인구(외곽)","Population_Urban","150px","percent"),
+            new Column.config.set("GDP 총합","GDP_Total","150px","number"),
+            new Column.config.set("농업","GDP_Agriculture","150px","number"),
+            new Column.config.set("산업","GDP_Industry","150px","number"),
+            new Column.config.set("서비스업","GDP_Services","150px","number"),
+        ];
+
+        Grid.config.setGrid(gridId, "", 500, true);
+        Grid.config.setColumns(gridId, columns);
+        Grid.config.setHeaders(gridId, columns, headers);
+        Grid.config.setGridData(gridId, countries, "ID");
+
+        headerCss = [
+            new Attribute("background-color", "#f5f5f5")
+        ]
+        Header.config.setHeaderCss(gridId, headerCss);
     });
 
     function onGetGridData(gridId) {
@@ -97,6 +97,10 @@
     function onAddRow(gridId, obj) {
         Grid.method.addRow(gridId, obj);
     }
+
+    // listener.grid.oncRowClick = function() {
+    //     alert("로우클릭");
+    // }
 
 </script>
 
