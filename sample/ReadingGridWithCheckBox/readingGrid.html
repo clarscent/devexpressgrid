@@ -45,47 +45,59 @@
 
     $(function () {
 
-        let headers  = new Array();
+        let band = new Array();
         let columns  = new Array();
         let headerCss = new Array();
 
-        headers = [
-            new Header.config.set("Country"),
-            new Header.config.set("Area"),
-            new Header.config.set("국가총생산", [
-                new Header.config.set("Population_Total"),
-                new Header.config.set("Population_Urban"),
+        band = [
+            new Band("Country"),
+            new Band("Area"),
+            new Band("국가총생산", [
+                new Band("Population_Total"),
+                new Band("Population_Urban"),
             ]),
-            new Header.config.set("일반\nGDP", [
-                new Header.config.set("GDP_Total"),
-                new Header.config.set("분야", [
-                    new Header.config.set("GDP_Agriculture"),
-                    new Header.config.set("GDP_Industry"),
-                    new Header.config.set("GDP_Services"),
+            new Band("일반\nGDP", [
+                new Band("GDP_Total"),
+                new Band("분야", [
+                    new Band("GDP_Agriculture"),
+                    new Band("GDP_Industry"),
+                    new Band("GDP_Services"),
                 ]),
             ]),
-        ];
+        ]
 
         columns = [
-            new Column.config.set("국가","Country","300px","text"),
-            new Column.config.set("지역","Area","100px","number"),
-            new Column.config.set("인구 합","Population_Total","150px","number"),
-            new Column.config.set("인구(외곽)","Population_Urban","150px","percent"),
-            new Column.config.set("GDP 총합","GDP_Total","150px","number"),
-            new Column.config.set("농업","GDP_Agriculture","150px","number"),
-            new Column.config.set("산업","GDP_Industry","150px","number"),
-            new Column.config.set("서비스업","GDP_Services","150px","number"),
+            new ColConfig("나라","Country","200px","text"),
+            new ColConfig("지역","Area","100px","number"),
+            new ColConfig("인구 합","Population_Total","150px","number"),
+            new ColConfig("인구(외곽)","Population_Urban","150px","percent"),
+            new ColConfig("GDP 총합","GDP_Total","150px","number"),
+            new ColConfig("농\n업","GDP_Agriculture","150px","percent",1),
+            new ColConfig("산업","GDP_Industry","150px","percent",1),
+            new ColConfig("서비스업","GDP_Services","150px","percent",1),
         ];
 
-        Grid.config.setGrid(gridId, "", 500, true);
-        Grid.config.setColumns(gridId, columns);
-        Grid.config.setHeaders(gridId, columns, headers);
-        Grid.config.setGridData(gridId, countries, "ID");
+        Grid.config.set(gridId, "", 500, true);
+        Column.config.set(gridId, columns);
+        Header.config.set(gridId, columns, band);
+        Grid.config.setGridData(gridId, countries);
 
         headerCss = [
-            new Attribute("background-color", "#f5f5f5")
+            new Attribute("background-color", "#f5f5f5"),
+            new Attribute("text-align", "center"),
         ]
-        Header.config.setHeaderCss(gridId, headerCss);
+        Header.config.setCss(gridId, headerCss);
+
+        // Grid.config.setEditMode(gridId, true);
+
+
+        /// ??
+        let listener = new Listener(gridId);
+        listener.grid.onRowClick = function () {
+            alert("Custom Event");
+        }
+        listener.addEventListener("onRowClick", listener.grid.onRowClick);
+
     });
 
     function onGetGridData(gridId) {
@@ -98,8 +110,16 @@
         Grid.method.addRow(gridId, obj);
     }
 
-    // listener.grid.oncRowClick = function() {
+
+
+    //
+    // let listener = Listener.set(gridId);
+    // listener.grid.onRowClick = function() {
     //     alert("로우클릭");
+    // }
+    //
+    // Grid.event.onRowClick = function () {
+    //     alert("로우클릭!");
     // }
 
 </script>
