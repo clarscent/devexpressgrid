@@ -32,11 +32,13 @@ var Grid = {
                 selection: {
                     mode: "multiple"
                 },
-                keyExpr: "__rowIndex",
-                errorRowEnabled: false,
-                onRowPrepared : function (e) {
-                    _.merge(e.data,{__rowIndex:e.rowIndex});
+                editing : {
+                    texts: {
+                        confirmDeleteMessage: "",
+                    }
                 },
+                keyExpr: "__rowIndex",
+                // errorRowEnabled: false,
                 onSelectionChanged : function (e) {
                     e.component.refresh();
                 },
@@ -54,7 +56,11 @@ var Grid = {
         },
 
         setGridData: function (gridId, data) {
+            for (let j = 0 ; j < data.length ; j++) {
+                data[j].__rowIndex = j;
+            }
             Grid.method.getGridInstance(gridId).option("dataSource", data);
+            // console.log("data", data);
         },
 
         setEditMode : function (gridId, boolean) {
@@ -73,31 +79,59 @@ var Grid = {
         },
 
         getGridData : function (gridId) {
-            let gridItems = Grid.method.getGridInstance(gridId)._controllers.data._dataSource._items;
-            console.log("gridItems", gridItems);
+            return Grid.method.getGridInstance(gridId)._controllers.data._dataSource._items;
         },
 
         getCheckedData : function (gridId) {
-            let selectedRowsData = Grid.method.getGridInstance(gridId).getSelectedRowsData();
-            console.log("selectedRowsData", selectedRowsData);
+            return Grid.method.getGridInstance(gridId).getSelectedRowsData();
         },
 
-        addRow : function (gridId, data) {
-            // let instance = Grid.method.getGridInstance(gridId);
-            // instance.on("initNewRow", e => {
-            //     e.data = data;
-            // });
-            // instance.addRow();
-            // instance.saveEditData();
-            // instance.repaint();
+        addRow : function (gridId, data, index) {
+            Grid.method.getGridInstance(gridId).deselectAll();
+            let dataSource = Grid.method.getGridInstance(gridId).getDataSource();
+            let arr = JSON.parse(JSON.stringify(dataSource.store()._array));
 
+            switch (index) {
+                case null :
+                case "bottom":
+                    arr.push(data);
+                    break;
+                case "top":
+                    arr.unshift(data);
+                    break;
+                default :
+                    arr.splice(index, 0, data);
+                    break;
+            }
 
-            var dataSource = Grid.method.getGridInstance(gridId).getDataSource();
-            dataSource.store().insert(data).then(function() {
+            this.__setRowSeq(arr);
+
+            dataSource.store()._array = arr;
+            dataSource.reload();
+        },
+
+        deleteRow : function (gridId) {
+            let instance = Grid.method.getGridInstance(gridId);
+            let dataSource = instance.getDataSource();
+            let checkedData = this.getCheckedData(gridId);
+            for (let j = 0 ; j < checkedData.length ; j++) {
+                instance.deleteRow(checkedData[j].__rowIndex);
                 dataSource.reload();
-            });
+            }
+            instance.deselectAll();
+
+            this.__setRowSeq(dataSource.store()._array);
         },
 
+        saveEditData : function (gridId) {
+            Grid.method.getGridInstance(gridId).saveEditData();
+        },
+
+        __setRowSeq : function (arr) {
+            for (let j = 0 ; j <arr.length ; j++) {
+                arr[j].__rowIndex = j;
+            }
+        },
 
     },
 
@@ -159,7 +193,7 @@ var Column = {
                     customizeText : (options) => {
                         return options.valueText.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
                     },
-                    format : { type: "fixedPoint", precision: precision }
+                    // format : { type: "fixedPoint", precision: precision }
                 };
             case "percent":
                 return { format: { type: "percent", precision: precision } }
