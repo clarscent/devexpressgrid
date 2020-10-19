@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Reading Grid With CheckBox</title>
     <script src="js/jquery-3.5.1.min.js"></script>
     <script src="js/lodash-4.17.15.min.js"></script>
     <link rel="stylesheet" type="text/css" href="css/dx.common.css"/>
@@ -11,58 +11,27 @@
     <script src="js/dx.all.js"></script>
     <script src="dxDataGridUtil.js"></script>
     <script src="gridData.js"></script>
-
-    <style>
-        .backGroundColor {
-            background-color: #61c6bf;
-            font-size: 13px;
-        }
-    </style>
 </head>
+<body>
+
 <body class="dx-viewport">
 
 <div class="demo-container">
     <div id="headerTest">
-        <div id="headerTestContainer"></div>
+        <div id="headerTestContainer" style="height: 500px"></div>
     </div>
 </div>
-<p></p>
-<button onclick="onGetGridData(gridID)">getGridData</button>
-<button onclick="onGetCheckedData(gridID)">onGetCheckedData</button>
-<button onclick="onAddRow(gridID, obj)">onAddRow</button>
-<button onclick="onAddRow(gridID, {})">onAddEmptyRow</button>
-<p></p>
-<button onclick="onSetColumnAlignment(gridID)">Alignment</button>
-<button onclick="onSetColumnWidth(gridID)">width</button>
-<button onclick="onSetColumnDataType(gridID)">DataType</button>
-<button onclick="onSetColumnEditing(gridID)">False Editing</button>
-<button onclick="onSetGridReadOnlyMode(gridID)">ReadOnly</button>
-<p></p>
-<button onclick="onSetGridEditMode(gridID)">EditMode</button>
-<button onclick="onSetColumnType(gridID, 'Country', 'textarea')">Textarea Type</button>
-<button onclick="onSetColumnType(gridID, 'Area', 'button')">Button Type</button>
-<button onclick="onSetColumnType(gridID, 'Population_Total', 'selectBox', countries, 'ID', 'Country', false)">ComboBox Type</button>
-<button onclick="onSetColumnType(gridID, 'GDP_Total', 'date')">Date Type</button>
-<button onclick="onSetColumnType(gridID, 'GDP_Agriculture', 'checkBox')">CheckBox Type</button>
-<button onclick="onSetColumnType(gridID, 'GDP_Services', 'mask', 0, 2)">Mask Type</button>
-<button onclick="onSetColumnType(gridID, 'Picture', 'image')">Image Type</button>
-<p></p>
-<div class="demo-container">
-    <div id="headerTest2">
-        <div id="headerTestContainer2"></div>
-    </div>
-</div>
-<p></p>
-<button onclick="onSetGridEditMode(gridID2)">EditMode</button>
-<button onclick="onSetColumnType(gridID2, 'Name', 'selectBox', ComboData, 'Name', 'Name', false)">Name ComboBox Type</button>
-<button onclick="onSetColumnType(gridID2, 'Test2', 'selectBox', ComboData, 'Name', 'Name', false)">Area ComboBox Type</button>
-<button onclick="onSetComboBoxLookUp(gridID2, 'Name', 'Test2')">Name Change Selection Event</button>
-
+<p>결과 값은 콘솔창</p>
+<button onclick="onGetGridData(gridId)">모든 데이터 가져오기</button>
+<button onclick="onGetCheckedData(gridId)">선택한 데이터 가져오기</button>
+<button onclick="onAddRow(gridId, {})">빈 행 추가</button>
+<button onclick="onAddRow(gridId, obj)">파라미터있는 새로운 행 추가</button>
+<button onclick="onDeleteRow(gridId)">선택한 행 일괄삭제</button>
+<button onclick="onSaveEditData(gridId)">편집저장</button>
+<p>TEST METHOD</p>
 
 <script>
-
-    var gridID = "#headerTestContainer";
-    var gridID2 = "#headerTestContainer2";
+    var gridId = "#headerTestContainer";
     var obj = {
         "ID": 11,
         "Country": "United",
@@ -75,155 +44,86 @@
         "GDP_Services": 0.783,
         "GDP_Total": 2945146,
         "Picture": "css/images/cat01.jpg"
-    }
+    };
 
     $(function () {
 
-        // header :: caption, dataField, columns(하위그룹)으로 이루어진다.
-        // column :: dataField를 PK로 header와 연결된다.
-        let gridId = gridID;
-        let header  = new Array();
-        let column = new Array();
+        let band = new Array();
+        let columns  = new Array();
         let headerCss = new Array();
 
-        header = [
-            {
-                "caption":"Country", "dataField": "Country",
-            },
-            {
-                "caption":"Area, km<sup>2</sup>", "dataField": "Area",
-            },
-            {
-                "caption":"Population", "dataField": "",
-                "columns": [
-                    {"caption":"Total", "dataField": "Population_Total"},
-                    {"caption":"Urban", "dataField": "Population_Urban"},
-                ]
-            },
-            {
-                "caption":"Nominal\nGDP", "dataField": "",
-                "columns": [
-                    {"caption":"Total, mln $", "dataField": "GDP_Total"},
-                    {"caption":"By Sector", "dataField": "",
-                        "columns": [
-                            {"caption":"Agriculture", "dataField": "GDP_Agriculture"},
-                            {"caption":"Industry", "dataField": "GDP_Industry"},
-                            {"caption":"Services", "dataField": "GDP_Services"},
-                        ]
-                    },
-                ]
-            },
-            {
-                "caption": "Picture", "dataField": "Picture"
-            }
+        band = [
+            new Band("Country"),
+            new Band("Area"),
+            new Band("국가총생산", [
+                new Band("Population_Total"),
+                new Band("Population_Urban"),
+            ]),
+            new Band("일반\nGDP", [
+                new Band("GDP_Total"),
+                new Band("분야", [
+                    new Band("GDP_Agriculture"),
+                    new Band("GDP_Industry"),
+                    new Band("GDP_Services"),
+                ]),
+            ]),
+        ]
+
+        columns = [
+            new ColConfig("나라","Country","200px","text"),
+            new ColConfig("지역","Area","100px","number"),
+            new ColConfig("인구 합","Population_Total","150px","number"),
+            new ColConfig("인구(외곽)","Population_Urban","150px","percent"),
+            new ColConfig("GDP 총합","GDP_Total","150px","number"),
+            new ColConfig("농\n업","GDP_Agriculture","150px","percent",1),
+            new ColConfig("산업","GDP_Industry","150px","percent",1),
+            new ColConfig("서비스업","GDP_Services","150px","percent",1),
         ];
 
-        headerCss = [
-            new Attribute("background-color", "#f5f5f5"),
-        ]
-
-
-        column = [
-            new Column.config.set("Country","300px","text"),
-            new Column.config.set("Area","100px","number"),
-            new Column.config.set("Population_Total","95px","check"),
-            new Column.config.set("Population_Urban","80px","date"),
-            // new Column.config.set("Agriculture","80px","number"),
-            // new Column.config.set("GDP_Industry","80px","number"),
-            // new Column.config.set("GDP_Services","80px","number"),
-        ]
-
-
-
-        Grid.config.setGrid(gridId, header, column, headerCss);
+        Grid.config.set(gridId, "", 500, true);
+        Column.config.set(gridId, columns);
+        Header.config.set(gridId, columns, band);
         Grid.config.setGridData(gridId, countries);
 
-        let button = Column.config.setColumnType(gridId, "button");
-        let selectBox = Column.config.setColumnType(gridId, "selectBox");
-        let mask = Column.config.setColumnType(gridId, "mask");
-        let image = Column.config.setColumnType(gridId, "image");
-        let textarea = Column.config.setColumnType(gridId, "textarea");
+        // Header CSS
+        headerCss = [
+            new Attribute("background-color", "#f5f5f5"),
+            new Attribute("vertical-align", "middle"),
+            new Attribute("text-align", "center"),
+        ]
+        Header.config.setCss(gridId, headerCss);
 
-        button("Area", "edit", "edit", true);
-        selectBox("Country", countries, "Country", "Country", false);
-        // mask("Country", "edit", "edit", true);
-
-        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-        let gridId2 = gridID2;
-        let header2  = new Array();
-        let column2 = new Array();
-        header2 = [
-            {
-                "caption":"Test1", "dataField":"Name"
-            },
-            {
-                "caption":"Test2", "dataField":"Test2"
-            }
-        ];
+        // Set Edit Mode
+        Grid.config.setEditMode(gridId, true);
 
 
-        // Grid.config.setGridColumns(gridId2, header2, column2);
-        // Grid.config.setGridData(gridId2, ComboData);
+        /// [?] EVENT
+        let listener = new Listener(gridId);
+        listener.grid.onRowClick = function () {
+            console.log("ㅁㅁㅁㅁ");
+        }
+        listener.addEventListener();
+
+        // BUTTON
+
 
     });
 
-    function onSetColumnAlignment(gridId) {
-        Column.config.setOneColumnOptionalFields(gridId, "alignment")("Country","right");
-    }
-    function onSetColumnWidth(gridId) {
-        Column.config.setOneColumnOptionalFields(gridId, "width")("GDP_Agriculture","20%");
-    }
-    function onSetColumnDataType(gridId) {
-        Column.config.setOneColumnOptionalFields(gridId, "dataType")("GDP_Industry","date");
-    }
-    function onSetColumnEditing(gridId) {
-        Column.config.setOneColumnOptionalFields(gridId, "allowEditing")("GDP_Services",false);
-    }
     function onGetGridData(gridId) {
-        Grid.method.getGridData(gridId);
+        console.log("모든 그리드 데이터", Grid.method.getGridData(gridId));
     }
     function onGetCheckedData(gridId) {
-        Grid.method.getCheckedData(gridId);
+        console.log("선택한 데이터들", Grid.method.getCheckedData(gridId));
     }
     function onAddRow(gridId, obj) {
-        Grid.method.addRow(gridId, obj);
+        Grid.method.addRow(gridId, obj, "top");
     }
-
-    function onSetColumnType(gridId, dataField, type, ...args) {
-        let editType = Column.config.setColumnType(gridId, type);
-        if (type === "comboBox") {
-            editType(dataField, args[0], args[1], args[2], args[3]);
-        } else if (type === "mask") {
-            editType(dataField, args[0], args[1]);
-        }
-        else {
-            editType(dataField);
-        }
-        // console.log("instance", $(gridId).dxDataGrid("instance").option('columns'));
+    function onDeleteRow(gridId) {
+        Grid.method.deleteRow(gridId);
     }
-
-
-    function onSetGridEditMode(gridId) {
-        Grid.config.setEditMode(gridId, true, true, true, "multiple");
+    function onSaveEditData(gridId) {
+        Grid.method.saveEditData(gridId);
     }
-    function onSetGridReadOnlyMode(gridId) {
-        Grid.config.setEditMode(gridId, false, false, false, "multiple");
-    }
-
-    function onSetComboBoxLookUp(gridId, dataField, dependentField) {
-        Column.method.setComboBoxLookUp(gridId, dataField, dependentField);
-        // let instance = $(gridId).dxDataGrid("instance");
-        // instance.columnOption(dependentField, "lookup.dataSource", countries);
-        // instance.columnOption(dependentField, "lookup.valueExpr", 'ID');
-        // instance.columnOption(dependentField, "lookup.displayExpr", 'Country');
-        // instance.columnOption(dependentField, "lookup.allowClearing", false);
-    }
-
-
-
-
-
 
 
 
