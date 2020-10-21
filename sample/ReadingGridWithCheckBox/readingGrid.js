@@ -1,5 +1,6 @@
 
-var Band = function (dataField, columns) {
+// 헤더 Grouping 할 때만 쓰는 객체
+const Band = function (dataField, columns) {
     this.dataField = dataField;
 
     if (columns !== null) {
@@ -11,7 +12,8 @@ var Band = function (dataField, columns) {
     }
 }
 
-var ColConfig = function (caption, dataField, width, dataType, arg) {
+// 처음 컬럼 셋팅할 때 쓰는 객체
+var ColConfig = function (caption, dataField, width, dataType, precision) {
     this.caption = caption;
     this.dataField = dataField;
     this.width = width;
@@ -19,32 +21,28 @@ var ColConfig = function (caption, dataField, width, dataType, arg) {
         header.append($("<div>").html(caption.replace(/\n/g, "<br/>")));
     };
 
-    let dataTypeObj = Column.dataFormat(dataType, arg);
+    let dataTypeObj = Column.dataFormat(dataType, precision);
     _.merge(this, dataTypeObj);
 }
 
+/**
+ *  __rowIndex 가 각 행의 키값이 된다.
+ */
 var Grid = {
     config: {
-        set : function (gridId, width, height, checkBox) {
+        setGrid : function (gridId, width, height, checkBox) {
             let instance = $(gridId).dxDataGrid({
                 width: width,
                 height: height,
-                selection: {
-                    mode: "multiple"
-                },
-                editing : {
-                    texts: {
-                        confirmDeleteMessage: "",
-                    }
-                },
+                selection: { mode: "multiple" },
                 keyExpr: "__rowIndex",
-                // errorRowEnabled: false,
+                editing : {
+                    texts: { confirmDeleteMessage: "", }
+                },
+                loadPanel: { enabled: false, },
                 onSelectionChanged : function (e) {
                     e.component.refresh();
                 },
-                loadPanel: {
-                    enabled: false,
-                }
 
             }).dxDataGrid("instance");
 
@@ -53,6 +51,10 @@ var Grid = {
             } else {
                 instance.option("selection.showCheckBoxesMode", "none");
             }
+
+            // Add EventListener
+            return Grid.__addEventListener(gridId);
+
         },
 
         setGridData: function (gridId, data) {
@@ -60,7 +62,6 @@ var Grid = {
                 data[j].__rowIndex = j;
             }
             Grid.method.getGridInstance(gridId).option("dataSource", data);
-            // console.log("data", data);
         },
 
         setEditMode : function (gridId, boolean) {
@@ -69,6 +70,17 @@ var Grid = {
                 e.toolbarOptions.visible = false;
             });
             instance.option("editing", {mode:"batch", allowUpdating: boolean});
+            this.setSorting(gridId, "none");
+        },
+
+        /*
+            sorting - 정렬 시 옵션 지정
+                value:  "none" - 정렬 안 함
+                        "single" - 하나의 컬럼으로만 정렬 가능
+                        "multiple" - 여러개의 컬럼으로 정렬 가능
+         */
+        setSorting : function (gridId, sorting) {
+            Grid.method.getGridInstance(gridId).option("sorting", { mode : sorting, });
         },
 
     },
@@ -135,6 +147,25 @@ var Grid = {
 
     },
 
+
+    __addEventListener : function (gridId) {
+        let listener = Listener.getListenerInstance(gridId);
+
+        let keys = Object.keys(listener.grid);
+
+        for (let j = 0 ; j < keys.length ; j++) {
+            Grid.method.getGridInstance(gridId).option(keys[j], function () {
+                Logger.info("",keys[j]);
+                try {
+                    listener.grid[keys[j]]();
+                } catch (err) {
+                    Logger.error("",err);
+                }
+            });
+        }
+
+    }
+
 }
 
 var Header = {
@@ -183,29 +214,6 @@ var Header = {
 }
 
 var Column = {
-
-    dataFormat : function (dataType, precision) {
-        switch (dataType) {
-            case "text":
-                return { alignment : "left" };
-            case "number":
-                return {
-                    customizeText : (options) => {
-                        return options.valueText.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-                    },
-                    // format : { type: "fixedPoint", precision: precision }
-                };
-            case "percent":
-                return { format: { type: "percent", precision: precision } }
-            case "date":
-                return { dataType : "date", format : "yyyy-mm-dd" };
-            case "check":
-                return { dataType : "boolean", alignment : "center" };
-            case "code":
-                return { alignment : "center" };
-        }
-    },
-
     config: {
         set : function (gridId, columns) {
             let instance = Grid.method.getGridInstance(gridId)
@@ -213,132 +221,6 @@ var Column = {
             instance.option("columns", columns);
             instance.repaint();
         },
-
-
-
-        // TestMethod
-        setOneColumnOptionalFields: function(gridId, attr) {
-            let instance = $(gridId).dxDataGrid("instance");
-
-            return (dataField, value) => {
-                instance.columnOption(dataField, attr, value);
-                // let result = Column.method.__findColumns(dataField, instance.option('columns'), {flag: 0, str: ""});
-                // result.str = result.str.slice(1)
-                // instance.option(result.str + "." + attr, value);
-            };
-        },
-
-        // TestMethod
-        __setAllColumnAttributes : function (dataFieldArr, instance, attrArr) {
-            for (let i = 0 ; i < dataFieldArr.length ; i++) {
-                this.__setColumnAttributes(dataFieldArr[i], instance, attrArr);
-            }
-        },
-
-        // TestMethod
-        __setColumnAttributes: function (dataField, instance, obj) {
-            instance.columnOption(dataField, obj);
-        },
-
-        // TestMethod
-        setColumnType: function (gridId, type) {
-            let instance = Grid.method.getGridInstance(gridId);
-            let obj = new Object();
-
-            switch (type) {
-                case "button":
-                    return (dataField, icon, hint, visible, onClick) => {
-                        obj = {
-                            type: "buttons",
-                            buttons: [
-                                {
-                                    icon: icon,
-                                    hint: hint,
-                                    visible: visible,
-                                    onClick: onClick,
-                                }
-                            ]
-                        }
-                        Column.config.__setColumnAttributes(dataField, instance, obj);
-                    };
-
-
-                case "selectBox":
-                    return (dataField, dataSource, value, display, clearing) => {
-                        obj = {
-                            lookup : {
-                                dataSource: dataSource,
-                                valueExpr: value,
-                                displayExpr: display,
-                                allowClearing: clearing,
-                            },
-
-                            showEditorAlways : true
-                        }
-
-                        Column.config.__setColumnAttributes(dataField, instance, obj);
-                    };
-
-
-                case "mask":
-                    return (dataField, fromStr, toStr) => {
-                        obj = {
-                            customizeText : function(cellInfo) {
-                                let str = cellInfo.valueText + "";
-                                str = str.slice(fromStr,toStr);
-                                return str + "******";
-                            }
-                        };
-
-                        Column.config.__setColumnAttributes(dataField, instance, obj);
-                    }
-
-                case "image":
-                    return (dataField, width) => {
-                        obj = {
-                            cellTemplate : function (container, options) {
-                                $("<div>")
-                                    .append($("<img>", { "src": options.value, "width": width }))
-                                    .appendTo(container);
-                            },
-
-                            allowEditing : false
-                        };
-
-                        Column.config.__setColumnAttributes(dataField, instance, obj);
-                    }
-
-                case "textarea":
-                    return (dataField) => {
-                        $(gridId).dxDataGrid({
-                            onEditorPreparing : function (e) {
-                                if (e.dataField === dataField) {
-                                    e.editorName = "dxTextArea";
-                                }
-                            }
-                        });
-
-                        obj = {
-                            cellTemplate : function (container, options) { // 개행 가능.
-                                container.append($("<div>").html(options.text.replace(/\n/g, "<br/>")));
-                            },
-
-                            editorOptions : {
-                                onKeyDown: function(args){
-                                    if(args.event.keyCode == 13){
-                                        args.event.stopPropagation();
-                                    }
-                                }
-                            }
-                        }
-
-                        Column.config.__setColumnAttributes(dataField, instance, obj);
-                    }
-            }
-
-        },
-
-
 
     },
 
@@ -352,50 +234,28 @@ var Column = {
             }
             return band;
         },
-
-        // TestMethod
-        setComboBoxLookUp : function (gridId, dataField, dependentField) {
-            let instance = $(gridId).dxDataGrid("instance");
-            Column.config.__setColumnAttributes(dataField, instance, [
-                {
-                    attr: "editorOptions",
-                    value: {
-                        onValueChanged: function(data){
-                            // console.log("changed");
-                            // console.log("dependentField", dependentField);
-                            // console.log("data", data);
-                            // console.log("data.value", data.value);
-                            instance.columnOption(dependentField, "lookup.dataSource", function(options) {
-                                return {
-                                    store: cities,
-                                    filter: options.data ? ["StateID", "=", options.data.StateID] : null
-                                };
-                            });
-                            instance.columnOption(dependentField, "lookup.valueExpr", data.value);
-                            instance.columnOption(dependentField, "lookup.displayExpr", data.value);
-                            // instance.columnOption(dependentField, "lookup.allowClearing", false);
-                            // instance.columnOption(dataField, "value", data.value);
-                        }
-                    }
-                }
-            ]);
-        },
-
-        // TestMethod
-        __setLookUp : function (dataSource, value, display, clearing) {
-            return {
-                attr: "lookup",
-                value: {
-                    dataSource: dataSource,
-                    valueExpr: value,
-                    displayExpr: display,
-                    allowClearing: clearing,
-                }
-            }
-        }
-
     },
 
+    dataFormat : function (dataType, precision) {
+        switch (dataType) {
+            case "text":
+                return { alignment : "left" };
+            case "number":
+                let obj = { customizeText: (options) => { return options.valueText.replace(/\B(?=(\d{3})+(?!\d))/g, ","); } }
+                if (precision != null) {
+                    _.merge(obj, { format : { type: "fixedPoint", precision: precision }});
+                }
+                return obj;
+            case "percent":
+                return { format: { type: "percent", precision: precision } };
+            case "date":
+                return { dataType : "date", format : "yyyy-mm-dd" };
+            case "check":
+                return { dataType : "boolean", alignment : "center" };
+            case "code":
+                return { alignment : "center" };
+        }
+    },
 }
 
 var Attribute = function (attr, value) {
@@ -403,22 +263,61 @@ var Attribute = function (attr, value) {
     this.value = value;
 }
 
-// var Listener = {
-//     grid : {
-//         onRowClick : function () { alert("default event"); }
-//     },
-//
-//     addEventListener : function (gridId, callBackFunc) {
-//         Grid.method.getGridInstance(gridId)
-//     }
-// }
+// LISTENER
+var Listener = {
+    __instance : new Object(),
 
-var Listener = function (gridId) {
-    this.grid = {
-        onRowClick : function () { alert("default event"); }
-    };
+    getListenerInstance : function (gridId) {
+        if (this.__instance[gridId] == null) {
+            this.__instance[gridId] = _.cloneDeep(Listener.event);
+        }
+        return this.__instance[gridId];
+    },
+
+    event : {
+        grid : {
+            onRowClick : function () { },
+            onKeyDown : function () { },
+            onEditingStart : function (cancel, column, component, data, element, key, model) { },
+        },
+    },
 
     this.addEventListener = function (event, callBackFunc) {
         Grid.method.getGridInstance(gridId).option(event, callBackFunc);
     }
 }
+
+// LOGGER
+const LOG_LEVEL_ERROR = 1;
+const LOG_LEVEL_WARN = 2;
+const LOG_LEVEL_INFO = 3;
+const LOG_LEVEL_DEBUG = 4;
+var Logger = {
+
+    __logLevel : LOG_LEVEL_DEBUG,
+
+    setLogLevel: function(logLevel) {
+        Logger.__logLevel = logLevel;
+    },
+
+    error : function(title, message) {
+        if (Logger.__logLevel >= LOG_LEVEL_ERROR) {
+            console.error("[ERROR] " + title, message);
+        }
+    },
+    warn : function(title, message) {
+        if (Logger.__logLevel >= LOG_LEVEL_WARN) {
+            console.warn("[WARN] " + title, message);
+        }
+    },
+    info : function(title, message) {
+        if (Logger.__logLevel >= LOG_LEVEL_INFO) {
+            console.info("[INFO] " + title, message);
+        }
+    },
+    debug : function(title, message) {
+        if (Logger.__logLevel >= LOG_LEVEL_DEBUG) {
+            console.debug("[DEBUG] " + title, message);
+        }
+    },
+};
