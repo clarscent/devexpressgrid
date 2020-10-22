@@ -276,9 +276,25 @@ var Listener = {
 
     event : {
         grid : {
-            onRowClick : function () { },
-            onKeyDown : function () { },
+            onCellClick : function (cellElement, column, columnIndex, component, data, displayValue, element, event, jQueryEvent, key, model, row, rowIndex, rowType, text, value) { },
+            onCellDblClick : function (cellElement, column, columnIndex, component, data, displayValue, element, event, key, model, row, rowIndex, rowType, text, value) { },
+            onContentReady : function (component, element, model) { },
+            onDataErrorOccurred : function (component, element, error, model) { },
             onEditingStart : function (cancel, column, component, data, element, key, model) { },
+            onFocusedCellChanged : function (cellElement, column, columnIndex, component, element, model, row, rowIndex) { },
+            onFocusedCellChanging : function (cancel, cellElement, columns, component, element, event, isHighlighted, model, newColumnIndex, newRowIndex, prevColumnIndex, prevRowIndex, rows) { },
+            onFocusedRowChanged : function (component, element, model, row, rowElement, rowIndex) { },
+            onFocusedRowChanging : function (cancel, component, element, event, model, newRowIndex, prevRowIndex, rowElement, rows) { },
+            onInitialized : function (component, element) { },
+            onInitNewRow : function (component, data, element, model, promise) { },
+            onKeyDown : function (component, element, event, handled, jQueryEvent, model) { },
+            onRowClick : function (columns, component, data, element, event, groupIndex, handled, isExpanded, isNewRow, isSelected, jQueryEvent, key, model, rowElement, rowIndex, rowType, values) { },
+            onRowDblClick : function (columns, component, data, element, event, groupIndex, isExpanded, isNewRow, isSelected, key, model, rowElement, rowIndex, rowType, values) { },
+            onRowInserted : function (component, data, element, error, key, model) { },
+            onRowUpdated : function (component, data, element, error, key, model) { },
+            onRowUpdating : function (cancel, component, element, key, model, newData, oldData) { },
+            onRowValidating : function (brokenRules, component, element, errorText, isValid, key, model, newData, oldData, promise) { },
+            onSelectionChanged : function (component, currentDeselectedRowKeys, currentSelectedRowKeys, element, model, selectedRowKeys, selectedRowsData) { },
         },
     },
 
