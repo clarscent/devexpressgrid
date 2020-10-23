@@ -58,10 +58,14 @@ var Grid = {
         },
 
         setGridData: function (gridId, data) {
+            let instance = Grid.method.getGridInstance(gridId);
+
             for (let j = 0 ; j < data.length ; j++) {
                 data[j].__rowIndex = j;
             }
-            Grid.method.getGridInstance(gridId).option("dataSource", data);
+
+            instance.option("dataSource", data);
+            instance.option("focusedRowEnabled", true);
         },
 
         setEditMode : function (gridId, boolean) {
