@@ -22,12 +22,12 @@
     </div>
 </div>
 <p>결과 값은 콘솔창</p>
-<button onclick="onGetGridData(gridId)">모든 데이터 가져오기</button>
-<button onclick="onGetCheckedData(gridId)">선택한 데이터 가져오기</button>
-<button onclick="onAddRow(gridId, {})">빈 행 추가</button>
-<button onclick="onAddRow(gridId, obj)">파라미터있는 새로운 행 추가</button>
-<button onclick="onDeleteRow(gridId)">선택한 행 일괄삭제</button>
-<button onclick="onSaveEditData(gridId)">편집저장</button>
+<button onclick="onGetGridData(gridId1)">모든 데이터 가져오기</button>
+<button onclick="onGetCheckedData(gridId1)">선택한 데이터 가져오기</button>
+<button onclick="onAddRow(gridId1, {})">빈 행 추가</button>
+<button onclick="onAddRow(gridId1, obj)">파라미터있는 새로운 행 추가</button>
+<button onclick="onDeleteRow(gridId1)">선택한 행 일괄삭제</button>
+<button onclick="onSaveEditData(gridId1)">편집저장</button>
 <p>TEST METHOD</p>
 
 <br><br><br><br><h3>이벤트 테스트</h3>
@@ -138,7 +138,8 @@
         console.log("선택한 데이터들", Grid.method.getCheckedData(gridId));
     }
     function onAddRow(gridId, obj) {
-        Grid.method.addRow(gridId, obj, "top");
+        obj = JSON.parse(JSON.stringify(obj));
+        Grid.method.addRow(gridId, obj, 3);
     }
     function onDeleteRow(gridId) {
         Grid.method.deleteRow(gridId);

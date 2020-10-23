@@ -13,7 +13,7 @@ const Band = function (dataField, columns) {
 }
 
 // 처음 컬럼 셋팅할 때 쓰는 객체
-var ColConfig = function (caption, dataField, width, dataType, precision) {
+const ColConfig = function (caption, dataField, width, dataType, precision) {
     this.caption = caption;
     this.dataField = dataField;
     this.width = width;
@@ -26,16 +26,16 @@ var ColConfig = function (caption, dataField, width, dataType, precision) {
 }
 
 /**
- *  __rowIndex 가 각 행의 키값이 된다.
+ *  __rowKey 가 각 행의 키값이 된다.
  */
-var Grid = {
+const Grid = {
     config: {
         setGrid : function (gridId, width, height, checkBox) {
             let instance = $(gridId).dxDataGrid({
                 width: width,
                 height: height,
                 selection: { mode: "multiple" },
-                keyExpr: "__rowIndex",
+                keyExpr: "__rowKey",
                 editing : {
                     texts: { confirmDeleteMessage: "", }
                 },
@@ -46,22 +46,28 @@ var Grid = {
 
             }).dxDataGrid("instance");
 
+            // __rowKey 초기셋팅
+            instance["__rowKey"] = 0;
+
+            // checkBox
             if (checkBox) {
                 instance.option("selection.showCheckBoxesMode", "always");
             } else {
                 instance.option("selection.showCheckBoxesMode", "none");
             }
 
-            // Add EventListener
+            // EventListener 연결
             Grid.method.__addEventListener(gridId);
 
         },
 
         setGridData: function (gridId, data) {
+            let instance = Grid.method.getGridInstance(gridId);
+
             for (let j = 0 ; j < data.length ; j++) {
-                data[j].__rowIndex = j;
+                data[j].__rowKey = instance.__rowKey++;
             }
-            Grid.method.getGridInstance(gridId).option("dataSource", data);
+            instance.option("dataSource", data);
         },
 
         setEditMode : function (gridId, boolean) {
@@ -73,14 +79,15 @@ var Grid = {
             this.setSorting(gridId, "none");
         },
 
-        /*
-            sorting - 정렬 시 옵션 지정
-                value:  "none" - 정렬 안 함
-                        "single" - 하나의 컬럼으로만 정렬 가능
-                        "multiple" - 여러개의 컬럼으로 정렬 가능
+        /**
+         * @param gridId
+         * @param sorting - "none"      - 정렬 안 함
+         *                  "single"    - 하나의 컬럼으로만 정렬 가능
+         *                  "multiple"  - 여러 개의 컬럼으로 정렬 가능
          */
         setSorting : function (gridId, sorting) {
-            Grid.method.getGridInstance(gridId).option("sorting", { mode : sorting, });
+            let instance = Grid.method.getGridInstance(gridId);
+            instance.option("sorting", { mode : sorting, });
         },
 
     },
@@ -91,17 +98,30 @@ var Grid = {
         },
 
         getGridData : function (gridId) {
-            return Grid.method.getGridInstance(gridId)._controllers.data._dataSource._items;
+            let instance = Grid.method.getGridInstance(gridId);
+            return instance._controllers.data._dataSource._items;
         },
 
         getCheckedData : function (gridId) {
-            return Grid.method.getGridInstance(gridId).getSelectedRowsData();
+            let instance = Grid.method.getGridInstance(gridId);
+            let rowsData = instance.getSelectedRowsData();
+            let rowIndex;
+
+            for (let j = 0 ; j < rowsData.length ; j++) {
+                rowIndex = instance.getRowIndexByKey(rowsData[j]["__rowKey"]);
+                _.merge(rowsData[j], { __rowIndex : rowIndex });
+            }
+
+            return rowsData;
         },
 
         addRow : function (gridId, data, index) {
-            Grid.method.getGridInstance(gridId).deselectAll();
+            let instance = Grid.method.getGridInstance(gridId);
             let dataSource = Grid.method.getGridInstance(gridId).getDataSource();
-            let arr = JSON.parse(JSON.stringify(dataSource.store()._array));
+            let arr = dataSource.store()._array;
+
+            instance.deselectAll();
+            data.__rowKey = instance.__rowKey++;
 
             switch (index) {
                 case null :
@@ -116,33 +136,24 @@ var Grid = {
                     break;
             }
 
-            this.__setRowSeq(arr);
-
-            dataSource.store()._array = arr;
-            dataSource.reload();
+            instance.refresh();
         },
 
         deleteRow : function (gridId) {
             let instance = Grid.method.getGridInstance(gridId);
-            let dataSource = instance.getDataSource();
-            let checkedData = this.getCheckedData(gridId);
-            for (let j = 0 ; j < checkedData.length ; j++) {
-                instance.deleteRow(checkedData[j].__rowIndex);
-                dataSource.reload();
+            let checkedData = instance.getSelectedRowKeys();
+
+            for (let j = 0 ; j < rowKeys.length ; j++) {
+                let rowIndex = instance.getRowIndexByKey(rowKeys[j]);
+                instance.deleteRow(rowIndex);
+                instance.refresh();
             }
             instance.deselectAll();
-
-            this.__setRowSeq(dataSource.store()._array);
         },
 
         saveEditData : function (gridId) {
-            Grid.method.getGridInstance(gridId).saveEditData();
-        },
-
-        __setRowSeq : function (arr) {
-            for (let j = 0 ; j <arr.length ; j++) {
-                arr[j].__rowIndex = j;
-            }
+            let instance = Grid.method.getGridInstance(gridId);
+            instance.saveEditData();
         },
 
         __addEventListener : function (gridId) {
@@ -239,7 +250,7 @@ var Grid = {
 
 }
 
-var Header = {
+const Header = {
     config: {
         set : function (gridId, columns, band) {
             for ( let j = 0 ; j < band.length ; j++) {
@@ -284,7 +295,7 @@ var Header = {
     }
 }
 
-var Column = {
+const Column = {
     config: {
         set : function (gridId, columns) {
             let instance = Grid.method.getGridInstance(gridId)
@@ -329,13 +340,13 @@ var Column = {
     },
 }
 
-var Attribute = function (attr, value) {
+const Attribute = function (attr, value) {
     this.attr = attr;
     this.value = value;
 }
 
 // LISTENER
-var Listener = {
+let Listener = {
     grid : {
         onCellClick : function (gridId, cellElement, column, columnIndex, component, data, displayValue, element, event, jQueryEvent, key, model, row, rowIndex, rowType, text, value) { },
         onCellDblClick : function (gridId, cellElement, column, columnIndex, component, data, displayValue, element, event, key, model, row, rowIndex, rowType, text, value) { },
@@ -365,7 +376,7 @@ const LOG_LEVEL_ERROR = 1;
 const LOG_LEVEL_WARN = 2;
 const LOG_LEVEL_INFO = 3;
 const LOG_LEVEL_DEBUG = 4;
-var Logger = {
+const Logger = {
 
     __logLevel : LOG_LEVEL_DEBUG,
 
