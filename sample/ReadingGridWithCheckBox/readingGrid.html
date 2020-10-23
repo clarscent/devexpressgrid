@@ -38,8 +38,16 @@
 </div>
 
 <script>
-    var gridId = "#headerTestContainer";
+    var gridId1 = "#headerTestContainer";
     var gridId2 = "#headerTestContainer2";
+
+    Listener.grid.onRowClick = function (gridId) {
+        if (gridId == gridId1) {
+            console.log(">>>Id 1 click");
+        } else if (gridId == gridId2) {
+            console.log(">>>>>>Id 2 click");
+        }
+    }
 
     var obj = {
         "ID": 11,
@@ -56,9 +64,6 @@
     };
 
     $(function () {
-
-        Logger.setLogLevel(LOG_LEVEL_WARN);
-
         let band = new Array();
         let columns  = new Array();
         let headerCss = new Array();
@@ -91,10 +96,10 @@
             new ColConfig("서비스업","GDP_Services","150px","percent",1),
         ];
 
-        Grid.config.setGrid(gridId, "", 500, true);
-        Column.config.set(gridId, columns);
-        Header.config.set(gridId, columns, band);
-        Grid.config.setGridData(gridId, countries);
+        Grid.config.setGrid(gridId1, "", 500, true);
+        Column.config.set(gridId1, columns);
+        Header.config.set(gridId1, columns, band);
+        Grid.config.setGridData(gridId1, countries);
 
         // Header CSS
         headerCss = [
@@ -102,7 +107,7 @@
             new Attribute("vertical-align", "middle"),
             new Attribute("text-align", "center"),
         ]
-        Header.config.setCss(gridId, headerCss);
+        Header.config.setCss(gridId1, headerCss);
 
         // Grid.config.setEditMode(gridId, true);
         // Grid.config.setSorting(gridId, "none");

@@ -53,7 +53,7 @@ var Grid = {
             }
 
             // Add EventListener
-            return Grid.__addEventListener(gridId);
+            Grid.method.__addEventListener(gridId);
 
         },
 
@@ -145,26 +145,97 @@ var Grid = {
             }
         },
 
-    },
+        __addEventListener : function (gridId) {
+            let instance = Grid.method.getGridInstance(gridId);
 
-
-    __addEventListener : function (gridId) {
-        let listener = Listener.getListenerInstance(gridId);
-
-        let keys = Object.keys(listener.grid);
-
-        for (let j = 0 ; j < keys.length ; j++) {
-            Grid.method.getGridInstance(gridId).option(keys[j], function () {
-                Logger.info("",keys[j]);
-                try {
-                    listener.grid[keys[j]]();
-                } catch (err) {
-                    Logger.error("",err);
-                }
+            instance.option("onCellClick", function (cellElement, column, columnIndex, component, data, displayValue, element, event, jQueryEvent, key, model, row, rowIndex, rowType, text, value) {
+                let paramObj = {gridId: gridId, cellElement:cellElement, column:column, columnIndex:columnIndex, component:component, data:data, displayValue:displayValue, element:element, event:event, jQueryEvent:jQueryEvent, key:key, model:model, row:row, rowIndex:rowIndex, rowType:rowType, text:text, value:value,};
+                Grid.method.__executeListener("onCellClick", paramObj, gridId, cellElement, column, columnIndex, component, data, displayValue, element, event, jQueryEvent, key, model, row, rowIndex, rowType, text, value);
             });
-        }
+            instance.option("onCellDblClick", function(cellElement, column, columnIndex, component, data, displayValue, element, event, key, model, row, rowIndex, rowType, text, value) {
+                let paramObj = {gridId: gridId, cellElement:cellElement, column:column, columnIndex:columnIndex, component:component, data:data, displayValue:displayValue, element:element, event:event, key:key, model:model, row:row, rowIndex:rowIndex, rowType:rowType, text:text, value:value,};
+                Grid.method.__executeListener("onCellDblClick", paramObj, gridId, cellElement, column, columnIndex, component, data, displayValue, element, event, key, model, row, rowIndex, rowType, text, value);
+            });
+            instance.option("onContentReady", function(component, element, model) {
+                let paramObj = {gridId: gridId, component:component, element:element, model:model,};
+                Grid.method.__executeListener("onContentReady", paramObj, gridId, component, element, model);
+            });
+            instance.option("onDataErrorOccurred", function(component, element, error, model) {
+                let paramObj = {gridId: gridId, component:component, element:element, error:error, model:model,};
+                Grid.method.__executeListener("onDataErrorOccurred", paramObj, gridId, component, element, error, model);
+            });
+            instance.option("onEditingStart", function(cancel, column, component, data, element, key, model) {
+                let paramObj = {gridId: gridId, cancel:cancel, column:column, component:component, data:data, element:element, key:key, model:model,};
+                Grid.method.__executeListener("onEditingStart", paramObj, gridId, cancel, column, component, data, element, key, model);
+            });
+            instance.option("onFocusedCellChanged", function(cellElement, column, columnIndex, component, element, model, row, rowIndex) {
+                let paramObj = {gridId: gridId, cellElement:cellElement, column:column, columnIndex:columnIndex, component:component, element:element, model:model, row:row, rowIndex:rowIndex,};
+                Grid.method.__executeListener("onFocusedCellChanged", paramObj, gridId, cellElement, column, columnIndex, component, element, model, row, rowIndex);
+            });
+            instance.option("onFocusedCellChanging", function(cancel, cellElement, columns, component, element, event, isHighlighted, model, newColumnIndex, newRowIndex, prevColumnIndex, prevRowIndex, rows) {
+                let paramObj = {gridId: gridId, cancel:cancel, cellElement:cellElement, columns:columns, component:component, element:element, event:event, isHighlighted:isHighlighted, model:model, newColumnIndex:newColumnIndex, newRowIndex:newRowIndex, prevColumnIndex:prevColumnIndex, prevRowIndex:prevRowIndex, rows:rows,};
+                Grid.method.__executeListener("onFocusedCellChanging", paramObj, gridId, cancel, cellElement, columns, component, element, event, isHighlighted, model, newColumnIndex, newRowIndex, prevColumnIndex, prevRowIndex, rows);
+            });
+            instance.option("onFocusedRowChanged", function(component, element, model, row, rowElement, rowIndex) {
+                let paramObj = {gridId: gridId, component:component, element:element, model:model, row:row, rowElement:rowElement, rowIndex:rowIndex,};
+                Grid.method.__executeListener("onFocusedRowChanged", paramObj, gridId, component, element, model, row, rowElement, rowIndex);
+            });
+            instance.option("onFocusedRowChanging", function(cancel, component, element, event, model, newRowIndex, prevRowIndex, rowElement, rows) {
+                let paramObj = {gridId: gridId, cancel:cancel, component:component, element:element, event:event, model:model, newRowIndex:newRowIndex, prevRowIndex:prevRowIndex, rowElement:rowElement, rows:rows,};
+                Grid.method.__executeListener("onFocusedRowChanging", paramObj, gridId, cancel, component, element, event, model, newRowIndex, prevRowIndex, rowElement, rows);
+            });
+            instance.option("onInitialized", function(component, element) {
+                let paramObj = {gridId: gridId, component:component, element:element,};
+                Grid.method.__executeListener("onInitialized", paramObj, gridId, component, element);
+            });
+            instance.option("onInitNewRow", function(component, data, element, model, promise) {
+                let paramObj = {gridId: gridId, component:component, data:data, element:element, model:model, promise:promise,};
+                Grid.method.__executeListener("onInitNewRow", paramObj, gridId, component, data, element, model, promise);
+            });
+            instance.option("onKeyDown", function(component, element, event, handled, jQueryEvent, model) {
+                let paramObj = {gridId: gridId, component:component, element:element, event:event, handled:handled, jQueryEvent:jQueryEvent, model:model,};
+                Grid.method.__executeListener("onKeyDown", paramObj, gridId, component, element, event, handled, jQueryEvent, model);
+            });
+            instance.option("onRowClick", function(columns, component, data, element, event, groupIndex, handled, isExpanded, isNewRow, isSelected, jQueryEvent, key, model, rowElement, rowIndex, rowType, values) {
+                let paramObj = {gridId: gridId, columns:columns, component:component, data:data, element:element, event:event, groupIndex:groupIndex, handled:handled, isExpanded:isExpanded, isNewRow:isNewRow, isSelected:isSelected, jQueryEvent:jQueryEvent, key:key, model:model, rowElement:rowElement, rowIndex:rowIndex, rowType:rowType, values:values,};
+                Grid.method.__executeListener("onRowClick", paramObj, gridId, columns, component, data, element, event, groupIndex, handled, isExpanded, isNewRow, isSelected, jQueryEvent, key, model, rowElement, rowIndex, rowType, values);
+            });
+            instance.option("onRowDblClick", function(columns, component, data, element, event, groupIndex, isExpanded, isNewRow, isSelected, key, model, rowElement, rowIndex, rowType, values) {
+                let paramObj = {gridId: gridId, columns:columns, component:component, data:data, element:element, event:event, groupIndex:groupIndex, isExpanded:isExpanded, isNewRow:isNewRow, isSelected:isSelected, key:key, model:model, rowElement:rowElement, rowIndex:rowIndex, rowType:rowType, values:values,};
+                Grid.method.__executeListener("onRowDblClick", paramObj, gridId, columns, component, data, element, event, groupIndex, isExpanded, isNewRow, isSelected, key, model, rowElement, rowIndex, rowType, values);
+            });
+            instance.option("onRowInserted", function(component, data, element, error, key, model) {
+                let paramObj = {gridId: gridId, component:component, data:data, element:element, error:error, key:key, model:model,};
+                Grid.method.__executeListener("onRowInserted", paramObj, gridId, component, data, element, error, key, model);
+            });
+            instance.option("onRowUpdated", function(component, data, element, error, key, model) {
+                let paramObj = {gridId: gridId, component:component, data:data, element:element, error:error, key:key, model:model,};
+                Grid.method.__executeListener("onRowUpdated", paramObj, gridId, component, data, element, error, key, model);
+            });
+            instance.option("onRowUpdating", function(cancel, component, element, key, model, newData, oldData) {
+                let paramObj = {gridId: gridId, cancel:cancel, component:component, element:element, key:key, model:model, newData:newData, oldData:oldData,};
+                Grid.method.__executeListener("onRowUpdating", paramObj, gridId, cancel, component, element, key, model, newData, oldData);
+            });
+            instance.option("onRowValidating", function(brokenRules, component, element, errorText, isValid, key, model, newData, oldData, promise) {
+                let paramObj = {gridId: gridId, brokenRules:brokenRules, component:component, element:element, errorText:errorText, isValid:isValid, key:key, model:model, newData:newData, oldData:oldData, promise:promise,};
+                Grid.method.__executeListener("onRowValidating", paramObj, gridId, brokenRules, component, element, errorText, isValid, key, model, newData, oldData, promise);
+            });
+            instance.option("onSelectionChanged", function(component, currentDeselectedRowKeys, currentSelectedRowKeys, element, model, selectedRowKeys, selectedRowsData) {
+                let paramObj = {gridId: gridId, component:component, currentDeselectedRowKeys:currentDeselectedRowKeys, currentSelectedRowKeys:currentSelectedRowKeys, element:element, model:model, selectedRowKeys:selectedRowKeys, selectedRowsData:selectedRowsData,};
+                Grid.method.__executeListener("onSelectionChanged", paramObj, gridId, component, currentDeselectedRowKeys, currentSelectedRowKeys, element, model, selectedRowKeys, selectedRowsData);
+            });
+        },
 
-    }
+        __executeListener : function (fncName, pobj, ...args) {
+            Logger.info(fncName, pobj);
+            try {
+                Listener.grid[fncName](...args);
+            } catch (err) {
+                Logger.error(fncName, err);
+            }
+        },
+
+    },
 
 }
 
@@ -265,37 +336,26 @@ var Attribute = function (attr, value) {
 
 // LISTENER
 var Listener = {
-    __instance : new Object(),
-
-    getListenerInstance : function (gridId) {
-        if (this.__instance[gridId] == null) {
-            this.__instance[gridId] = _.cloneDeep(Listener.event);
-        }
-        return this.__instance[gridId];
-    },
-
-    event : {
-        grid : {
-            onCellClick : function (cellElement, column, columnIndex, component, data, displayValue, element, event, jQueryEvent, key, model, row, rowIndex, rowType, text, value) { },
-            onCellDblClick : function (cellElement, column, columnIndex, component, data, displayValue, element, event, key, model, row, rowIndex, rowType, text, value) { },
-            onContentReady : function (component, element, model) { },
-            onDataErrorOccurred : function (component, element, error, model) { },
-            onEditingStart : function (cancel, column, component, data, element, key, model) { },
-            onFocusedCellChanged : function (cellElement, column, columnIndex, component, element, model, row, rowIndex) { },
-            onFocusedCellChanging : function (cancel, cellElement, columns, component, element, event, isHighlighted, model, newColumnIndex, newRowIndex, prevColumnIndex, prevRowIndex, rows) { },
-            onFocusedRowChanged : function (component, element, model, row, rowElement, rowIndex) { },
-            onFocusedRowChanging : function (cancel, component, element, event, model, newRowIndex, prevRowIndex, rowElement, rows) { },
-            onInitialized : function (component, element) { },
-            onInitNewRow : function (component, data, element, model, promise) { },
-            onKeyDown : function (component, element, event, handled, jQueryEvent, model) { },
-            onRowClick : function (columns, component, data, element, event, groupIndex, handled, isExpanded, isNewRow, isSelected, jQueryEvent, key, model, rowElement, rowIndex, rowType, values) { },
-            onRowDblClick : function (columns, component, data, element, event, groupIndex, isExpanded, isNewRow, isSelected, key, model, rowElement, rowIndex, rowType, values) { },
-            onRowInserted : function (component, data, element, error, key, model) { },
-            onRowUpdated : function (component, data, element, error, key, model) { },
-            onRowUpdating : function (cancel, component, element, key, model, newData, oldData) { },
-            onRowValidating : function (brokenRules, component, element, errorText, isValid, key, model, newData, oldData, promise) { },
-            onSelectionChanged : function (component, currentDeselectedRowKeys, currentSelectedRowKeys, element, model, selectedRowKeys, selectedRowsData) { },
-        },
+    grid : {
+        onCellClick : function (gridId, cellElement, column, columnIndex, component, data, displayValue, element, event, jQueryEvent, key, model, row, rowIndex, rowType, text, value) { },
+        onCellDblClick : function (gridId, cellElement, column, columnIndex, component, data, displayValue, element, event, key, model, row, rowIndex, rowType, text, value) { },
+        onContentReady : function (gridId, component, element, model) { },
+        onDataErrorOccurred : function (gridId, component, element, error, model) { },
+        onEditingStart : function (gridId, cancel, column, component, data, element, key, model) { },
+        onFocusedCellChanged : function (gridId, cellElement, column, columnIndex, component, element, model, row, rowIndex) { },
+        onFocusedCellChanging : function (gridId, cancel, cellElement, columns, component, element, event, isHighlighted, model, newColumnIndex, newRowIndex, prevColumnIndex, prevRowIndex, rows) { },
+        onFocusedRowChanged : function (gridId, component, element, model, row, rowElement, rowIndex) { },
+        onFocusedRowChanging : function (gridId, cancel, component, element, event, model, newRowIndex, prevRowIndex, rowElement, rows) { },
+        onInitialized : function (gridId, component, element) { },
+        onInitNewRow : function (gridId, component, data, element, model, promise) { },
+        onKeyDown : function (gridId, component, element, event, handled, jQueryEvent, model) { },
+        onRowClick : function (gridId, columns, component, data, element, event, groupIndex, handled, isExpanded, isNewRow, isSelected, jQueryEvent, key, model, rowElement, rowIndex, rowType, values) { },
+        onRowDblClick : function (gridId, columns, component, data, element, event, groupIndex, isExpanded, isNewRow, isSelected, key, model, rowElement, rowIndex, rowType, values) { },
+        onRowInserted : function (gridId, component, data, element, error, key, model) { },
+        onRowUpdated : function (gridId, component, data, element, error, key, model) { },
+        onRowUpdating : function (gridId, cancel, component, element, key, model, newData, oldData) { },
+        onRowValidating : function (gridId, brokenRules, component, element, errorText, isValid, key, model, newData, oldData, promise) { },
+        onSelectionChanged : function (gridId, component, currentDeselectedRowKeys, currentSelectedRowKeys, element, model, selectedRowKeys, selectedRowsData) { },
     },
 
     this.addEventListener = function (event, callBackFunc) {
