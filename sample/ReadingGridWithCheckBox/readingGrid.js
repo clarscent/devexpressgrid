@@ -358,9 +358,6 @@ var Listener = {
         onSelectionChanged : function (gridId, component, currentDeselectedRowKeys, currentSelectedRowKeys, element, model, selectedRowKeys, selectedRowsData) { },
     },
 
-    this.addEventListener = function (event, callBackFunc) {
-        Grid.method.getGridInstance(gridId).option(event, callBackFunc);
-    }
 }
 
 // LOGGER

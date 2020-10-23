@@ -112,12 +112,22 @@
         // Grid.config.setEditMode(gridId, true);
         // Grid.config.setSorting(gridId, "none");
 
-        /// ??
-        let listener = new Listener(gridId);
-        listener.grid.onRowClick = function () {
-            alert("Custom Event");
-        }
-        listener.addEventListener("onRowClick", listener.grid.onRowClick);
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        let columns2 = [
+            new ColConfig("나라","Country","200px","text"),
+            new ColConfig("지역","Area","100px","number"),
+            new ColConfig("인구 합","Population_Total","150px","number"),
+            new ColConfig("인구(외곽)","Population_Urban","150px","percent"),
+            new ColConfig("GDP 총합","GDP_Total","150px","number",1),
+            new ColConfig("농\n업","GDP_Agriculture","150px","percent",1),
+            new ColConfig("산업","GDP_Industry","150px","percent",1),
+            new ColConfig("서비스업","GDP_Services","150px","percent",1),
+        ];
+
+        Grid.config.setGrid(gridId2, "", 500, true);
+        Column.config.set(gridId2, columns2);
+        Grid.config.setGridData(gridId2, countries);
 
     });
 
