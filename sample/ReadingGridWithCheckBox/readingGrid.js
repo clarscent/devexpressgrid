@@ -67,7 +67,10 @@ const Grid = {
             for (let j = 0 ; j < data.length ; j++) {
                 data[j].__rowKey = instance.__rowKey++;
             }
+
             instance.option("dataSource", data);
+            instance.option("focusedRowEnabled", true);
+
         },
 
         setEditMode : function (gridId, boolean) {
@@ -150,7 +153,7 @@ const Grid = {
             }
             instance.deselectAll();
         },
-
+//
         saveEditData : function (gridId) {
             let instance = Grid.method.getGridInstance(gridId);
             instance.saveEditData();
