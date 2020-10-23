@@ -46,9 +46,6 @@ const Grid = {
 
             }).dxDataGrid("instance");
 
-            // __rowKey 초기셋팅
-            instance["__rowKey"] = 0;
-
             // checkBox
             if (checkBox) {
                 instance.option("selection.showCheckBoxesMode", "always");
@@ -70,7 +67,7 @@ const Grid = {
 
             instance.option("dataSource", data);
             instance.option("focusedRowEnabled", true);
-
+            instance.option("focusedRowKey", false);
         },
 
         setEditMode : function (gridId, boolean) {
@@ -105,6 +102,19 @@ const Grid = {
             return instance._controllers.data._dataSource._items;
         },
 
+        getKeyString: function () {
+            let value = "";
+            for (var i = 0; i < 32; i++) {
+                value += Math.round(15 * Math.random()).toString(16)
+            }
+            value = value.replace(/[^a-f0-9]/gi, "").toLowerCase();
+            while (value.length < 32) {
+                value += "0"
+            }
+
+            return [value.substr(0, 8), value.substr(8, 4), value.substr(12, 4), value.substr(16, 4), value.substr(20, 12)].join("-")
+        },
+
         getCheckedData : function (gridId) {
             let instance = Grid.method.getGridInstance(gridId);
             let rowsData = instance.getSelectedRowsData();
@@ -120,26 +130,14 @@ const Grid = {
 
         addRow : function (gridId, data, index) {
             let instance = Grid.method.getGridInstance(gridId);
-            let dataSource = Grid.method.getGridInstance(gridId).getDataSource();
-            let arr = dataSource.store()._array;
+            let dataSource = instance.getDataSource();
+            instance.option("focusedRowEnabled", false);
 
-            instance.deselectAll();
-            data.__rowKey = instance.__rowKey++;
+            data["__rowIndex"] = Grid.method.getKeyString();
 
-            switch (index) {
-                case null :
-                case "bottom":
-                    arr.push(data);
-                    break;
-                case "top":
-                    arr.unshift(data);
-                    break;
-                default :
-                    arr.splice(index, 0, data);
-                    break;
-            }
-
+            dataSource.store().insert(data, index);
             instance.refresh();
+            instance.option("focusedRowEnabled", true);
         },
 
         deleteRow : function (gridId) {
