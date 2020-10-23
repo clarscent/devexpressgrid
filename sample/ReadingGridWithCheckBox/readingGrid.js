@@ -40,9 +40,10 @@ const Grid = {
                     texts: { confirmDeleteMessage: "", }
                 },
                 loadPanel: { enabled: false, },
-                onSelectionChanged : function (e) {
-                    e.component.refresh();
-                },
+                // onSelectionChanged : function (e) {
+                //     e.component.refresh();
+                // },
+                paging : { enabled: false },
 
             }).dxDataGrid("instance");
 
@@ -62,7 +63,7 @@ const Grid = {
             let instance = Grid.method.getGridInstance(gridId);
 
             for (let j = 0 ; j < data.length ; j++) {
-                data[j].__rowKey = instance.__rowKey++;
+                data[j].__rowKey = Grid.method.getKeyString();
             }
 
             instance.option("dataSource", data);
@@ -80,6 +81,7 @@ const Grid = {
         },
 
         /**
+         *
          * @param gridId
          * @param sorting - "none"      - 정렬 안 함
          *                  "single"    - 하나의 컬럼으로만 정렬 가능
@@ -102,9 +104,15 @@ const Grid = {
             return instance._controllers.data._dataSource._items;
         },
 
+        /**
+         * 랜덤 키 값을 생성해주는 함수.
+         * 각 행의 __rowKey 의 값으로 들어간다.
+         *
+         * @returns {string}
+         */
         getKeyString: function () {
             let value = "";
-            for (var i = 0; i < 32; i++) {
+            for (let i = 0; i < 32; i++) {
                 value += Math.round(15 * Math.random()).toString(16)
             }
             value = value.replace(/[^a-f0-9]/gi, "").toLowerCase();
@@ -115,6 +123,13 @@ const Grid = {
             return [value.substr(0, 8), value.substr(8, 4), value.substr(12, 4), value.substr(16, 4), value.substr(20, 12)].join("-")
         },
 
+        /**
+         * 선택한 행들의 데이터와 행의 인덱스를 리턴
+         *
+         * @param gridId
+         * @returns {*}
+         *
+         */
         getCheckedData : function (gridId) {
             let instance = Grid.method.getGridInstance(gridId);
             let rowsData = instance.getSelectedRowsData();
@@ -128,30 +143,51 @@ const Grid = {
             return rowsData;
         },
 
+        /**
+         * 새로운 행 추가
+         *
+         * @param gridId
+         * @param data  - 행에 들어갈 데이터를 넣어준다.
+         * @param index - 행이 들어갈 위치를 지정해준다.
+         *
+         * instance.option("focusedRowEnabled", false), instance.option("focusedRowEnabled", true)
+         * 작동하기 위해서는 두 함수가 반드시 필요함
+         *
+         */
         addRow : function (gridId, data, index) {
             let instance = Grid.method.getGridInstance(gridId);
             let dataSource = instance.getDataSource();
             instance.option("focusedRowEnabled", false);
 
-            data["__rowIndex"] = Grid.method.getKeyString();
+            data["__rowKey"] = Grid.method.getKeyString();
 
             dataSource.store().insert(data, index);
             instance.refresh();
             instance.option("focusedRowEnabled", true);
         },
 
+        /**
+         * 선택한 행들을 일괄 삭제
+         *
+         * @param gridId
+         *
+         * instance.option("focusedRowEnabled", false), instance.option("focusedRowEnabled", true)
+         * 작동하기 위해서는 두 함수가 반드시 필요함
+         *
+         */
         deleteRow : function (gridId) {
             let instance = Grid.method.getGridInstance(gridId);
-            let checkedData = instance.getSelectedRowKeys();
+            let checkedData = Grid.method.getCheckedData(gridId);
+            instance.option("focusedRowEnabled", false);
 
-            for (let j = 0 ; j < rowKeys.length ; j++) {
-                let rowIndex = instance.getRowIndexByKey(rowKeys[j]);
-                instance.deleteRow(rowIndex);
+            for (let j = 0 ; j < checkedData.length ; j++) {
+                instance.deleteRow(checkedData[j].__rowIndex);
                 instance.refresh();
             }
             instance.deselectAll();
+            instance.option("focusedRowEnabled", true);
         },
-//
+
         saveEditData : function (gridId) {
             let instance = Grid.method.getGridInstance(gridId);
             instance.saveEditData();
