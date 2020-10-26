@@ -33,7 +33,7 @@ const Grid = {
         setGrid : function (gridId, width, height, checkBox) {
             let instance = $(gridId).dxDataGrid({
                 width: width,
-                height: height,
+                // height: height,
                 selection: { mode: "multiple" },
                 keyExpr: "__rowKey",
                 editing : {
@@ -41,6 +41,11 @@ const Grid = {
                 },
                 loadPanel: { enabled: false, },
                 paging : { enabled: false },
+                showBorders: true,
+                scrolling: {
+                    mode: "virtual"
+                },
+                focusedRowEnabled: true,
 
             }).dxDataGrid("instance");
 
@@ -49,6 +54,7 @@ const Grid = {
                 instance.option("selection.showCheckBoxesMode", "always");
             } else {
                 instance.option("selection.showCheckBoxesMode", "none");
+                instance.option("selection.mode", "none");
             }
 
             // EventListener 연결
@@ -63,6 +69,11 @@ const Grid = {
                 data[j].__rowKey = Grid.method.getKeyString();
             }
 
+            if (!(data instanceof Array)) {
+                data = [data];
+            }
+
+            instance.option("dataSource", []);
             instance.option("dataSource", data);
             instance.option("focusedRowEnabled", true);
             instance.option("focusedRowKey", false);
@@ -74,7 +85,7 @@ const Grid = {
                 e.toolbarOptions.visible = false;
             });
             instance.option("editing", {mode:"batch", allowUpdating: boolean});
-            this.setSorting(gridId, "none");
+            Grid.config.setSorting(gridId, "none");
         },
 
         /**
@@ -88,6 +99,17 @@ const Grid = {
             let instance = Grid.method.getGridInstance(gridId);
             instance.option("sorting", { mode : sorting, });
         },
+
+        setFooter : function (gridId, footer) {
+            let instance = Grid.method.getGridInstance(gridId);
+            let arr = new Array();
+            if (footer != null) {
+                for (let elm of footer) {
+                    arr.push({column: elm.attr, summaryType: elm.value});
+                }
+            }
+            instance.option("summary", { totalItems: arr, });
+        }
 
     },
 
