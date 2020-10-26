@@ -40,9 +40,6 @@ const Grid = {
                     texts: { confirmDeleteMessage: "", }
                 },
                 loadPanel: { enabled: false, },
-                // onSelectionChanged : function (e) {
-                //     e.component.refresh();
-                // },
                 paging : { enabled: false },
 
             }).dxDataGrid("instance");
@@ -101,7 +98,7 @@ const Grid = {
 
         getGridData : function (gridId) {
             let instance = Grid.method.getGridInstance(gridId);
-            return instance._controllers.data._dataSource._items;
+            return instance.getDataSource().items();
         },
 
         /**
@@ -161,6 +158,15 @@ const Grid = {
 
             data["__rowKey"] = Grid.method.getKeyString();
 
+            // default 값은 bottom으로 들어가도록
+            if (index == null) {
+                index = Grid.method.getGridData(gridId);
+                if (index != null) {
+                    index = index.length;
+                } else {
+                    index = 0;
+                }
+            }
             dataSource.store().insert(data, index);
             instance.refresh();
             instance.option("focusedRowEnabled", true);
@@ -289,22 +295,23 @@ const Grid = {
 
 const Header = {
     config: {
-        set : function (gridId, columns, band) {
+        setHeader : function (gridId, columns, band) {
             for ( let j = 0 ; j < band.length ; j++) {
                 band[j] = Column.method.__mergeBandAndColumn(band[j], columns);
 
                 if (band[j].columns != null) {
-                    this.set(gridId, columns, band[j].columns);
+                    Header.config.setHeader(gridId, columns, band[j].columns);
                 }
             }
 
-            Column.config.set(gridId, band);
+            Column.config.setColumn(gridId, band);
         },
 
         setCss : function (gridId, css) {
-            let columns = Grid.method.getGridInstance(gridId).option("columns");
+            let instance = Grid.method.getGridInstance(gridId);
+            let columns = instance.option("columns");
             columns = Header.method.__mergeHeaderTemplate(columns, css);
-            Column.config.set(gridId, columns);
+            Column.config.setColumn(gridId, columns);
         },
 
     },
@@ -313,17 +320,14 @@ const Header = {
         __mergeHeaderTemplate : function (header, css) {
             for (let k = 0 ; k < header.length ; k++) {
                 header[k].headerCellTemplate = function (header, info) {
-                    header.append(
-                        $("<div>")
-                            .html(info.column.caption.replace(/\n/g, "<br/>"))
-                    );
+                    header.append($("<div>").html(info.column.caption.replace(/\n/g, "<br/>")));
                     for (let j = 0 ; j < css.length ; j++) {
                         header.parent().css(css[j].attr, css[j].value);
                     }
                 }
 
                 if (header[k].columns != null) {
-                    header[k].columns = this.__mergeHeaderTemplate(header[k].columns, css);
+                    header[k].columns = Header.method.__mergeHeaderTemplate(header[k].columns, css);
                 }
             }
             return header;
@@ -334,7 +338,7 @@ const Header = {
 
 const Column = {
     config: {
-        set : function (gridId, columns) {
+        setColumn : function (gridId, columns) {
             let instance = Grid.method.getGridInstance(gridId)
             instance.option("columns", []);
             instance.option("columns", columns);

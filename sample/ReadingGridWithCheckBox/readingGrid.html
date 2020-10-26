@@ -8,7 +8,7 @@
     <link rel="stylesheet" type="text/css" href="css/dx.common.css"/>
     <link rel="dx-theme" data-theme="generic.light" href="css/dx.light.css"/>
     <link rel="stylesheet" type="text/css" href="css/grid.css"/>
-    <script src="js/dx.all.debug.min.js"></script>
+    <script src="js/dx.custom.js"></script>
     <script src="readingGrid.js"></script>
     <script src="readingGridData.js"></script>
 </head>
@@ -38,8 +38,8 @@
 </div>
 
 <script>
-    var gridId1 = "#headerTestContainer";
-    var gridId2 = "#headerTestContainer2";
+    const gridId1 = "#headerTestContainer";
+    const gridId2 = "#headerTestContainer2";
 
     Listener.grid.onRowClick = function (gridId) {
         if (gridId == gridId1) {
@@ -49,7 +49,7 @@
         }
     }
 
-    var obj = {
+    const obj = {
         "ID": 11,
         "Country": "United",
         "Area": 244820,
@@ -97,8 +97,8 @@
         ];
 
         Grid.config.setGrid(gridId1, "", 500, true);
-        Column.config.set(gridId1, columns);
-        Header.config.set(gridId1, columns, band);
+        Column.config.setColumn(gridId1, columns);
+        Header.config.setHeader(gridId1, columns, band);
         Grid.config.setGridData(gridId1, countries);
 
         // Header CSS
@@ -126,7 +126,7 @@
         ];
 
         Grid.config.setGrid(gridId2, "", 500, true);
-        Column.config.set(gridId2, columns2);
+        Column.config.setColumn(gridId2, columns2);
         Grid.config.setGridData(gridId2, countries);
 
     });
@@ -139,7 +139,7 @@
     }
     function onAddRow(gridId, obj) {
         obj = JSON.parse(JSON.stringify(obj));
-        Grid.method.addRow(gridId, obj, 3);
+        Grid.method.addRow(gridId, obj);
     }
     function onDeleteRow(gridId) {
         Grid.method.deleteRow(gridId);
