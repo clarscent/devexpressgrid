@@ -40,11 +40,9 @@ const Grid = {
                     texts: { confirmDeleteMessage: "", }
                 },
                 loadPanel: { enabled: false, },
-                paging : { enabled: false },
+                paging : { enabled: false, pageSize: 0 },
                 showBorders: true,
-                scrolling: {
-                    mode: "virtual"
-                },
+                scrolling: { mode: "Virtual" },
                 focusedRowEnabled: true,
 
             }).dxDataGrid("instance");
