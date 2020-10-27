@@ -119,6 +119,9 @@ const Grid = {
                         elm.summaryType = undefined;
                     }
 
+                    // // add Css
+                    // elm.cssClass = "test";
+
                 }
             }
             instance.option("summary", { totalItems: footer, });

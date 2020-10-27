@@ -9,6 +9,7 @@
 <!--    <link rel="stylesheet" type="text/css" href="css/grid.css"/>-->
 <!--    <link rel="stylesheet" type="text/css" href="css/grid-custom.css"/>-->
     <link rel="stylesheet" type="text/css" href="css/grid_back.css"/>
+    <link rel="stylesheet" type="text/css" href="css/footer.css"/>
     <script src="js/dx.custom.js"></script>
 <!--    <script src="js/dx.all.debug.js"></script>-->
     <script src="readingGrid.js"></script>
@@ -119,11 +120,11 @@
         footer = [
             new Footer("Country", "text", "합계"),
             new Footer("Population_Total", "sum"),
-            new Footer("Population_Urban", "avg", "평균: ","","left"),
+            new Footer("Population_Urban", "avg", "평균: ",""),
             new Footer("GDP_Agriculture", "min","",Column.dataFormat("percent", 2),"center"),
             new Footer("GDP_Industry", "max"),
         ]
-        Grid.config.setFooter(gridId1, footer)
+        Grid.config.setFooter(gridId1, footer);
 
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
