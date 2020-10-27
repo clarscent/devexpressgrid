@@ -33,7 +33,7 @@ const Grid = {
         setGrid : function (gridId, width, height, checkBox) {
             let instance = $(gridId).dxDataGrid({
                 width: width,
-                // height: height,
+                height: height,
                 selection: { mode: "multiple" },
                 keyExpr: "__rowKey",
                 editing : {
@@ -102,13 +102,28 @@ const Grid = {
 
         setFooter : function (gridId, footer) {
             let instance = Grid.method.getGridInstance(gridId);
-            let arr = new Array();
-            if (footer != null) {
+            if (footer != undefined) {
                 for (let elm of footer) {
-                    arr.push({column: elm.attr, summaryType: elm.value});
+                    // default: 컬럼 형식대로 valueFormat 설정
+                    if (elm.valueFormat == undefined) {
+                        elm.valueFormat = instance.columnOption(elm.column).format;
+                    }
+                    elm.customizeText = instance.columnOption(elm.column).customizeText;
+
+                    // display format
+                    if (elm.summaryType !== "text") {
+                        if (elm.displayFormat == undefined) {
+                            elm.displayFormat = "{0}";
+                        } else {
+                            elm.displayFormat = elm.displayFormat + "{0}";
+                        }
+                    } else {
+                        elm.summaryType = undefined;
+                    }
+
                 }
             }
-            instance.option("summary", { totalItems: arr, });
+            instance.option("summary", { totalItems: footer, });
         }
 
     },
@@ -403,10 +418,29 @@ const Column = {
     },
 }
 
-const Attribute = function (attr, value) {
+const Attribute = function (attr, value, text) {
     this.attr = attr;
     this.value = value;
-}
+    this.text= text;
+};
+
+/**
+ *
+ * @param dataField     연산을 할 dataField
+ * @param type          'avg' | 'count' | 'max' | 'min' | 'sum'
+ * @param text          출력할 text 지정
+ * @param valueFormat   출력할 value format 지정
+ * @param alignment     'center' | 'left' | 'right'
+ */
+const Footer = function (dataField, type, text, valueFormat, alignment) {
+    this.column = dataField;
+    this.summaryType = type;
+    this.displayFormat = text;
+    if (valueFormat != null) {
+        this.valueFormat = valueFormat.format;
+    }
+    this.alignment = alignment;
+};
 
 // LISTENER
 let Listener = {
