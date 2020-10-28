@@ -10,8 +10,8 @@
 <!--    <link rel="stylesheet" type="text/css" href="css/grid-custom.css"/>-->
 <link rel="stylesheet" type="text/css" href="css/grid_back.css"/>
 <link rel="stylesheet" type="text/css" href="css/footer.css"/>
-<!--<script src="js/dx.custom.js"></script>-->
-    <script src="js/dx.all.debug.js"></script>
+<script src="js/dx.custom.js"></script>
+<!--<script src="js/dx.all.debug.js"></script>-->
 <script src="readingGrid.js"></script>
 <!--<script src="readingGridData.js"></script>-->
 </head>
@@ -174,15 +174,6 @@ function onSaveEditData(gridId) {
 }
 
 function onSetData(gridId) {
-	// $.ajax({
-	// 	url : "readingGridData.js",
-	// 	success : function(data) {
-	// 		console.log("[SUCCESS]", data);
-	// 	},
-	// 	error : function(e) {
-	// 		console.log("[ERROR]", e.responseText);
-	// 	}
-	// });
 	Grid.method.setGridData(gridId, "gridData.json");
 }
 
