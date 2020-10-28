@@ -36,15 +36,14 @@ const Grid = {
                 height: height,
                 selection: { mode: "multiple" },
                 keyExpr: "__rowKey",
-                editing : {
-                    texts: { confirmDeleteMessage: "", }
-                },
+                editing : { texts: { confirmDeleteMessage: "", } },
                 loadPanel: { enabled: false, },
                 paging : { enabled: false, pageSize: 0 },
                 showBorders: true,
-                scrolling: { mode: "Virtual" },
                 focusedRowEnabled: true,
-                filterSyncEnabled: true,
+                // width 조정
+                allowColumnResizing: true,
+                columnResizingMode: "nextColumn",
 
             }).dxDataGrid("instance");
 
@@ -60,7 +59,6 @@ const Grid = {
             Grid.method.__addEventListener(gridId);
 
         },
-
 
         setEditMode : function (gridId, boolean) {
             let instance = Grid.method.getGridInstance(gridId);
@@ -103,14 +101,10 @@ const Grid = {
                     } else {
                         elm.summaryType = undefined;
                     }
-
-                    // // add Css
-                    // elm.cssClass = "test";
-
                 }
             }
             instance.option("summary", { totalItems: footer, });
-        }
+        },
 
     },
 

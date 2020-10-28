@@ -42,7 +42,7 @@
 
 
 <script>
-Logger.setLogLevel(LOG_LEVEL_WARN);
+// Logger.setLogLevel(LOG_LEVEL_WARN);
 const gridId1 = "#headerTestContainer";
 const gridId2 = "#headerTestContainer2";
 
@@ -92,14 +92,14 @@ $(document).ready(function () {
 	]
 
 	columns = [
-		new ColConfig("나라", "Country", "100%", "text"),
-		new ColConfig("지역", "Area", "100%", "number"),
-		new ColConfig("인구 합", "Population_Total", "100%", "number"),
-		new ColConfig("인구(외곽)", "Population_Urban", "100%", "percent"),
-		new ColConfig("GDP 총합", "GDP_Total", "100%", "number", 1),
-		new ColConfig("농업", "GDP_Agriculture", "100%", "percent", 1),
-		new ColConfig("산업", "GDP_Industry", "100%", "percent", 1),
-		new ColConfig("서비스업", "GDP_Services", "100%", "percent", 1),
+		new ColConfig("나라", "Country", "auto", "text"),
+		new ColConfig("지역", "Area", 80, "number"),
+		new ColConfig("인구 합", "Population_Total", 80, "number"),
+		new ColConfig("인구(외곽)", "Population_Urban", 80, "percent"),
+		new ColConfig("GDP 총합", "GDP_Total", 80, "number", 1),
+		new ColConfig("농업", "GDP_Agriculture", 80, "percent", 1),
+		new ColConfig("산업", "GDP_Industry", 80, "percent", 1),
+		new ColConfig("서비스업", "GDP_Services", 80, "percent", 1),
 	];
 
 	Grid.config.setGrid(gridId1, 800, 500, true);
