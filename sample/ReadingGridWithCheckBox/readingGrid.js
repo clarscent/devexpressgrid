@@ -49,7 +49,13 @@ const Grid = {
                 columnResizingMode: "nextColumn",
                 columnAutoWidth: false,
                 onColumnsChanging: function (e) {
-                    console.log("EE",e);
+                    let i = Grid.method.getGridInstance(gridId);
+                    let columns = i.option("columns");
+                    for (let col of columns) {
+                        if(col.width == "auto") {
+                            i.columnOption(col.dataField, "width", "auto");
+                        }
+                    }
                 }
 
             }).dxDataGrid("instance");
@@ -278,9 +284,6 @@ const Grid = {
             instance.option("onCellClick", function(eventObject) {
                 Grid.method.__executeListener("onCellClick", eventObject, gridId, eventObject.cellElement, eventObject.column, eventObject.columnIndex, eventObject.component, eventObject.data, eventObject.displayValue, eventObject.element, eventObject.event, eventObject.event, eventObject.key, eventObject.model, eventObject.row, eventObject.rowIndex, eventObject.rowType, eventObject.text, eventObject.value);
             });
-            instance.option("onCellDblClick", function(eventObject) {
-                Grid.method.__executeListener("onCellDblClick", eventObject, gridId, eventObject.cellElement, eventObject.column, eventObject.columnIndex, eventObject.component, eventObject.data, eventObject.displayValue, eventObject.element, eventObject.event, eventObject.key, eventObject.model, eventObject.row, eventObject.rowIndex, eventObject.rowType, eventObject.text, eventObject.value);
-            });
             instance.option("onContentReady", function(eventObject) {
                 Grid.method.__executeListener("onContentReady", eventObject, gridId, eventObject.component, eventObject.element, eventObject.model);
             });
@@ -313,9 +316,6 @@ const Grid = {
             });
             instance.option("onRowClick", function(eventObject) {
                 Grid.method.__executeListener("onRowClick", eventObject, gridId, eventObject.columns, eventObject.component, eventObject.data, eventObject.element, eventObject.event, eventObject.groupIndex, eventObject.handled, eventObject.isExpanded, eventObject.isNewRow, eventObject.isSelected, eventObject.event, eventObject.key, eventObject.model, eventObject.rowElement, eventObject.rowIndex, eventObject.rowType, eventObject.values);
-            });
-            instance.option("onRowDblClick", function(eventObject) {
-                Grid.method.__executeListener("onRowDblClick", eventObject, gridId, eventObject.columns, eventObject.component, eventObject.data, eventObject.element, eventObject.event, eventObject.groupIndex, eventObject.isExpanded, eventObject.isNewRow, eventObject.isSelected, eventObject.key, eventObject.model, eventObject.rowElement, eventObject.rowIndex, eventObject.rowType, eventObject.values);
             });
             instance.option("onRowInserted", function(eventObject) {
                 Grid.method.__executeListener("onRowInserted", eventObject, gridId, eventObject.component, eventObject.data, eventObject.element, eventObject.error, eventObject.key, eventObject.model);
@@ -466,7 +466,6 @@ const Footer = function (dataField, type, text, valueFormat, alignment) {
 let Listener = {
     grid : {
         onCellClick : function (gridId, cellElement, column, columnIndex, component, data, displayValue, element, event, event, key, model, row, rowIndex, rowType, text, value) { },
-        onCellDblClick : function (gridId, cellElement, column, columnIndex, component, data, displayValue, element, event, key, model, row, rowIndex, rowType, text, value) { },
         onContentReady : function (gridId, component, element, model) { },
         onDataErrorOccurred : function (gridId, component, element, error, model) { },
         onEditingStart : function (gridId, cancel, column, component, data, element, key, model) { },
@@ -478,7 +477,6 @@ let Listener = {
         onInitNewRow : function (gridId, component, data, element, model, promise) { },
         onKeyDown : function (gridId, component, element, event, handled, event, model) { },
         onRowClick : function (gridId, columns, component, data, element, event, groupIndex, handled, isExpanded, isNewRow, isSelected, event, key, model, rowElement, rowIndex, rowType, values) { },
-        onRowDblClick : function (gridId, columns, component, data, element, event, groupIndex, isExpanded, isNewRow, isSelected, key, model, rowElement, rowIndex, rowType, values) { },
         onRowInserted : function (gridId, component, data, element, error, key, model) { },
         onRowUpdated : function (gridId, component, data, element, error, key, model) { },
         onRowUpdating : function (gridId, cancel, component, element, key, model, newData, oldData) { },
