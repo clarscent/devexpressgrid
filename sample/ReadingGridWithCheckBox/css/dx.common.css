@@ -4058,6 +4058,10 @@
 }
 .dx-datagrid-table-fixed {
   table-layout: fixed;
+  width: inherit;
+}
+.dx-datagrid-table,
+.dx-datagrid-table-fixed {
   width: 100%;
 }
 .dx-hidden {

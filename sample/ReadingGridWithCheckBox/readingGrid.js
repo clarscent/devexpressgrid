@@ -16,7 +16,10 @@ const Band = function (dataField, columns) {
 const ColConfig = function (caption, dataField, width, dataType, precision) {
     this.caption = caption;
     this.dataField = dataField;
+    this.columnMinWidth = width;
     this.width = width;
+    // this.maxWidth = width;
+    // this.visibleWidth = width;
     this.headerCellTemplate = function (header, info) {
         header.append($("<div>").html(caption.replace(/\n/g, "<br/>")));
     };
@@ -43,7 +46,11 @@ const Grid = {
                 focusedRowEnabled: true,
                 // width 조정
                 allowColumnResizing: true,
-                columnResizingMode: "nextColumn",
+                columnResizingMode: "widget",
+                columnAutoWidth: false,
+                onColumnsChanging: function (e) {
+                    console.log("EE",e);
+                }
 
             }).dxDataGrid("instance");
 
@@ -389,6 +396,7 @@ const Column = {
     config: {
         setColumn : function (gridId, columns) {
             let instance = Grid.method.getGridInstance(gridId)
+            // instance.option("width", "min-content");
             instance.option("columns", []);
             instance.option("columns", columns);
             instance.repaint();

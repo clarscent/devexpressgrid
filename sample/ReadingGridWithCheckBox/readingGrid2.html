@@ -10,8 +10,8 @@
 <!--    <link rel="stylesheet" type="text/css" href="css/grid-custom.css"/>-->
 <link rel="stylesheet" type="text/css" href="css/grid_back.css"/>
 <link rel="stylesheet" type="text/css" href="css/footer.css"/>
-<script src="js/dx.custom.js"></script>
-<!--    <script src="js/dx.all.debug.js"></script>-->
+<!--<script src="js/dx.custom.js"></script>-->
+    <script src="js/dx.all.debug.js"></script>
 <script src="readingGrid.js"></script>
 <!--<script src="readingGridData.js"></script>-->
 </head>
@@ -92,8 +92,8 @@ $(document).ready(function () {
 	]
 
 	columns = [
-		new ColConfig("나라", "Country", "auto", "text"),
-		new ColConfig("지역", "Area", 80, "number"),
+		new ColConfig("나라", "Country", 100, "text"),
+		new ColConfig("지역", "Area", "auto", "number"),
 		new ColConfig("인구 합", "Population_Total", 80, "number"),
 		new ColConfig("인구(외곽)", "Population_Urban", 80, "percent"),
 		new ColConfig("GDP 총합", "GDP_Total", 80, "number", 1),
@@ -102,7 +102,7 @@ $(document).ready(function () {
 		new ColConfig("서비스업", "GDP_Services", 80, "percent", 1),
 	];
 
-	Grid.config.setGrid(gridId1, 800, 500, true);
+	Grid.config.setGrid(gridId1, 1000, 500, true);
 	Column.config.setColumn(gridId1, columns);
 	// Header.config.setHeader(gridId1, columns, band);
 	// Grid.method.setGridData(gridId1, countries);
@@ -127,6 +127,8 @@ $(document).ready(function () {
 		new Footer("GDP_Industry", "max"),
 	]
 	Grid.config.setFooter(gridId1, footer);
+
+	console.log("instance", Grid.method.getGridInstance(gridId1).option('columns'));
 });
 
 $(document).ready(function () {
@@ -141,8 +143,8 @@ $(document).ready(function () {
 		new ColConfig("서비스업", "GDP_Services", "100%", "percent", 1),
 	];
 
-	Grid.config.setGrid(gridId2, "", 500, false);
-	Column.config.setColumn(gridId2, columns2);
+	// Grid.config.setGrid(gridId2, "", 500, false);
+	// Column.config.setColumn(gridId2, columns2);
 	// Grid.method.setGridData(gridId2, []);
 
 	// Header.config.setCss(gridId2, headerCss);
