@@ -42,11 +42,11 @@ const Grid = {
                 editing : { texts: { confirmDeleteMessage: "", } },
                 loadPanel: { enabled: false, },
                 paging : { enabled: false, pageSize: 0 },
-                showBorders: true,
+                showBorders: false,
                 focusedRowEnabled: true,
                 // width 조정
                 allowColumnResizing: true,
-                columnResizingMode: "widget",
+                columnResizingMode: "nextColumn",
                 columnAutoWidth: false,
                 onColumnsChanging: function (e) {
                     console.log("EE",e);
