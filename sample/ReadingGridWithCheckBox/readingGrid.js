@@ -16,10 +16,7 @@ const Band = function (dataField, columns) {
 const ColConfig = function (caption, dataField, width, dataType, precision) {
     this.caption = caption;
     this.dataField = dataField;
-    this.columnMinWidth = width;
     this.width = width;
-    // this.maxWidth = width;
-    // this.visibleWidth = width;
     this.headerCellTemplate = function (header, info) {
         header.append($("<div>").html(caption.replace(/\n/g, "<br/>")));
     };
@@ -47,7 +44,8 @@ const Grid = {
                 // width 조정
                 allowColumnResizing: true,
                 columnResizingMode: "nextColumn",
-                columnAutoWidth: false,
+                columnMinWidth: 50,
+
                 onColumnsChanging: function (e) {
                     let i = Grid.method.getGridInstance(gridId);
                     let columns = i.option("columns");
@@ -130,12 +128,26 @@ const Grid = {
                 gridData[j].__rowKey = Grid.method.getKeyString();
             }
 
-            // if (!(data instanceof Array)) {
-            //     data = [data];
-            // }
-
             instance.option("dataSource", []);
             instance.option("dataSource", gridData);
+            instance.option("focusedRowEnabled", true);
+            instance.option("focusedRowKey", false);
+        },
+
+        setGridDataByObj : function (gridId, data) {
+            let instance = Grid.method.getGridInstance(gridId);
+
+            if (!(data instanceof Array)) {
+                data.__rowKey = Grid.method.getKeyString();
+                data = [data];
+            } else {
+                for (let j = 0 ; j < data.length ; j++) {
+                    data[j].__rowKey = Grid.method.getKeyString();
+                }
+            }
+
+            instance.option("dataSource", []);
+            instance.option("dataSource", data);
             instance.option("focusedRowEnabled", true);
             instance.option("focusedRowKey", false);
         },
@@ -395,8 +407,8 @@ const Header = {
 const Column = {
     config: {
         setColumn : function (gridId, columns) {
-            let instance = Grid.method.getGridInstance(gridId)
-            // instance.option("width", "min-content");
+            let instance = Grid.method.getGridInstance(gridId);
+
             instance.option("columns", []);
             instance.option("columns", columns);
             instance.repaint();

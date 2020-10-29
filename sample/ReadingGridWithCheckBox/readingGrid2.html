@@ -9,11 +9,11 @@
 <!--    <link rel="stylesheet" type="text/css" href="css/grid.css"/>-->
 <!--    <link rel="stylesheet" type="text/css" href="css/grid-custom.css"/>-->
 <link rel="stylesheet" type="text/css" href="css/grid_back.css"/>
-<link rel="stylesheet" type="text/css" href="css/footer.css"/>
-<script src="js/dx.custom.js"></script>
-<!--<script src="js/dx.all.debug.js"></script>-->
+<link rel="stylesheet" type="text/css" href="css/grid-custom-2.css"/>
+<!--<script src="js/dx.custom.js"></script>-->
+<script src="js/dx.all.debug.js"></script>
 <script src="readingGrid.js"></script>
-<!--<script src="readingGridData.js"></script>-->
+<script src="readingGridData.js"></script>
 </head>
 <body>
 
@@ -49,8 +49,8 @@ const gridId2 = "#headerTestContainer2";
 // gridId1의 focused Row 를 gridId2에 display
 Listener.grid.onFocusedRowChanged = function (gridId, component, element, model, row, rowElement, rowIndex) {
 	if (gridId == gridId1) {
-		let keyArr = ["Country", "Area"];
-		Grid.method.setGridFilter(gridId2, keyArr, row.data);
+		// let keyArr = ["Country", "Area"];
+		// Grid.method.setGridFilter(gridId2, keyArr, row.data);
 	}
 }
 
@@ -67,6 +67,10 @@ const obj = {
 	"GDP_Total": 2945146,
 	"Picture": "css/images/cat01.jpg"
 };
+
+$(window).resize(function () {
+	console.log("outerWidth",window.outerWidth);
+});
 
 $(document).ready(function () {
 	let band = new Array();
@@ -102,8 +106,9 @@ $(document).ready(function () {
 		new ColConfig("서비스업", "GDP_Services", 80, "percent", 1),
 	];
 
-	Grid.config.setGrid(gridId1, "", 500, true);
+	Grid.config.setGrid(gridId1, "", "", true);
 	Column.config.setColumn(gridId1, columns);
+	// Grid.method.setGridDataByObj(gridId1, countries);
 	// Header.config.setHeader(gridId1, columns, band);
 	// Grid.method.setGridData(gridId1, countries);
 
@@ -128,7 +133,6 @@ $(document).ready(function () {
 	]
 	Grid.config.setFooter(gridId1, footer);
 
-	console.log("instance", Grid.method.getGridInstance(gridId1).option('columns'));
 });
 
 $(document).ready(function () {
