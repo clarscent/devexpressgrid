@@ -1,3 +1,10 @@
+/* 컬럼만 있을 때 생기는 빈 행 숨김 */
+.dx-freespace-row td {
+    border-color: transparent!important
+}
+
+
+/* Footer */
 .dx-datagrid-total-footer > .dx-datagrid-content {
     padding: 0;
 }
