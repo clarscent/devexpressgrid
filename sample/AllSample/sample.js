@@ -144,7 +144,7 @@ const Logger = {
  */
 const Grid = {
     config: {
-        setGrid : function (gridId, width, height, checkBox) {
+        setGrid : function (gridId, width, height, option) {
             let instance = $("#" + gridId).dxDataGrid({
                 width: width,
                 height: height,
@@ -183,28 +183,45 @@ const Grid = {
 
             }).dxDataGrid("instance");
 
-            // checkBox
-            if (checkBox) {
-                instance.option("selection.showCheckBoxesMode", "always");
-            } else {
-                instance.option("selection.showCheckBoxesMode", "none");
-                instance.option("selection.mode", "none");
+            // 옵션
+            if (option) {
+                if (option.checkbox) {
+                    instance.option("selection.showCheckBoxesMode", "always");
+                } else {
+                    instance.option("selection.showCheckBoxesMode", "none");
+                    instance.option("selection.mode", "none");
+                }
+
+                if (option.editable) {
+                    instance.option("onToolbarPreparing", function(e) {
+                        e.toolbarOptions.visible = false;
+                    });
+                    instance.option("editing", {mode:"batch", allowUpdating: option.editable, allowAdding: option.editable});
+                    instance.option("sorting", { mode : "none"});
+                }
+
+                if (option.sortable) {
+                    instance.option("sorting", { mode : "single", });
+                    if (option.sortable !== true) {
+                        instance.option("sorting", { mode : option.sortable, });
+                    }
+                }
             }
 
             // EventListener 연결
             Grid.method.__addEventListener(gridId);
         },
 
-        setEditMode : function (gridId, editable) {
-            let instance = Grid.method.getGridInstance(gridId);
-            instance.option("onToolbarPreparing", function(e) {
-                e.toolbarOptions.visible = false;
-            });
-            instance.option("editing", {mode:"batch", allowUpdating: editable, allowAdding: editable});
-
-            // Edit 모드 시, 정렬 기능 비활성화
-            Grid.config.setSorting(gridId, "none");
-        },
+        // setEditMode : function (gridId, editable) {
+        //     let instance = Grid.method.getGridInstance(gridId);
+        //     instance.option("onToolbarPreparing", function(e) {
+        //         e.toolbarOptions.visible = false;
+        //     });
+        //     instance.option("editing", {mode:"batch", allowUpdating: editable, allowAdding: editable});
+        //
+        //     // Edit 모드 시, 정렬 기능 비활성화
+        //     Grid.config.setSorting(gridId, "none");
+        // },
 
         /**
          *
@@ -213,10 +230,10 @@ const Grid = {
          *                   "single"    - 하나의 컬럼으로만 정렬 가능
          *                   "multiple"  - 여러 개의 컬럼으로 정렬 가능
          */
-        setSorting : function (gridId, sortable) {
-            let instance = Grid.method.getGridInstance(gridId);
-            instance.option("sorting", { mode : sortable, });
-        },
+        // setSorting : function (gridId, sortable) {
+        //     let instance = Grid.method.getGridInstance(gridId);
+        //     instance.option("sorting", { mode : sortable, });
+        // },
 
         setFooter : function (gridId, footer) {
             let instance = Grid.method.getGridInstance(gridId);
@@ -246,21 +263,7 @@ const Grid = {
     },
 
     method: {
-        setGridData: async function (gridId, url) {
-            let instance = Grid.method.getGridInstance(gridId);
-            let gridData = await Grid.method.__getDataByUrl(url);
-
-            for (let j = 0 ; j < gridData.length ; j++) {
-                gridData[j].__rowKey = Grid.method.__getKeyString();
-            }
-
-            instance.option("dataSource", gridData);
-            instance.option("focusedRowEnabled", true);
-            instance.option("focusedRowKey", false);
-
-        },
-
-        setGridDataByObj : function (gridId, data) {
+        setGridData : function (gridId, data) {
             let instance = Grid.method.getGridInstance(gridId);
 
             if (!(data instanceof Array)) {
@@ -275,6 +278,20 @@ const Grid = {
             instance.option("dataSource", data);
             instance.option("focusedRowEnabled", true);
             instance.option("focusedRowKey", false);
+        },
+
+        setGridDataByUrl: async function (gridId, url) {
+            let instance = Grid.method.getGridInstance(gridId);
+            let gridData = await Grid.method.__getDataByUrl(url);
+
+            for (let j = 0 ; j < gridData.length ; j++) {
+                gridData[j].__rowKey = Grid.method.__getKeyString();
+            }
+
+            instance.option("dataSource", gridData);
+            instance.option("focusedRowEnabled", true);
+            instance.option("focusedRowKey", false);
+
         },
 
         /**
@@ -575,32 +592,25 @@ const Column = {
             instance.refresh();
         },
 
-        __checkDataSourceJsonKey : function (gridId, dataSource, text, all, ...args) {
+        __checkDataSourceJsonKey : function (dataSource, text, ...args) {
             if (dataSource && dataSource.length > 0) {
                 let obj = dataSource[0];
                 let keys = Object.keys(obj);
-                const popUpId = "__popUp";
+                // const popUpId = "__popUp";
 
                 for (let code of args) {
                     let flag = false;
                     for (let key of keys) {
                         if (code === key) {
                             flag = true;
-                            if (!all) {
-                                return;
-                            } else {
-                                break;
-                            }
+                            break;
                         }
                     }
-                    if (all && !flag) {
-                        PopUp.create(popUpId, Form.create(Form.Type.Warn(popUpId, text)), "warn", gridId).show();
-                        throw new Error("JSON 키 값 에러");
+                    if (!flag) {
+                        console.log("code", code);
+                        // PopUp.create(popUpId, Form.create(Form.Type.Warn(popUpId, text)), "warn", gridId).show();
+                        Logger.error("ERROR", text);
                     }
-                }
-                if (!all) {
-                    PopUp.create(popUpId, Form.create(Form.Type.Warn(popUpId, text)), "warn", gridId).show();
-                    throw new Error("JSON 키 값 에러");
                 }
             }
         },
@@ -614,17 +624,23 @@ const Column = {
             for (let col of columns) {
                 if (col.__helpPopUp) {
                     let dataSource = col.__dataSource;
-                    let text = "[" + gridId + "]<br>" +
-                        "Help PopUp 컬럼 DataSource의 키 값은 대문자 CODE, NAME 이어야 합니다.";
+                    let text = "[" + gridId + "]" +
+                        "Help PopUp 컬럼 DataSource의 키 값은 CODE, NAME 이어야 합니다.";
+                    Column.config.__checkDataSourceJsonKey(dataSource, text, "CODE", "NAME");
 
-                    Column.config.__checkDataSourceJsonKey(gridId, dataSource, text, true, "CODE", "NAME");
                     _.merge(col, new Column.config.__configHelpPopUp(gridId, col.__dataSource, col.__nameTarget))
-                } else if (col.__selectBox && col.__parentField) {
+                } else if (col.__selectBox) {
                     let dataSource = col.__dataSource;
-                    let text = "[" + gridId + "]<br>" +
-                        "SelectBox 컬럼 DataSource의 참조키 값은 \"parentCode\" 이어야 합니다.";
 
-                    Column.config.__checkDataSourceJsonKey(gridId, dataSource, text, false, "parentCode");
+                    if (col.__parentField) {
+                        let text = "[" + gridId + "]" +
+                            "SelectBox 컬럼 DataSource의 키 값은 CODE, NAME, parentCode 이어야 합니다.";
+                        Column.config.__checkDataSourceJsonKey(dataSource, text, "CODE", "NAME", "parentCode");
+                    } else {
+                        let text = "[" + gridId + "]" +
+                            "SelectBox 컬럼 DataSource의 키 값은 CODE, NAME 이어야 합니다.";
+                        Column.config.__checkDataSourceJsonKey(dataSource, text, "CODE", "NAME");
+                    }
                 }
 
 
@@ -846,17 +862,15 @@ const Column = {
      * SelectBox 객체. parentCode 가 상위 코드
      *
      * @param dataSource - Array    : JSON data가 있는 배열
-     * @param valueExpr             : SelectBox 에서의 값
-     * @param displayExpr           : SelectBox 에서의 보여지는 값
      * @param [parentField]         : 상위 SelectBox의 DataField
      *
      */
-    SelectBox : function (dataSource, valueExpr, displayExpr, parentField) {
+    SelectBox : function (dataSource, parentField) {
         this.__selectBox = true;
         this.__parentField = parentField;
         this.__dataSource = dataSource;
 
-        this.lookup = { dataSource : "", valueExpr : valueExpr, displayExpr: displayExpr };
+        this.lookup = { dataSource : "", valueExpr : "CODE", displayExpr: "NAME" };
         if (parentField != undefined) {
             this.lookup.dataSource = function (options) {
                 return {

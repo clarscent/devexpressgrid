@@ -13,6 +13,7 @@
 <script src="js/dx.custom.js"></script>
 <!--<script src="js/dx.all.debug.js"></script>-->
 <script src="sample.js"></script>
+<script src="readGridData.js"></script>
 
 <style>
 .dx-dropdowneditor-icon {
@@ -148,11 +149,11 @@ $(document).ready(function () {
 		new Footer("GDP_Industry", "max"),
 	]
 
-	Grid.config.setGrid(gridId, "100%", "", true);
+	Grid.config.setGrid(gridId, "100%", "", { checkbox: true, editable: false, sortable: true } );
 	Column.config.setColumn(gridId, columns);
-	Grid.method.setGridData(gridId,"readGridData.json");
+	Grid.method.setGridData(gridId, readGridData);
 
-	Grid.config.setEditMode(gridId, true);
+	// Grid.config.setEditMode(gridId, true);
 
 	// 헤더 설정
 	// Header.config.setHeader(gridId, columns, band);
@@ -172,141 +173,141 @@ $(document).ready(function () {
 $(document).ready(function () {
 	let columns, gridId = "selectBoxGridContainer";
 	let states = [{
-		"ID": 1,
-		"Name": "Alabama"
+		"CODE": 1,
+		"NAME": "Alabama"
 	}, {
-		"ID": 2,
-		"Name": "Alaska"
+		"CODE": 2,
+		"NAME": "Alaska"
 	}, {
-		"ID": 3,
-		"Name": "Arizona"
+		"CODE": 3,
+		"NAME": "Arizona"
 	}, {
-		"ID": 4,
-		"Name": "Arkansas"
+		"CODE": 4,
+		"NAME": "Arkansas"
 	}, {
-		"ID": 5,
-		"Name": "California"
+		"CODE": 5,
+		"NAME": "California"
 	}];
 	let cities = [{
-		"ID": 1,
-		"Name": "Tuscaloosa",
+		"CODE": 1,
+		"NAME": "Tuscaloosa",
 		"parentCode": 1
 	}, {
-		"ID": 2,
-		"Name": "Hoover",
+		"CODE": 2,
+		"NAME": "Hoover",
 		"parentCode": 1
 	}, {
-		"ID": 3,
-		"Name": "Dothan",
+		"CODE": 3,
+		"NAME": "Dothan",
 		"parentCode": 1
 	}, {
-		"ID": 4,
-		"Name": "Decatur",
+		"CODE": 4,
+		"NAME": "Decatur",
 		"parentCode": 1
 	}, {
-		"ID": 5,
-		"Name": "Anchorage",
+		"CODE": 5,
+		"NAME": "Anchorage",
 		"parentCode": 2
 	}, {
-		"ID": 6,
-		"Name": "Fairbanks",
+		"CODE": 6,
+		"NAME": "Fairbanks",
 		"parentCode": 2
 	}, {
-		"ID": 7,
-		"Name": "Juneau",
+		"CODE": 7,
+		"NAME": "Juneau",
 		"parentCode": 2
 	}, {
-		"ID": 8,
-		"Name": "Avondale",
+		"CODE": 8,
+		"NAME": "Avondale",
 		"parentCode": 3
 	}, {
-		"ID": 9,
-		"Name": "Buckeye",
+		"CODE": 9,
+		"NAME": "Buckeye",
 		"parentCode": 3
 	}, {
-		"ID": 10,
-		"Name": "Carefree",
+		"CODE": 10,
+		"NAME": "Carefree",
 		"parentCode": 3
 	}, {
-		"ID": 11,
-		"Name": "Springdale",
+		"CODE": 11,
+		"NAME": "Springdale",
 		"parentCode": 4
 	}, {
-		"ID": 12,
-		"Name": "Rogers",
+		"CODE": 12,
+		"NAME": "Rogers",
 		"parentCode": 4
 	}, {
-		"ID": 13,
-		"Name": "Sherwood",
+		"CODE": 13,
+		"NAME": "Sherwood",
 		"parentCode": 4
 	}, {
-		"ID": 14,
-		"Name": "Jacksonville",
+		"CODE": 14,
+		"NAME": "Jacksonville",
 		"parentCode": 4
 	}, {
-		"ID": 15,
-		"Name": "Cabot",
+		"CODE": 15,
+		"NAME": "Cabot",
 		"parentCode": 4
 	}, {
-		"ID": 16,
-		"Name": "Adelanto",
+		"CODE": 16,
+		"NAME": "Adelanto",
 		"parentCode": 5
 	}, {
-		"ID": 17,
-		"Name": "Glendale",
+		"CODE": 17,
+		"NAME": "Glendale",
 		"parentCode": 5
 	}, {
-		"ID": 18,
-		"Name": "Moorpark",
+		"CODE": 18,
+		"NAME": "Moorpark",
 		"parentCode": 5
 	}, {
-		"ID": 19,
-		"Name": "Needles",
+		"CODE": 19,
+		"NAME": "Needles",
 		"parentCode": 5
 	}, {
-		"ID": 20,
-		"Name": "Ontario",
+		"CODE": 20,
+		"NAME": "Ontario",
 		"parentCode": 5
 	}];
 	let thirdCode = [
-		{ "code" : 1, "name": "1번", "parentCode": "1"},
-		{ "code" : 2, "name": "2번", "parentCode": "1"},
-		{ "code" : 3, "name": "3번", "parentCode": "2"},
-		{ "code" : 4, "name": "4번", "parentCode": "2"},
-		{ "code" : 5, "name": "5번", "parentCode": "3"},
-		{ "code" : 6, "name": "6번", "parentCode": "4"},
-		{ "code" : 8, "name": "8번", "parentCode": "4"},
-		{ "code" : 9, "name": "9번", "parentCode": "5"},
-		{ "code" : 10, "name": "10번", "parentCode": 6},
-		{ "code" : 11, "name": "11번", "parentCode": "7"},
-		{ "code" : 12, "name": "12번", "parentCode": "8"},
-		{ "code" : 13, "name": "13번", "parentCode": "9"},
-		{ "code" : 14, "name": "14번", "parentCode": "10"},
-		{ "code" : 15, "name": "15번", "parentCode": "11"},
-		{ "code" : 16, "name": "16번", "parentCode": "12"},
-		{ "code" : 17, "name": "17번", "parentCode": "13"},
-		{ "code" : 18, "name": "18번", "parentCode": "14"},
-		{ "code" : 19, "name": "19번", "parentCode": "15"},
-		{ "code" : 20, "name": "20번", "parentCode": "16"},
-		{ "code" : 21, "name": "21번", "parentCode": "17"},
-		{ "code" : 22, "name": "22번", "parentCode": "18"},
-		{ "code" : 23, "name": "23번", "parentCode": "19"},
-		{ "code" : 24, "name": "24번", "parentCode": "20"},
+		{ "CODE" : 1, "NAME": "1번", "parentCode": "1"},
+		{ "CODE" : 2, "NAME": "2번", "parentCode": "1"},
+		{ "CODE" : 3, "NAME": "3번", "parentCode": "2"},
+		{ "CODE" : 4, "NAME": "4번", "parentCode": "2"},
+		{ "CODE" : 5, "NAME": "5번", "parentCode": "3"},
+		{ "CODE" : 6, "NAME": "6번", "parentCode": "4"},
+		{ "CODE" : 8, "NAME": "8번", "parentCode": "4"},
+		{ "CODE" : 9, "NAME": "9번", "parentCode": "5"},
+		{ "CODE" : 10, "NAME": "10번", "parentCode": 6},
+		{ "CODE" : 11, "NAME": "11번", "parentCode": "7"},
+		{ "CODE" : 12, "NAME": "12번", "parentCode": "8"},
+		{ "CODE" : 13, "NAME": "13번", "parentCode": "9"},
+		{ "CODE" : 14, "NAME": "14번", "parentCode": "10"},
+		{ "CODE" : 15, "NAME": "15번", "parentCode": "11"},
+		{ "CODE" : 16, "NAME": "16번", "parentCode": "12"},
+		{ "CODE" : 17, "NAME": "17번", "parentCode": "13"},
+		{ "CODE" : 18, "NAME": "18번", "parentCode": "14"},
+		{ "CODE" : 19, "NAME": "19번", "parentCode": "15"},
+		{ "CODE" : 20, "NAME": "20번", "parentCode": "16"},
+		{ "CODE" : 21, "NAME": "21번", "parentCode": "17"},
+		{ "CODE" : 22, "NAME": "22번", "parentCode": "18"},
+		{ "CODE" : 23, "NAME": "23번", "parentCode": "19"},
+		{ "CODE" : 24, "NAME": "24번", "parentCode": "20"},
 	];
 
 	columns = [
 		new ColConfig("성","LastName","auto","text"),
 		new ColConfig("이름","FirstName","auto","text"),
 		new ColConfig("직급","Position","auto","text"),
-		new ColConfig("주","StateID","auto","text", new Column.SelectBox(states, "ID", "Name")),
-		new ColConfig("도시","CityID","auto","text", new Column.SelectBox(cities, "ID", "Name", "StateID")),
-		new ColConfig("3번","ThridID","auto","text", new Column.SelectBox(thirdCode, "code", "name", "CityID")),
+		new ColConfig("주","StateID","auto","text", new Column.SelectBox(states)),
+		new ColConfig("도시","CityID","auto","text", new Column.SelectBox(cities, "StateID")),
+		new ColConfig("3번","ThridID","auto","text", new Column.SelectBox(thirdCode, "CityID")),
 	]
 
-	Grid.config.setGrid(gridId, "100%", "", true);
-	Grid.config.setEditMode(gridId, true);
+	Grid.config.setGrid(gridId, "100%", "", { checkbox: true, editable: true, sortable: false } );
+	// Grid.config.setEditMode(gridId, true);
 	Column.config.setColumn(gridId, columns);
-	Grid.method.setGridData(gridId,"selectGridData.json");
+	Grid.method.setGridDataByUrl(gridId,"selectGridData.json");
 
 });
 
@@ -337,10 +338,10 @@ $(document).ready(function () {
 		new ColConfig("직급","Position","auto","text"),
 	]
 
-	Grid.config.setGrid(gridId, "100%", "", true);
-	Grid.config.setEditMode(gridId, true);
+	Grid.config.setGrid(gridId, "100%", "", { checkbox: true, editable: true, sortable: true } );
+	// Grid.config.setEditMode(gridId, true);
 	Column.config.setColumn(gridId, columns);
-	Grid.method.setGridData(gridId,"selectGridData.json");
+	Grid.method.setGridDataByUrl(gridId,"selectGridData.json");
 
 });
 
