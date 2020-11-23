@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>All Sample</title>
+
+<script src="js/jquery-3.4.0.min.js"></script>
+<script src="js/lodash-4.17.15.min.js"></script>
+<link rel="stylesheet" type="text/css" href="css/dx.common.css"/>
+<link rel="stylesheet" type="text/css" href="css/dx.light.css"/>
+<link rel="stylesheet" type="text/css" href="css/grid_back.css"/>
+<link rel="stylesheet" type="text/css" href="css/grid-custom-2.css"/>
+<!--<script src="js/dx.custom.js"></script>-->
+<script src="js/dx.all.debug.js"></script>
+<script src="sample.js"></script>
+
+<style>
+.dx-dropdowneditor-icon {
+	background-image: url("css/icons/ico-down.png");
+}
+.dx-dropdowneditor-icon:before {
+	content: unset;
+}
+
+.dx-datagrid-rowsview .dx-row-focused.dx-data-row:not(.dx-edit-row) .dx-command-edit .dx-icon-help {
+	font-size: 18px;
+	font-family: DXIcons;
+}
+
+.dx-datagrid-content .dx-datagrid-table .dx-row .dx-command-edit,
+.dx-datagrid-content .dx-datagrid-table .dx-row .dx-command-edit.dx-command-edit-with-icons {
+	width: unset;
+	min-width: unset;
+}
+
+.form-content {
+	margin-bottom: 30px;
+}
+</style>
+
+<script type="text/javascript">
+$(document).ready(function () {
+	$("button[data-type='addRow']").on("click", function(evt) {
+		$el = $(evt.currentTarget);
+		let gridId = $el.attr("data-grid-id");
+		Grid.method.addRow(gridId);
+	});
+
+	$("button[data-type='deleteRow']").on("click", function(evt) {
+		$el = $(evt.currentTarget);
+		let gridId = $el.attr("data-grid-id");
+		Grid.method.deleteRow(gridId);
+	});
+
+	$("button[data-type='checkedRow']").on("click", function(evt) {
+		$el = $(evt.currentTarget);
+		let gridId = $el.attr("data-grid-id");
+		let checkedData = Grid.method.getCheckedData(gridId);
+		console.log("<<<checkedData>>>", checkedData);
+	});
+
+	$("button[data-type='saveData']").on("click", function(evt) {
+		$el = $(evt.currentTarget);
+		let gridId = $el.attr("data-grid-id");
+		Grid.method.saveEditData(gridId);
+	});
+
+	$("button[data-type='allRows']").on("click", function(evt) {
+		$el = $(evt.currentTarget);
+		let gridId = $el.attr("data-grid-id");
+		let data = Grid.method.getGridData(gridId);
+		console.log("<<<data>>>", data);
+	});
+
+});
+</script>
+
+</head>
+<body class="dx-viewport">
+
+<div class="form-content">
+	<div>
+		<button type="button" data-type="addRow" data-grid-id="readOrEditGridContainer">신규</button>
+		<button type="button" data-type="deleteRow" data-grid-id="readOrEditGridContainer">삭제</button>
+		<button type="button" data-type="checkedRow" data-grid-id="readOrEditGridContainer">조회</button>
+		<button type="button" data-type="saveData" data-grid-id="readOrEditGridContainer">저장</button>
+	</div>
+	<div class="grid-container" id="readOrEditGridContainer"></div>
+</div>
+
+<div class="form-content">
+	<div>
+		<button type="button" data-type="addRow" data-grid-id="selectBoxGridContainer">신규</button>
+		<button type="button" data-type="deleteRow" data-grid-id="selectBoxGridContainer">삭제</button>
+		<button type="button" data-type="checkedRow" data-grid-id="selectBoxGridContainer">조회</button>
+		<button type="button" data-type="allRows" data-grid-id="selectBoxGridContainer">모든데이터조회</button>
+		<button type="button" data-type="test" data-grid-id="selectBoxGridContainer">test</button>
+	</div>
+	<div class="grid-container" id="selectBoxGridContainer"></div>
+</div>
+
+<div class="form-content">
+	<div>
+		<button type="button" data-type="addRow" data-grid-id="helpPopUpGridContainer">신규</button>
+		<button type="button" data-type="deleteRow" data-grid-id="helpPopUpGridContainer">삭제</button>
+		<button type="button" data-type="checkedRow" data-grid-id="helpPopUpGridContainer">조회</button>
+	</div>
+	<div class="grid-container" id="helpPopUpGridContainer"></div>
+</div>
+
+<script>
+$(document).ready(function () {
+	let band, columns, footer, gridId = "readOrEditGridContainer";
+
+	band = [
+		new Band("Country"),
+		new Band("Area"),
+		new Band("국가총생산", [
+			new Band("Population_Total"),
+			new Band("Population_Urban"),
+		]),
+		new Band("일반\nGDP", [
+			new Band("GDP_Total"),
+			new Band("분야", [
+				new Band("GDP_Agriculture"),
+				new Band("GDP_Industry"),
+				new Band("GDP_Services"),
+			]),
+		]),
+	]
+	
+	columns = [
+		new ColConfig("나라","Country","200px","text"),
+		new ColConfig("지역","Area","300px","number"),
+		new ColConfig("인구 합","Population_Total","150px","number"),
+		new ColConfig("인구(외곽)","Population_Urban","150px","percent"),
+		new ColConfig("GDP 총합","GDP_Total","150px","number"),
+		new ColConfig("농업","GDP_Agriculture","150px",{type: "percent", pre: 3}),
+		new ColConfig("산업","GDP_Industry","150px",{type: "percent", pre: 1}),
+		new ColConfig("서비스업","GDP_Services","150px",{type: "percent", pre: 1}),
+	]
+
+	footer = [
+		new Footer("Country", "text", "텍스트"),
+		new Footer("Population_Total", "sum"),
+		new Footer("Population_Urban", "avg", "평균: ", ""),
+		new Footer("GDP_Agriculture", "min", "", {type:"percent", pre: 2}, "center"),
+		new Footer("GDP_Industry", "max"),
+	]
+
+	Grid.config.setGrid(gridId, "100%", "", true);
+	Column.config.setColumn(gridId, columns);
+	Grid.method.setGridData(gridId,"readGridData.json");
+
+	Grid.config.setEditMode(gridId, true);
+
+	// 헤더 설정
+	// Header.config.setHeader(gridId, columns, band);
+
+	// 헤더 CSS 설정
+	// let headerCss = [
+	// 	new Attribute("background-color", "#f5f5f5"),
+	// 	new Attribute("text-align", "right"),
+	// ]
+	// Header.config.setCss(gridId, headerCss);
+
+	// Footer 설정
+	Grid.config.setFooter(gridId, footer);
+
+});
+
+$(document).ready(function () {
+	let columns, gridId = "selectBoxGridContainer";
+	let states = [{
+		"ID": 1,
+		"Name": "Alabama"
+	}, {
+		"ID": 2,
+		"Name": "Alaska"
+	}, {
+		"ID": 3,
+		"Name": "Arizona"
+	}, {
+		"ID": 4,
+		"Name": "Arkansas"
+	}, {
+		"ID": 5,
+		"Name": "California"
+	}];
+	let cities = [{
+		"ID": 1,
+		"Name": "Tuscaloosa",
+		"parentCode": 1
+	}, {
+		"ID": 2,
+		"Name": "Hoover",
+		"parentCode": 1
+	}, {
+		"ID": 3,
+		"Name": "Dothan",
+		"parentCode": 1
+	}, {
+		"ID": 4,
+		"Name": "Decatur",
+		"parentCode": 1
+	}, {
+		"ID": 5,
+		"Name": "Anchorage",
+		"parentCode": 2
+	}, {
+		"ID": 6,
+		"Name": "Fairbanks",
+		"parentCode": 2
+	}, {
+		"ID": 7,
+		"Name": "Juneau",
+		"parentCode": 2
+	}, {
+		"ID": 8,
+		"Name": "Avondale",
+		"parentCode": 3
+	}, {
+		"ID": 9,
+		"Name": "Buckeye",
+		"parentCode": 3
+	}, {
+		"ID": 10,
+		"Name": "Carefree",
+		"parentCode": 3
+	}, {
+		"ID": 11,
+		"Name": "Springdale",
+		"parentCode": 4
+	}, {
+		"ID": 12,
+		"Name": "Rogers",
+		"parentCode": 4
+	}, {
+		"ID": 13,
+		"Name": "Sherwood",
+		"parentCode": 4
+	}, {
+		"ID": 14,
+		"Name": "Jacksonville",
+		"parentCode": 4
+	}, {
+		"ID": 15,
+		"Name": "Cabot",
+		"parentCode": 4
+	}, {
+		"ID": 16,
+		"Name": "Adelanto",
+		"parentCode": 5
+	}, {
+		"ID": 17,
+		"Name": "Glendale",
+		"parentCode": 5
+	}, {
+		"ID": 18,
+		"Name": "Moorpark",
+		"parentCode": 5
+	}, {
+		"ID": 19,
+		"Name": "Needles",
+		"parentCode": 5
+	}, {
+		"ID": 20,
+		"Name": "Ontario",
+		"parentCode": 5
+	}];
+	let thirdCode = [
+		{ "code" : 1, "name": "1번", "parentCode": "1"},
+		{ "code" : 2, "name": "2번", "parentCode": "1"},
+		{ "code" : 3, "name": "3번", "parentCode": "2"},
+		{ "code" : 4, "name": "4번", "parentCode": "2"},
+		{ "code" : 5, "name": "5번", "parentCode": "3"},
+		{ "code" : 6, "name": "6번", "parentCode": "4"},
+		{ "code" : 8, "name": "8번", "parentCode": "4"},
+		{ "code" : 9, "name": "9번", "parentCode": "5"},
+		{ "code" : 10, "name": "10번", "parentCode": 6},
+		{ "code" : 11, "name": "11번", "parentCode": "7"},
+		{ "code" : 12, "name": "12번", "parentCode": "8"},
+		{ "code" : 13, "name": "13번", "parentCode": "9"},
+		{ "code" : 14, "name": "14번", "parentCode": "10"},
+		{ "code" : 15, "name": "15번", "parentCode": "11"},
+		{ "code" : 16, "name": "16번", "parentCode": "12"},
+		{ "code" : 17, "name": "17번", "parentCode": "13"},
+		{ "code" : 18, "name": "18번", "parentCode": "14"},
+		{ "code" : 19, "name": "19번", "parentCode": "15"},
+		{ "code" : 20, "name": "20번", "parentCode": "16"},
+		{ "code" : 21, "name": "21번", "parentCode": "17"},
+		{ "code" : 22, "name": "22번", "parentCode": "18"},
+		{ "code" : 23, "name": "23번", "parentCode": "19"},
+		{ "code" : 24, "name": "24번", "parentCode": "20"},
+	];
+
+	columns = [
+		new ColConfig("성","LastName","auto","text"),
+		new ColConfig("이름","FirstName","auto","text"),
+		new ColConfig("직급","Position","auto","text"),
+		new ColConfig("주","StateID","auto","text", new Column.SelectBox(states, "ID", "Name")),
+		new ColConfig("도시","CityID","auto","text", new Column.SelectBox(cities, "ID", "Name", "StateID")),
+		new ColConfig("3번","ThridID","auto","text", new Column.SelectBox(thirdCode, "code", "name", "CityID")),
+	]
+
+	Grid.config.setGrid(gridId, "100%", "", true);
+	Grid.config.setEditMode(gridId, true);
+	Column.config.setColumn(gridId, columns);
+	Grid.method.setGridData(gridId,"selectGridData.json");
+
+});
+
+$(document).ready(function () {
+	let columns, gridId = "helpPopUpGridContainer";
+	let states = [{
+		"CODE": 1,
+		"NAME": "Alabama"
+	}, {
+		"CODE": 2,
+		"NAME": "Alaska"
+	}, {
+		"CODE": 3,
+		"NAME": "Arizona"
+	}, {
+		"CODE": 4,
+		"NAME": "Arkansas"
+	}, {
+		"CODE": 5,
+		"NAME": "California"
+	}];
+
+	columns = [
+		new ColConfig("State 코드","StateID","auto","text", new Column.HelpPopUp(states, "StateIDName")),
+		new ColConfig("State 명","StateIDName","auto","text", "" ,true),
+		new ColConfig("성","LastName","auto","text"),
+		new ColConfig("이름","FirstName","auto","text"),
+		new ColConfig("직급","Position","auto","text"),
+	]
+
+	Grid.config.setGrid(gridId, "100%", "", true);
+	Grid.config.setEditMode(gridId, true);
+	Column.config.setColumn(gridId, columns);
+	Grid.method.setGridData(gridId,"selectGridData.json");
+
+});
+
+
+</script>
+
+</body>
+</html>
