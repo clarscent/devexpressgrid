@@ -110,6 +110,11 @@ $(document).ready(function () {
 </div>
 
 <script>
+Listener.grid.onInitialized = function (gridId) {
+	if (gridId == "selectBoxGridContainer") {
+		console.log("dddddd");
+	}
+}
 $(document).ready(function () {
 	let band, columns, footer, gridId = "readOrEditGridContainer";
 

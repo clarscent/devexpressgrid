@@ -83,23 +83,41 @@ const Footer = function (dataField, type, text, dataFormat, alignment) {
 
 let Listener = {
     grid : {
-        onCellClick: function (gridId, component, element, model, jQueryEvent, event, data, key, value, displayValue, text, columnIndex, column, rowIndex, rowType, cellElement, row) { },
-        onContentReady: function (gridId, component, element, model) { },
-        onDataErrorOccurred: function (gridId, component, element, model, error) { },
-        onEditingStart: function (gridId, component, element, model, data, key, cancel, column) { },
-        onFocusedCellChanged: function (gridId, component, element, model, cellElement, columnIndex, rowIndex, row, column) { },
-        onFocusedCellChanging: function (gridId, component, element, model, cellElement, prevColumnIndex, prevRowIndex, newColumnIndex, newRowIndex, event, rows, columns, cancel, isHighlighted) { },
-        onFocusedRowChanged: function (gridId, component, element, model, rowElement, rowIndex, row) { },
-        onFocusedRowChanging: function (gridId, component, element, model, rowElement, prevRowIndex, newRowIndex, event, rows, cancel) { },
-        onInitialized: function (gridId, component, element) { },
-        onInitNewRow: function (gridId, component, element, model, data) { },
-        onKeyDown: function (gridId, component, element, model, jQueryEvent, event, handled) { },
-        onRowClick: function (gridId, component, element, model, jQueryEvent, event, data, key, values, columns, rowIndex, rowType, isSelected, isExpanded, groupIndex, rowElement, handled) { },
-        onRowInserted: function (gridId, component, element, model, data, key, error) { },
-        onRowUpdated: function (gridId, component, element, model, data, key, error) { },
-        onRowUpdating: function (gridId, component, element, model, oldData, newData, key, cancel) { },
-        onRowValidating: function (gridId, component, element, model, brokenRules, isValid, key, newData, oldData, errorText) { },
-        onSelectionChanged: function (gridId, component, element, model, currentSelectedRowKeys, currentDeselectedRowKeys, selectedRowKeys, selectedRowsData) { },
+        onCellClick: function (gridId, event, data, key, value, displayValue, text, column, cellElement, row) { },
+        onContentReady: function (gridId) { },
+        onDataErrorOccurred: function (gridId, error) { },
+        onEditingStart: function (gridId, data, key, column) { },
+        onFocusedCellChanged: function (gridId, cellElement, row, column) { },
+        onFocusedCellChanging: function (gridId, cellElement, prevColumnIndex, prevRowIndex, newColumnIndex, newRowIndex, event, rows, columns) { },
+        onFocusedRowChanged: function (gridId, rowElement, row) { },
+        onFocusedRowChanging: function (gridId, rowElement, prevRowIndex, newRowIndex, event, rows) { },
+        onInitialized: function (gridId) { },
+        // onInitNewRow: function (gridId, component, element, model, data) { },
+        onKeyDown: function (gridId, event) { },
+        onRowClick: function (gridId, columns, data, key, values) { },
+        onRowInserted: function (gridId, data) { }, // addRow 호출 시 발생
+        onRowUpdated: function (gridId, data) { }, // input blur시
+        onRowUpdating: function (gridId, oldData, newData) { }, // input change
+        // onRowValidating: function (gridId, component, element, model, brokenRules, isValid, key, newData, oldData, errorText) { },
+        onSelectionChanged: function (gridId,currentSelectedRowKeys, currentDeselectedRowKeys, selectedRowsData) { },
+
+        // onCellClick: function (gridId, component, element, model, jQueryEvent, event, data, key, value, displayValue, text, columnIndex, column, rowIndex, rowType, cellElement, row) { },
+        // onContentReady: function (gridId, component, element, model) { },
+        // onDataErrorOccurred: function (gridId, component, element, model, error) { },
+        // onEditingStart: function (gridId, component, element, model, data, key, cancel, column) { },
+        // onFocusedCellChanged: function (gridId, component, element, model, cellElement, columnIndex, rowIndex, row, column) { },
+        // onFocusedCellChanging: function (gridId, component, element, model, cellElement, prevColumnIndex, prevRowIndex, newColumnIndex, newRowIndex, event, rows, columns, cancel, isHighlighted) { },
+        // onFocusedRowChanged: function (gridId, component, element, model, rowElement, rowIndex, row) { },
+        // onFocusedRowChanging: function (gridId, component, element, model, rowElement, prevRowIndex, newRowIndex, event, rows, cancel) { },
+        // onInitialized: function (gridId, component, element) { }, // setGrid 호출시 발생
+        // // onInitNewRow: function (gridId, component, element, model, data) { },
+        // onKeyDown: function (gridId, component, element, model, jQueryEvent, event, handled) { },
+        // onRowClick: function (gridId, component, element, model, jQueryEvent, event, data, key, values, columns, rowIndex, rowType, isSelected, isExpanded, groupIndex, rowElement, handled) { },
+        // onRowInserted: function (gridId, component, element, model, data, key, error) { }, // addRow 호출 시 발생
+        // onRowUpdated: function (gridId, component, element, model, data, key, error) { }, // input blur시
+        // onRowUpdating: function (gridId, component, element, model, oldData, newData, key, cancel) { }, // input change
+        // // onRowValidating: function (gridId, component, element, model, brokenRules, isValid, key, newData, oldData, errorText) { },
+        // onSelectionChanged: function (gridId, component, element, model, currentSelectedRowKeys, currentDeselectedRowKeys, selectedRowKeys, selectedRowsData) { },
     },
 
 };
@@ -185,55 +203,39 @@ const Grid = {
 
             // 옵션
             if (option) {
-                if (option.checkbox) {
+                const checkbox = option.checkbox;
+                const editable = option.editable;
+                const sortable = option.sortable;
+
+                if (checkbox) {
                     instance.option("selection.showCheckBoxesMode", "always");
                 } else {
                     instance.option("selection.showCheckBoxesMode", "none");
                     instance.option("selection.mode", "none");
                 }
 
-                if (option.editable) {
+                if (editable) {
                     instance.option("onToolbarPreparing", function(e) {
                         e.toolbarOptions.visible = false;
                     });
-                    instance.option("editing", {mode:"batch", allowUpdating: option.editable, allowAdding: option.editable});
+                    instance.option("editing", { mode:"batch", allowUpdating: editable, allowAdding: editable });
                     instance.option("sorting", { mode : "none"});
                 }
 
-                if (option.sortable) {
-                    instance.option("sorting", { mode : "single", });
-                    if (option.sortable !== true) {
-                        instance.option("sorting", { mode : option.sortable, });
+                if (sortable) {
+                    instance.option("sorting", { mode : "single" });
+                    if (sortable !== true) {
+                        instance.option("sorting", { mode : sortable });
                     }
                 }
             }
 
             // EventListener 연결
             Grid.method.__addEventListener(gridId);
+
+            // Event 발생
+            Grid.method.__executeListener("onInitialized", {gridId: gridId}, gridId);
         },
-
-        // setEditMode : function (gridId, editable) {
-        //     let instance = Grid.method.getGridInstance(gridId);
-        //     instance.option("onToolbarPreparing", function(e) {
-        //         e.toolbarOptions.visible = false;
-        //     });
-        //     instance.option("editing", {mode:"batch", allowUpdating: editable, allowAdding: editable});
-        //
-        //     // Edit 모드 시, 정렬 기능 비활성화
-        //     Grid.config.setSorting(gridId, "none");
-        // },
-
-        /**
-         *
-         * @param gridId
-         * @param sortable - "none"      - 정렬 안 함
-         *                   "single"    - 하나의 컬럼으로만 정렬 가능
-         *                   "multiple"  - 여러 개의 컬럼으로 정렬 가능
-         */
-        // setSorting : function (gridId, sortable) {
-        //     let instance = Grid.method.getGridInstance(gridId);
-        //     instance.option("sorting", { mode : sortable, });
-        // },
 
         setFooter : function (gridId, footer) {
             let instance = Grid.method.getGridInstance(gridId);
@@ -369,11 +371,15 @@ const Grid = {
                     rowIndex = 0;
                 }
             }
-            dataSource.store().insert(data, rowIndex);
+            // instance.addRow();
+            dataSource.store().insert(data, rowIndex).then( _ => {
+                Grid.method.__executeListener("onRowInserted", "", gridId, data);
+            });
             instance.refresh().done(() => {
                 instance.option("focusedRowEnabled", true);
                 Grid.method.__setFocusOnCell(instance, rowIndex, 1);
             });
+
 
         },
 
@@ -458,13 +464,28 @@ const Grid = {
             });
             instance.option("onContentReady", function(eventObject) {
                 Grid.method.__executeListener("onContentReady", eventObject, gridId, eventObject.component, eventObject.element, eventObject.model);
+                let $el = eventObject.element;
+                let $input = $el.find("div.dx-editor-outlined input.dx-texteditor-input");
+                if ($input.length == 1) {
+                    $input = $input[0];
+                    let column = __currentEditingColumn.column;
+                    let newData, oldData = __currentEditingColumn.data[column.dataField];
+                    $input.addEventListener("blur", function () {
+                        Grid.method.__executeListener("onRowUpdating", {gridId: gridId, oldData: oldData, newData: newData}, gridId, oldData, newData);
+                        if (newData && oldData !== newData) {
+                            Grid.method.__executeListener("onRowUpdated", {gridId: gridId, data: newData}, gridId, newData);
+                        }
+                    });
+                    $input.addEventListener("input", function (e) {
+                        newData = e.target.value;
+                    });
+                }
             });
             instance.option("onDataErrorOccurred", function(eventObject) {
                 Grid.method.__executeListener("onDataErrorOccurred", eventObject, gridId, eventObject.component, eventObject.element, eventObject.model, eventObject.error);
             });
             instance.option("onEditingStart", function(eventObject) {
-                __currentEditingColumn = eventObject.column;
-
+                __currentEditingColumn = eventObject;
                 Grid.method.__executeListener("onEditingStart", eventObject, gridId, eventObject.component, eventObject.element, eventObject.model, eventObject.data, eventObject.key, eventObject.cancel, eventObject.column);
             });
             instance.option("onFocusedCellChanged", function(eventObject) {
@@ -488,7 +509,7 @@ const Grid = {
                 Grid.method.__executeListener("onInitNewRow", eventObject, gridId, eventObject.component, eventObject.element, eventObject.model, eventObject.data);
             });
             instance.option("onKeyDown", function(eventObject) {
-                let column = __currentEditingColumn;
+                let column = __currentEditingColumn.column;
 
                 if (eventObject.event.key == "Enter" && column.__helpPopUp) {
                     __listener.grid.onKeyDown(eventObject);
