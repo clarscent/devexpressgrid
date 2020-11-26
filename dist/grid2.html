@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Select Box 그리드</title>
+<link rel="stylesheet" type="text/css" href="css/dx.common.css"/>
+<link rel="stylesheet" type="text/css" href="css/dx.grid.custom.css"/>
+<script src="js/jquery-3.4.0.min.js"></script>
+<script src="js/lodash-4.17.15.min.js"></script>
+<script src="js/dx.custom.js"></script>
+<script src="js/dx.grid.js"></script>
+<script src="readGridData.js"></script>
+
+<style>
+.form-content {
+	margin-bottom: 30px;
+}
+
+.redText {
+	color: red;
+	font-weight: bold;
+}
+</style>
+
+<script type="text/javascript">
+$(document).ready(function () {
+	$("button[data-type='addRow']").on("click", function(evt) {
+		$el = $(evt.currentTarget);
+		let gridID = $el.attr("data-grid-id");
+		dxGrid.addRow(gridID, undefined);
+	});
+
+	$("button[data-type='deleteCheckedRow']").on("click", function(evt) {
+		$el = $(evt.currentTarget);
+		let gridID = $el.attr("data-grid-id");
+		dxGrid.deleteCheckedRow(gridID);
+	});
+
+	$("button[data-type='checkedRow']").on("click", function(evt) {
+		$el = $(evt.currentTarget);
+		let gridID = $el.attr("data-grid-id");
+		let checkedData = dxGrid.getCheckedData(gridID);
+		console.log("<<<checkedData>>>", checkedData);
+	});
+
+	$("button[data-type='allRows']").on("click", function(evt) {
+		$el = $(evt.currentTarget);
+		let gridID = $el.attr("data-grid-id");
+		let data = dxGrid.getGridData(gridID);
+		console.log("<<<data>>>", data);
+	});
+});
+
+</script>
+
+</head>
+<body class="dx-viewport">
+<h2>Select Box 그리드</h2>
+<div class="form-content">
+	<div>
+		<button type="button" data-type="addRow" data-grid-id="selectBoxGridContainer">신규</button>
+		<button type="button" data-type="deleteCheckedRow" data-grid-id="selectBoxGridContainer">선택행삭제</button>
+		<button type="button" data-type="checkedRow" data-grid-id="selectBoxGridContainer">선택행가져오기(console)</button>
+		<button type="button" data-type="allRows" data-grid-id="selectBoxGridContainer">모든데이터조회(console)</button>
+	</div>
+	<div class="grid-container" id="selectBoxGridContainer"></div>
+</div>
+
+<script>
+Listener.grid.onInitialized = function (gridID) {
+	if (gridID == "selectBoxGridContainer") {
+		// console.log("dddddd");
+	}
+}
+
+$(document).ready(function () {
+	let columns, gridID = "selectBoxGridContainer";
+	let states = [{
+		"CODE": 1,
+		"NAME": "Alabama"
+	}, {
+		"CODE": 2,
+		"NAME": "Alaska"
+	}, {
+		"CODE": 3,
+		"NAME": "Arizona"
+	}, {
+		"CODE": 4,
+		"NAME": "Arkansas"
+	}, {
+		"CODE": 5,
+		"NAME": "California"
+	}];
+	let cities = [{
+		"CODE": 1,
+		"NAME": "Tuscaloosa",
+		"parentCode": 1
+	}, {
+		"CODE": 2,
+		"NAME": "Hoover",
+		"parentCode": 1
+	}, {
+		"CODE": 3,
+		"NAME": "Dothan",
+		"parentCode": 1
+	}, {
+		"CODE": 4,
+		"NAME": "Decatur",
+		"parentCode": 1
+	}, {
+		"CODE": 5,
+		"NAME": "Anchorage",
+		"parentCode": 2
+	}, {
+		"CODE": 6,
+		"NAME": "Fairbanks",
+		"parentCode": 2
+	}, {
+		"CODE": 7,
+		"NAME": "Juneau",
+		"parentCode": 2
+	}, {
+		"CODE": 8,
+		"NAME": "Avondale",
+		"parentCode": 3
+	}, {
+		"CODE": 9,
+		"NAME": "Buckeye",
+		"parentCode": 3
+	}, {
+		"CODE": 10,
+		"NAME": "Carefree",
+		"parentCode": 3
+	}, {
+		"CODE": 11,
+		"NAME": "Springdale",
+		"parentCode": 4
+	}, {
+		"CODE": 12,
+		"NAME": "Rogers",
+		"parentCode": 4
+	}, {
+		"CODE": 13,
+		"NAME": "Sherwood",
+		"parentCode": 4
+	}, {
+		"CODE": 14,
+		"NAME": "Jacksonville",
+		"parentCode": 4
+	}, {
+		"CODE": 15,
+		"NAME": "Cabot",
+		"parentCode": 4
+	}, {
+		"CODE": 16,
+		"NAME": "Adelanto",
+		"parentCode": 5
+	}, {
+		"CODE": 17,
+		"NAME": "Glendale",
+		"parentCode": 5
+	}, {
+		"CODE": 18,
+		"NAME": "Moorpark",
+		"parentCode": 5
+	}, {
+		"CODE": 19,
+		"NAME": "Needles",
+		"parentCode": 5
+	}, {
+		"CODE": 20,
+		"NAME": "Ontario",
+		"parentCode": 5
+	}];
+	let thirdCode = [
+		{ "CODE" : 1, "NAME": "1번", "parentCode": "1"},
+		{ "CODE" : 2, "NAME": "2번", "parentCode": "1"},
+		{ "CODE" : 3, "NAME": "3번", "parentCode": "2"},
+		{ "CODE" : 4, "NAME": "4번", "parentCode": "2"},
+		{ "CODE" : 5, "NAME": "5번", "parentCode": "3"},
+		{ "CODE" : 6, "NAME": "6번", "parentCode": "4"},
+		{ "CODE" : 8, "NAME": "8번", "parentCode": "4"},
+		{ "CODE" : 9, "NAME": "9번", "parentCode": "5"},
+		{ "CODE" : 10, "NAME": "10번", "parentCode": 6},
+		{ "CODE" : 11, "NAME": "11번", "parentCode": "7"},
+		{ "CODE" : 12, "NAME": "12번", "parentCode": "8"},
+		{ "CODE" : 13, "NAME": "13번", "parentCode": "9"},
+		{ "CODE" : 14, "NAME": "14번", "parentCode": "10"},
+		{ "CODE" : 15, "NAME": "15번", "parentCode": "11"},
+		{ "CODE" : 16, "NAME": "16번", "parentCode": "12"},
+		{ "CODE" : 17, "NAME": "17번", "parentCode": "13"},
+		{ "CODE" : 18, "NAME": "18번", "parentCode": "14"},
+		{ "CODE" : 19, "NAME": "19번", "parentCode": "15"},
+		{ "CODE" : 20, "NAME": "20번", "parentCode": "16"},
+		{ "CODE" : 21, "NAME": "21번", "parentCode": "17"},
+		{ "CODE" : 22, "NAME": "22번", "parentCode": "18"},
+		{ "CODE" : 23, "NAME": "23번", "parentCode": "19"},
+		{ "CODE" : 24, "NAME": "24번", "parentCode": "20"},
+	];
+
+	columns = [
+		new Column("성","LastName","auto","text", {maxLength: 10}),
+		new Column("이름","FirstName","auto","text"),
+		new Column("직급","Position","auto","text"),
+		new Column("주","StateID","auto","text", {
+			columnType: new dxGrid.SelectBox(states)
+		}),
+		new Column("도시","CityID","auto","text", {
+			columnType: new dxGrid.SelectBox(cities, "StateID")
+		}),
+		new Column("3번","ThridID","auto","text", {
+			columnType: new dxGrid.SelectBox(thirdCode, "CityID")
+		}),
+	]
+
+	dxGrid.initGrid(gridID, "100%", "", { checkbox: true, editable: true, sortable: false } );
+	dxGrid.setColumn(gridID, columns);
+	dxGrid.setGridDataByUrl(gridID,"selectGridData.json");
+
+});
+
+</script>
+
+</body>
+</html>
