@@ -202,14 +202,16 @@ $(document).ready(function () {
 		new Column("성","LastName","auto","text", {maxLength: 10}),
 		new Column("이름","FirstName","auto","text"),
 		new Column("직급","Position","auto","text"),
-		new Column("주","StateID","auto","text", {
-			columnType: new dxGrid.SelectBox(states)
+		new Column("주","StateID","auto","selectBox", {
+			dataSource: states
 		}),
-		new Column("도시","CityID","auto","text", {
-			columnType: new dxGrid.SelectBox(cities, "StateID")
+		new Column("도시","CityID","auto","selectBox", {
+			dataSource: cities,
+			parentDataField: "StateID"
 		}),
-		new Column("3번","ThridID","auto","text", {
-			columnType: new dxGrid.SelectBox(thirdCode, "CityID")
+		new Column("3번","ThridID","auto","selectBox", {
+			dataSource: thirdCode,
+			parentDataField: "CityID"
 		}),
 	]
 

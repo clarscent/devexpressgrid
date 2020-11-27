@@ -5765,7 +5765,7 @@ body {
     border: transparent;
 }
 .dx-datagrid-content .dx-datagrid-table .dx-row > td div {
-    font-family: Roboto;
+    font-family: Roboto, sans-serif;
     /*height: 100%;*/
     overflow: hidden;
 }
@@ -5835,7 +5835,7 @@ body {
 }
 
 .dx-list-item-content {
-    font-family: Roboto;
+    font-family: Roboto, sans-serif;
     font-size: 12px;
 }
 
