@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>[sample] 조회 그리드</title>
+<link rel="stylesheet" type="text/css" href="../css/dx.common.css"/>
+<link rel="stylesheet" type="text/css" href="../css/dx.grid.custom.css"/>
+<script src="../js/jquery-3.4.0.min.js"></script>
+<script src="../js/lodash-4.17.15.min.js"></script>
+<script src="../js/dx.custom.js"></script>
+<script src="../js/dx.grid.js"></script>
+<script src="../data/readGridData.js"></script>
+
+<style>
+.form-content {
+	margin-bottom: 30px;
+}
+
+.redText {
+	color: red;
+	font-weight: bold;
+}
+</style>
+
+<script type="text/javascript">
+$(document).ready(function () {
+	$("button[data-type='addRow']").on("click", function(evt) {
+		$el = $(evt.currentTarget);
+		let gridID = $el.attr("data-grid-id");
+		dxGrid.addRow(gridID);
+	});
+
+	$("button[data-type='deleteCheckedRow']").on("click", function(evt) {
+		$el = $(evt.currentTarget);
+		let gridID = $el.attr("data-grid-id");
+		dxGrid.deleteCheckedRow(gridID);
+	});
+
+	$("button[data-type='checkedRow']").on("click", function(evt) {
+		$el = $(evt.currentTarget);
+		let gridID = $el.attr("data-grid-id");
+		let checkedData = dxGrid.getCheckedData(gridID);
+		console.log("<<<checkedData>>>", checkedData);
+	});
+});
+
+</script>
+
+</head>
+<body class="dx-viewport">
+<h2>조회 그리드</h2>
+<div class="form-content">
+	<div>
+		<button type="button" data-type="addRow" data-grid-id="readOrEditGridContainer">신규</button>
+		<button type="button" data-type="deleteCheckedRow" data-grid-id="readOrEditGridContainer">선택행 삭제</button>
+		<button type="button" data-type="checkedRow" data-grid-id="readOrEditGridContainer">선택행 가져오기(console)</button>
+	</div>
+	<div class="grid-container" id="readOrEditGridContainer"></div>
+</div>
+
+<script>
+Listener.grid.onInitialized = function (gridID) {
+	if (gridID == "readOrEditGridContainer") {
+		// console.log("dddddd");
+	}
+}
+$(document).ready(function () {
+	let band, columns, footer, gridID = "readOrEditGridContainer";
+
+	band = [
+		new Band("Country"),
+		new Band("Area"),
+		new Band("국가총생산", [
+			new Band("Population_Total"),
+			new Band("Population_Urban"),
+		]),
+		new Band("일반\nGDP", [
+			new Band("GDP_Total"),
+			new Band("분야", [
+				new Band("GDP_Agriculture"),
+				new Band("GDP_Industry"),
+				new Band("GDP_Services"),
+			]),
+		]),
+	]
+
+	columns = [
+		new Column("나라","Country","200px","text"),
+		new Column("지역","Area","300px","number"),
+		new Column("인구 합","Population_Total","150px","number"),
+		new Column("인구(외곽)","Population_Urban","150px","percent"),
+		new Column("GDP 총합","GDP_Total","150px","number"),
+		new Column("농업","GDP_Agriculture","150px",{type: "percent", precision: 3}),
+		new Column("산업","GDP_Industry","150px",{type: "percent", precision: 1}),
+		new Column("서비스업","GDP_Services","150px",{type: "percent", precision: 1}),
+	]
+
+	footer = [
+		new Footer("Country", "text", "텍스트"),
+		new Footer("Population_Total", "sum"),
+		new Footer("Population_Urban", "avg", "평균: ", ""),
+		new Footer("GDP_Agriculture", "min", "", {type:"percent", precision: 2}, "center"),
+		new Footer("GDP_Industry", "max"),
+	]
+
+	dxGrid.initGrid(gridID, "100%", 200, { checkbox: true, editable: false, sortable: true } );
+	dxGrid.setColumn(gridID, columns, band);
+	dxGrid.setGridData(gridID, readGridData);
+
+	// Footer 설정
+	dxGrid.setFooter(gridID, footer);
+
+});
+
+</script>
+
+</body>
+</html>
