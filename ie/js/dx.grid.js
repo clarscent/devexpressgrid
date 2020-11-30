@@ -42,7 +42,7 @@ const LOG_LEVEL_WARN = 2;
 const LOG_LEVEL_INFO = 3;
 const LOG_LEVEL_DEBUG = 4;
 const Logger = {
-	__logLevel: LOG_LEVEL_ERROR,
+	__logLevel: LOG_LEVEL_DEBUG,
 
 	setLogLevel: function(logLevel) {
 		Logger.__logLevel = logLevel;
@@ -73,11 +73,6 @@ const Logger = {
 // 필수 변수
 let __focusedCellElement = new Array(2);
 let __currentEditingColumn = new Object();
-let __listener = {
-	grid: {
-		onKeyDown: function(eventObject) {},
-	}
-}
 
 // Event listener
 let Listener = {
@@ -366,6 +361,7 @@ const dxGrid = {
 
 	setGridData: function (gridID, data) {
 		let instance = dxGrid.getGridInstance(gridID);
+		let columns = instance.option("columns");
 
 		if (!(data instanceof Array)) {
 			data.__rowKey = dxGrid.method.__getKeyString();
@@ -376,26 +372,28 @@ const dxGrid = {
 			}
 		}
 
+		// codehelp 코드명
+		for (let i = 0 ; i < columns.length ; i++) {
+			if (columns[i].__codeHelp && data) {
+				let nameTarget = columns[i].__nameTarget;
+				if (!data[0].nameTarget) {
+					Logger.warn("<codeHelp>", "dataSource에 " + nameTarget + "에 대한 데이터가 없습니다. join 을 통해 값을 가져오십시오.");
+				}
+			}
+		}
+
 		instance.option("dataSource", data);
 		instance.option("focusedRowEnabled", true);
 		instance.option("focusedRowKey", false);
 	},
 
 	setGridDataByUrl: function (gridID, url) {
-		let instance = dxGrid.getGridInstance(gridID);
-
 		$.ajax({
 			url: url,
 			success: function(data) {
 				Logger.debug("[SUCCESS]", data);
 
-				for (let j = 0 ; j < data.length ; j++) {
-					data[j].__rowKey = dxGrid.method.__getKeyString();
-				}
-
-				instance.option("dataSource", data);
-				instance.option("focusedRowEnabled", true);
-				instance.option("focusedRowKey", false);
+				dxGrid.setGridData(gridID, data);
 			},
 			error: function(e) {
 				Logger.error(url, e.responseText);
@@ -409,6 +407,7 @@ const dxGrid = {
 
 	getGridData: function (gridID) {
 		let instance = dxGrid.getGridInstance(gridID);
+		dxGrid.saveEditData(gridID);
 		return instance.getDataSource() ? instance.getDataSource().items(): undefined;
 	},
 
@@ -421,6 +420,7 @@ const dxGrid = {
 	 */
 	getCheckedData: function (gridID) {
 		let instance = dxGrid.getGridInstance(gridID);
+		dxGrid.saveEditData(gridID);
 		let rowsData = instance.getSelectedRowsData();
 		let rowIndex;
 
@@ -623,6 +623,7 @@ const dxGrid = {
 				eventObject.instance = eventObject.component;
 
 				dxGrid.method.__executeListener("onContentReady", eventObject, [gridID, eventObject.instance]);
+
 				let $el = eventObject.element;
 				let $input = $el.find("div.dx-editor-outlined input.dx-texteditor-input");
 				if ($input.length == 1) {
@@ -630,17 +631,30 @@ const dxGrid = {
 					let column = __currentEditingColumn.column;
 					let rowIndex = __currentEditingColumn.rowIndex;
 					let dataField = __currentEditingColumn.column.dataField;
-					let newData, oldData = __currentEditingColumn.data[column.dataField];
-					$input.addEventListener("focusout", function () {
+					let newData;
+					let oldData = dxGrid.getCellValue(gridID, rowIndex, dataField);
+
+					$input.addEventListener("focusout", function (e) {
 						dxGrid.method.__executeListener("onCellUpdating", {
 							gridID: gridID,
-							value: newData,
+							value: oldData,
 							rowIndex: rowIndex,
 							dataField: dataField,
-						}, [gridID, newData, rowIndex, dataField]);
+						}, [gridID, oldData, rowIndex, dataField]);
+
 						if (newData && oldData !== newData) {
 							const rowData = __currentEditingColumn.data;
 							rowData[column.dataField] = newData;
+							if (column.__codeHelp) {
+								const ds = column.__dataSource;
+								const nt = column.__nameTarget;
+								for (let i = 0 ; i < ds.length ; i++) {
+									if (ds[i]["CODE"] == newData) {
+										rowData[nt] = ds[i]["NAME"];
+									}
+								}
+							}
+							__currentEditingColumn.data = rowData;
 							dxGrid.method.__executeListener("onCellUpdated", {
 								gridID: gridID,
 								rowIndex: rowIndex,
@@ -649,11 +663,13 @@ const dxGrid = {
 							}, [gridID, rowIndex, dataField, rowData]);
 						}
 					});
+
 					$input.addEventListener("keyup", function (e) {
 						newData = e.target.value;
 					});
 
-					if (!column.__codeHelp){
+					if (column) {
+						let oldData = dxGrid.getCellValue(gridID,rowIndex,column.dataField);
 						eventObject.element.find("div.dx-editor-outlined input.dx-texteditor-input").val("").focus();
 						eventObject.element.find("div.dx-editor-outlined input.dx-texteditor-input").val(oldData).focus();
 					}
@@ -696,10 +712,6 @@ const dxGrid = {
 			});
 			instance.option("onKeyDown", function (eventObject) {
 				let column = __currentEditingColumn.column;
-
-				if (eventObject.event.key == "Enter" && column && column.__helpPopUp) {
-					__listener.grid.onKeyDown(eventObject);
-				}
 
 				if (eventObject.event.key == "F2") {
 					eventObject.component.editCell(__focusedCellElement[0], __focusedCellElement[1]);
@@ -838,7 +850,6 @@ const dxGrid = {
 				let isExist = false;
 
 				const __codeHelpCellCallBack = function () {
-					const popupID = "__warn";
 					let value = options.value;
 
 					if (value != undefined) {
@@ -852,19 +863,16 @@ const dxGrid = {
 							}
 						}
 
-						if (!isExist) {
-							alert("존재하지 않는 코드입니다.");
-						} else {
-							gridInstance.cellValue(rowIndex, nameTarget, value);
+						if (isExist) {
+							isExist = value;
 						}
-					}
-				}
 
-				// Enter 리스너 연결
-				__listener.grid.onKeyDown = function () {
-					// 마지막 editable cell 일 때 (onFocusOut이벤트가 먹지않음)
-					if (rowIndex == gridInstance.totalCount() - 1 && colIndex == gridInstance.columnCount() - 1) {
-						__codeHelpCellCallBack();
+						if (isExist) {
+							gridInstance.cellValue(rowIndex, nameTarget, value);
+						} else {
+							alert("존재하지 않는 코드입니다.");
+						}
+						return isExist;
 					}
 				}
 
@@ -876,20 +884,25 @@ const dxGrid = {
 						options.setValue(evt.value);
 					},
 					maxLength: maxLength,
-					onKeyDown: function(e) {
-						if (e.event.keyCode === 13){
-							__codeHelpCellCallBack();
-							e.event.stopPropagation();
+					onKeyDown: function(evt) {
+						if (evt.event.keyCode === 13){
+							let value = __codeHelpCellCallBack();
+							if (value) {
+								evt.event.keyCode = 9;
+							} else {
+								evt.event.stopPropagation();
+							}
 						}
 					},
 					onFocusIn: function (evt) {
-						console.log();
-						evt.element.find("div.dx-editor-outlined input.dx-texteditor-input").val("").focus();
-						evt.element.find("div.dx-editor-outlined input.dx-texteditor-input").val(options.text).focus();
 					},
 					onFocusOut: function (evt) {
 						let relatedTarget = evt.event.relatedTarget;
-						if ( relatedTarget && relatedTarget.classList.contains("dx-button")) {
+
+						if (relatedTarget && relatedTarget.children && relatedTarget.children[0].classList && relatedTarget.children[0].classList.contains("dx-pointer-events-target")) {
+							return;
+						}
+						if (relatedTarget && relatedTarget.classList.contains("dx-button")) {
 							return;
 						} else {
 							__codeHelpCellCallBack();
@@ -941,12 +954,12 @@ const dxGrid = {
 						btnInstance.option("onClick", function () {
 							gridInstance.cellValue(rowIndex, target, focusedCode);
 							gridInstance.cellValue(rowIndex, nameTarget, focusedName);
-							//gridInstance.saveEditData();  // saveEditData() 실행시 parent 그리드 깜빡임
+							// gridInstance.saveEditData();  // saveEditData() 실행시 parent 그리드 깜빡임
 							Popup.hide(popupID);
 						});
 
 						// 팝업창 생성
-						Popup.create(popupID, $form, "code", gridID, rowIndex, colIndex + 2).show();
+						Popup.create(popupID, $form, gridID, rowIndex, colIndex).show();
 					}
 				});
 
@@ -1142,9 +1155,12 @@ const Form = {
 };
 
 const Popup = {
-	create: function (popupID, form, type, gridID, rowIndex, colIndex) {
+	create: function (popupID, form, gridID, rowIndex, colIndex) {
 		let instance = dxGrid.getGridInstance(gridID);
 		let popupObj = {
+			width: 500,
+			height: 500,
+			title: "코드",
 			position: {
 				my: "center",
 				at: "center",
@@ -1153,13 +1169,17 @@ const Popup = {
 			animation: undefined,
 			closeOnOutsideClick: false,
 			showTitle: true,
+			/**
+			 * html - height: 100%,
+			 * body - min-height: 100%
+			 * 일 때만 dragging 가능
+			 */
+			dragEnabled: true,
 			contentTemplate: function () {
 				return form;
 			},
 			onHiding: function () {
-				if (rowIndex && colIndex) {
-					//dxGrid.method.__setFocusOnCell(instance, rowIndex, colIndex)
-				}
+				dxGrid.method.__setFocusOnCell(instance, rowIndex, colIndex);
 			},
 			onHidden: function () {
 				$("#" + popupID).remove();
@@ -1171,21 +1191,6 @@ const Popup = {
 		}
 
 		$("#" + gridID).after("<div id=" + popupID + "></div>");
-
-		if (type === "code") {
-			_.merge(popupObj, {
-				width: 500,
-				height: 500,
-				title: "코드",
-				/**
-				 * html - height: 100%,
-				 * body - min-height: 100%
-				 * 일 때만 dragging 가능
-				 */
-				dragEnabled: true,
-			})
-		}
-
 		return $("#" + popupID).dxPopup(popupObj).dxPopup("instance");
 	},
 
