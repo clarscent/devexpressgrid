@@ -407,7 +407,8 @@ const dxGrid = {
 
 	getGridData: function (gridID) {
 		let instance = dxGrid.getGridInstance(gridID);
-		dxGrid.saveEditData(gridID);
+		instance.saveEditData();
+
 		return instance.getDataSource() ? instance.getDataSource().items(): undefined;
 	},
 
@@ -420,7 +421,7 @@ const dxGrid = {
 	 */
 	getCheckedData: function (gridID) {
 		let instance = dxGrid.getGridInstance(gridID);
-		dxGrid.saveEditData(gridID);
+		instance.saveEditData();
 		let rowsData = instance.getSelectedRowsData();
 		let rowIndex;
 
@@ -483,13 +484,12 @@ const dxGrid = {
 
 		// default 값은 bottom으로 들어가도록
 		if (rowIndex == null) {
-			rowIndex = dxGrid.getGridData(gridID);
-			if (rowIndex != null) {
-				rowIndex = rowIndex.length;
-			} else {
+			rowIndex = instance.totalCount();
+			if (rowIndex == null) {
 				rowIndex = 0;
 			}
 		}
+
 		dataSource.store().insert(data, rowIndex).then( function () {
 			dxGrid.method.__executeListener("onRowInserted", {
 				"gridID": gridID,
@@ -635,14 +635,14 @@ const dxGrid = {
 					let oldData = dxGrid.getCellValue(gridID, rowIndex, dataField);
 
 					$input.addEventListener("focusout", function (e) {
-						dxGrid.method.__executeListener("onCellUpdating", {
-							gridID: gridID,
-							value: oldData,
-							rowIndex: rowIndex,
-							dataField: dataField,
-						}, [gridID, oldData, rowIndex, dataField]);
-
 						if (newData && oldData !== newData) {
+							dxGrid.method.__executeListener("onCellUpdating", {
+								gridID: gridID,
+								value: oldData,
+								rowIndex: rowIndex,
+								dataField: dataField,
+							}, [gridID, oldData, rowIndex, dataField]);
+
 							const rowData = __currentEditingColumn.data;
 							rowData[column.dataField] = newData;
 							if (column.__codeHelp) {
@@ -664,14 +664,19 @@ const dxGrid = {
 						}
 					});
 
-					$input.addEventListener("keyup", function (e) {
+					$input.addEventListener("change", function (e) {
+						if (e.keyCode === 13 || e.keyCode === 9) {
+							return;
+						}
 						newData = e.target.value;
 					});
 
 					if (column) {
-						let oldData = dxGrid.getCellValue(gridID,rowIndex,column.dataField);
-						eventObject.element.find("div.dx-editor-outlined input.dx-texteditor-input").val("").focus();
-						eventObject.element.find("div.dx-editor-outlined input.dx-texteditor-input").val(oldData).focus();
+						if (!column.__selectBox) {
+							let oldData = dxGrid.getCellValue(gridID,rowIndex,column.dataField);
+							eventObject.element.find("div.dx-editor-outlined input.dx-texteditor-input").val("").focus();
+							eventObject.element.find("div.dx-editor-outlined input.dx-texteditor-input").val(oldData).focus();
+						}
 					}
 				}
 			});
@@ -899,7 +904,7 @@ const dxGrid = {
 					onFocusOut: function (evt) {
 						let relatedTarget = evt.event.relatedTarget;
 
-						if (relatedTarget && relatedTarget.children && relatedTarget.children[0].classList && relatedTarget.children[0].classList.contains("dx-pointer-events-target")) {
+						if (relatedTarget && relatedTarget.children && relatedTarget.children[0] && relatedTarget.children[0].classList && relatedTarget.children[0].classList.contains("dx-pointer-events-target")) {
 							return;
 						}
 						if (relatedTarget && relatedTarget.classList.contains("dx-button")) {
@@ -999,7 +1004,7 @@ const dxGrid = {
 			let precision = undefined;
 
 			/**
-			 * type: number, percen 인 경우, 소수점(precision) 설정
+			 * type: number, percent 인 경우, 소수점(precision) 설정
 			 */
 			if (typeof dataType == "object") {
 				precision = dataType.precision;
@@ -1027,10 +1032,16 @@ const dxGrid = {
 					return {dataType: "date", format: "yyyy-mm-dd"};
 				case "check":
 					return {dataType: "boolean", alignment: "center"};
-				case "code":
-					return {alignment: "center"};
 				case "password":
-					return {customizeText: function (options) {return "*******";}}
+					return {
+						customizeText: function (options) {
+							let str = "";
+							for (let i = 0 ; i < options.valueText.length ; i++) {
+								str += "*";
+							}
+							return str;
+						}
+					}
 			}
 		},
 	},
@@ -1122,6 +1133,7 @@ const Form = {
 				width: "100%",
 				height: 250,
 				focusedRowEnabled: true,
+				paging: {enabled: false, pageSize: 0},
 			});
 			$btn.find("#" + btnId).dxButton({
 				text: "선택",

@@ -5710,7 +5710,7 @@ body {
     min-height: 100%;
 }
 
-/* Edit ¸ðµå */
+/* Edit ï¿½ï¿½ï¿½ */
 .dx-datagrid-focus-overlay {
     border: transparent;
 }
@@ -5722,7 +5722,7 @@ body {
     border: 1px solid #dedede;
 }
 
-/* ÄÃ·³¸¸ ÀÖÀ» ¶§ »ý±â´Â ºó Çà ¼û±è */
+/* ï¿½Ã·ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ */
 .dx-freespace-row td {
     border-color: transparent!important
 }
@@ -5953,4 +5953,9 @@ div[title="helpBtn"] > div.dx-button-content {
 .dx-datagrid-content .dx-datagrid-table .dx-row .dx-command-edit.dx-command-edit-with-icons {
 	width: unset;
 	min-width: unset;
+}
+
+#__popupTextBox input {
+	border: 1px solid #dedede;
+	padding: 5px;
 }
