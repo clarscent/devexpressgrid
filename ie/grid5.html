@@ -7,6 +7,7 @@
 <link rel="stylesheet" type="text/css" href="css/dx.grid.custom.css"/>
 <script src="js/jquery-3.5.1.js"></script>
 <script src="js/lodash-4.17.15.min.js"></script>
+<script src="js/jszip.min.js"></script>
 <script src="js/dx.custom.js"></script>
 <script src="js/dx.grid.js"></script>
 <script src="readGridData.js"></script>
@@ -62,10 +63,10 @@ $(document).ready(function () {
 		let gridID = $el.attr("data-grid-id");
 		dxGrid.setRowData(gridID, 2, {
 			"ID": 1,
-			"FirstName": "쭈",
-			"LastName": "영",
-			"Prefix": "이",
-			"Position": "ㅁ",
+			"FirstName": "aaa",
+			"LastName": "bb",
+			"Prefix": "cc",
+			"Position": "dd",
 			"StateID": 4,
 			"CityID": 14,
 			"ThridID": 18
@@ -96,6 +97,18 @@ $(document).ready(function () {
 		let gridID = $el.attr("data-grid-id");
 		dxGrid.setFocus(gridID, 3, "Position");
 	});
+
+	$("button[data-type='setEmptyGrid']").on("click", function(evt) {
+		$el = $(evt.currentTarget);
+		let gridID = $el.attr("data-grid-id");
+		dxGrid.setEmptyGrid(gridID);
+	});
+
+	$("button[data-type='exportToExcel']").on("click", function(evt) {
+		$el = $(evt.currentTarget);
+		let gridID = $el.attr("data-grid-id");
+		dxGrid.exportToExcel(gridID);
+	});
 });
 
 </script>
@@ -115,6 +128,9 @@ $(document).ready(function () {
 		<button type="button" data-type="setCellValue" data-grid-id="helpPopUpGridContainer">[2,Position] 셀 데이터 설정</button>
 		<button type="button" data-type="deleteRow" data-grid-id="helpPopUpGridContainer">[2] 행삭제</button>
 		<button type="button" data-type="setFocus" data-grid-id="helpPopUpGridContainer">[2,Position] 포커스설정</button>
+		<br><br>
+		<button type="button" data-type="setEmptyGrid" data-grid-id="helpPopUpGridContainer">빈 그리드 만들기</button>
+		<button type="button" data-type="exportToExcel" data-grid-id="helpPopUpGridContainer">엑셀 파일 추출</button>
 	</div>
 	<div class="grid-container" id="helpPopUpGridContainer"></div>
 </div>

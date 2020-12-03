@@ -2748,8 +2748,8 @@
 }
 
 .dx-scrollbar-vertical.dx-scrollbar-hoverable .dx-scrollable-scroll.dx-state-invisible .dx-scrollable-scroll-content {
-	-webkit-transition: background-color .5s linear 1s, -webkit-box-shadow .5s linear 1s;
-	transition: box-shadow .5s linear 1s, background-color .5s linear 1s, -webkit-box-shadow .5s linear 1s;
+	/*-webkit-transition: background-color .5s linear 1s, -webkit-box-shadow .5s linear 1s;*/
+	/*transition: box-shadow .5s linear 1s, background-color .5s linear 1s, -webkit-box-shadow .5s linear 1s;*/
 }
 
 .dx-scrollbar-horizontal.dx-scrollbar-hoverable .dx-scrollable-scroll.dx-state-invisible {
@@ -5158,13 +5158,13 @@
 .dx-scrollable-scroll-content {
 	width: 100%;
 	height: 100%;
-	background-color: rgba(191, 191, 191, 0.7);
+	background-color: #bfbfbf;
 	-webkit-box-shadow: 0 0 0 1px transparent;
 	box-shadow: 0 0 0 1px transparent;
 }
 
 .dx-scrollbar-hoverable {
-	background-color: transparent;
+	background-color: rgba(191, 191, 191, 0.2);
 }
 
 .dx-scrollbar-hoverable.dx-state-hover,
@@ -5181,19 +5181,19 @@
 }
 
 .dx-scrollbar-hoverable .dx-scrollable-scroll.dx-state-invisible .dx-scrollable-scroll-content {
-	background-color: transparent;
-	background-color: rgba(0, 0, 0, 0);
+	background-color: #bfbfbf;
 	-webkit-box-shadow: 0 0 0 1px transparent;
 	box-shadow: 0 0 0 1px transparent;
 }
 
 .dx-scrollbar-vertical .dx-scrollable-scroll {
 	float: right;
-	width: 8px;
+	width: 15px;
+	background-color: rgba(191, 191, 191, 0.2);
 }
 
 .dx-scrollbar-vertical.dx-scrollbar-hoverable {
-	width: 8px;
+	width: 15px;
 	-webkit-transition: width .2s linear .15s, background-color .2s linear .15s;
 	transition: width .2s linear .15s, background-color .2s linear .15s;
 }
@@ -5204,11 +5204,11 @@
 }
 
 .dx-scrollbar-vertical.dx-scrollbar-hoverable .dx-scrollable-scroll .dx-scrollable-scroll-content {
-	-webkit-transition: box-shadow .15s linear .15s, background-color .15s linear .15s;
-	-webkit-transition: background-color .15s linear .15s, -webkit-box-shadow .15s linear .15s;
-	transition: background-color .15s linear .15s, -webkit-box-shadow .15s linear .15s;
-	transition: box-shadow .15s linear .15s, background-color .15s linear .15s;
-	transition: box-shadow .15s linear .15s, background-color .15s linear .15s, -webkit-box-shadow .15s linear .15s;
+	/*-webkit-transition: box-shadow .15s linear .15s, background-color .15s linear .15s;*/
+	/*-webkit-transition: background-color .15s linear .15s, -webkit-box-shadow .15s linear .15s;*/
+	/*transition: background-color .15s linear .15s, -webkit-box-shadow .15s linear .15s;*/
+	/*transition: box-shadow .15s linear .15s, background-color .15s linear .15s;*/
+	/*transition: box-shadow .15s linear .15s, background-color .15s linear .15s, -webkit-box-shadow .15s linear .15s;*/
 }
 
 .dx-scrollbar-vertical.dx-scrollbar-hoverable .dx-scrollable-scroll.dx-state-invisible {
@@ -5217,11 +5217,11 @@
 }
 
 .dx-scrollbar-vertical.dx-scrollbar-hoverable .dx-scrollable-scroll.dx-state-invisible .dx-scrollable-scroll-content {
-	-webkit-transition: box-shadow .5s linear 1s, background-color .5s linear 1s;
-	-webkit-transition: background-color .5s linear 1s, -webkit-box-shadow .5s linear 1s;
-	transition: background-color .5s linear 1s, -webkit-box-shadow .5s linear 1s;
-	transition: box-shadow .5s linear 1s, background-color .5s linear 1s;
-	transition: box-shadow .5s linear 1s, background-color .5s linear 1s, -webkit-box-shadow .5s linear 1s;
+	/*-webkit-transition: box-shadow .5s linear 1s, background-color .5s linear 1s;*/
+	/*-webkit-transition: background-color .5s linear 1s, -webkit-box-shadow .5s linear 1s;*/
+	/*transition: background-color .5s linear 1s, -webkit-box-shadow .5s linear 1s;*/
+	/*transition: box-shadow .5s linear 1s, background-color .5s linear 1s;*/
+	/*transition: box-shadow .5s linear 1s, background-color .5s linear 1s, -webkit-box-shadow .5s linear 1s;*/
 }
 
 .dx-scrollbar-vertical.dx-scrollbar-hoverable.dx-state-hover,

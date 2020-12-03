@@ -13,7 +13,7 @@ const LOG_LEVEL_WARN = 2;
 const LOG_LEVEL_INFO = 3;
 const LOG_LEVEL_DEBUG = 4;
 const Logger = {
-	__logLevel: LOG_LEVEL_DEBUG,
+	__logLevel: LOG_LEVEL_ERROR,
 
 	setLogLevel: function(logLevel) {
 		Logger.__logLevel = logLevel;
@@ -42,8 +42,9 @@ const Logger = {
 };
 
 // 필수 변수
-let __focusedCellElement = new Array(2);
-let __currentEditingColumn = new Object();
+let __focusedCell = {};
+let __focusedRow = {};
+let __currentEditingColumn = {};
 
 // Event listener
 let Listener = {
@@ -55,7 +56,7 @@ let Listener = {
 		onFocusedCellChanged: function (gridID, rowIndex, dataField, instance) {},
 		onFocusedRowChanged: function (gridID, rowIndex, rowData) {},
 		onInitialized: function (gridID) {},
-		onKeyDown: function (gridID, keyCode, event) {},
+		onKeyDown: function (gridID, rowIndex, columnIndex, dataField, value, keyCode, rowData) {},
 		onRowClick: function (gridID, rowIndex, rowData, rowKey, columns) {},
 		onRowInserted: function (gridID, rowIndex, rowData) {}, // addRow 호출 시 발생
 		onCellUpdating: function (gridID, value, rowIndex, dataField) {}, // input change
@@ -221,14 +222,18 @@ const dxGrid = {
 			keyExpr: "__rowKey",
 			editing: {texts: {confirmDeleteMessage: ""}},
 			loadPanel: {enabled: false},
-			paging: {enabled: false, pageSize: 0},
+			// paging: {enabled: false, pageSize: 0},
 			showBorders: false,
 			focusedRowEnabled: true,
 			dataSource: [],
+			scrolling: {
+				mode: "virtual"
+			},
 			// width 조정
 			allowColumnResizing: true,
 			columnResizingMode: "nextColumn",
-			columnMinWidth: 50,
+			errorRowEnabled: false,
+			// columnMinWidth: 50,
 
 		}).dxDataGrid("instance");
 
@@ -345,7 +350,7 @@ const dxGrid = {
 
 		// codehelp 코드명
 		for (let i = 0 ; i < columns.length ; i++) {
-			if (columns[i].__codeHelp && data) {
+			if (columns[i].__codeHelp && data && data.length > 0) {
 				let nameTarget = columns[i].__nameTarget;
 				if (!data[0].nameTarget) {
 					Logger.warn("<codeHelp>", "dataSource에 " + nameTarget + "에 대한 데이터가 없습니다. join 을 통해 값을 가져오십시오.");
@@ -379,8 +384,7 @@ const dxGrid = {
 	getGridData: function (gridID) {
 		let instance = dxGrid.getGridInstance(gridID);
 		instance.saveEditData();
-
-		return instance.getDataSource() ? instance.getDataSource().items(): undefined;
+		return instance._controllers.data._dataSource._items;
 	},
 
 	/**
@@ -423,6 +427,11 @@ const dxGrid = {
 		}).fail(function(error) {});
 	},
 
+	getCellValue: function(gridID, rowIndex, dataField) {
+		let rowData = dxGrid.getRowData(gridID, rowIndex)
+		return rowData[dataField];
+	},
+
 	setCellValue: function(gridID, rowIndex, dataField, value) {
 		let rowData = dxGrid.getRowData(gridID, rowIndex);
 		rowData[dataField] = value;
@@ -430,9 +439,14 @@ const dxGrid = {
 		dxGrid.setRowData(gridID, rowIndex, rowData);
 	},
 
-	getCellValue: function(gridID, rowIndex, dataField) {
-		let rowData = dxGrid.getRowData(gridID, rowIndex)
-		return rowData[dataField];
+	/**
+	 * 현재 포커스를 가지고 있는 행의 index 반환
+	 *
+	 * @param gridID
+	 */
+	getRowIndex: function(gridID) {
+		const rowIndex = __focusedRow ? __focusedRow.rowIndex : undefined;
+		return rowIndex;
 	},
 
 	/**
@@ -455,10 +469,8 @@ const dxGrid = {
 
 		// default 값은 bottom으로 들어가도록
 		if (rowIndex == null) {
-			rowIndex = instance.totalCount();
-			if (rowIndex == null) {
-				rowIndex = 0;
-			}
+			let allData = dxGrid.getGridData(gridID);
+			rowIndex = allData ? allData.length : 0;
 		}
 
 		dataSource.store().insert(data, rowIndex).then( function () {
@@ -521,6 +533,31 @@ const dxGrid = {
 		let colIndex = $cellEl.get(0).cellIndex;
 
 		dxGrid.method.__setFocusOnCell(instance, rowIndex, colIndex);
+	},
+
+	setEmptyGrid: function(gridID) {
+		let instance = dxGrid.getGridInstance(gridID);
+		dxGrid.setGridData(gridID, []);
+		instance.refresh().done(function () {
+			Logger.info("onInitialized", {gridID: gridID});
+			try {
+				Listener.grid.onInitialized(gridID);
+			} catch (err) {
+				Logger.error("onInitialized", err);
+			}
+		});
+	},
+
+	exportToExcel: function(gridID) {
+		let instance = dxGrid.getGridInstance(gridID);
+		let checkedData = dxGrid.getCheckedData(gridID);
+		let bool = false;
+
+		if (checkedData && checkedData.length > 0) {
+			bool = true;
+		}
+
+		instance.exportToExcel(bool);
 	},
 
 	method: {
@@ -661,13 +698,19 @@ const dxGrid = {
 				dxGrid.method.__executeListener("onFocusedCellChanging", eventObject, [gridID, eventObject.prevRowIndex, eventObject.prevDataField, eventObject.newRowIndex, eventObject.newDataField, eventObject.instance, eventObject.event]);
 			});
 			instance.option("onFocusedCellChanged", function (eventObject) {
-				__focusedCellElement = [eventObject.rowIndex, eventObject.columnIndex];
+				__focusedCell = {
+					row: eventObject.row,
+					column: eventObject.column,
+					rowIndex: eventObject.rowIndex,
+					columnIndex: eventObject.columnIndex,
+				}
 				eventObject.dataField = eventObject.column ? eventObject.column.dataField: undefined;
 				eventObject.instance = eventObject.component;
 
 				dxGrid.method.__executeListener("onFocusedCellChanged", eventObject, [gridID, eventObject.rowIndex, eventObject.dataField, eventObject.instance]);
 			});
 			instance.option("onFocusedRowChanged", function (eventObject) {
+				__focusedRow = eventObject.row;
 				eventObject.rowData = eventObject.row ? eventObject.row.data: undefined;
 
 				dxGrid.method.__executeListener("onFocusedRowChanged", eventObject, [gridID, eventObject.rowIndex, eventObject.rowData]);
@@ -676,13 +719,17 @@ const dxGrid = {
 				dxGrid.method.__executeListener("onInitialized", eventObject, [gridID]);
 			});
 			instance.option("onKeyDown", function (eventObject) {
-				let column = __currentEditingColumn.column;
-
 				if (eventObject.event.key == "F2") {
-					eventObject.component.editCell(__focusedCellElement[0], __focusedCellElement[1]);
+					eventObject.component.editCell(__focusedCell.rowIndex, __focusedCell.columnIndex);
 				}
 
+				eventObject.rowIndex = __focusedRow.rowIndex;
+				eventObject.columnIndex = __focusedCell.columnIndex;
+				eventObject.dataField = __focusedCell.column ? __focusedCell.column.dataField : undefined;
+				eventObject.value = eventObject.component.cellValue(eventObject.rowIndex, eventObject.dataField);
 				eventObject.keyCode = eventObject.event.keyCode;
+				eventObject.rowData = __focusedRow.data;
+
 				dxGrid.method.__executeListener("onKeyDown", eventObject, [gridID, eventObject.keyCode, eventObject.event]);
 			});
 			instance.option("onRowClick", function (eventObject) {
