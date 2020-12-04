@@ -233,7 +233,6 @@ const dxGrid = {
 			allowColumnResizing: true,
 			columnResizingMode: "nextColumn",
 			errorRowEnabled: false,
-			// columnMinWidth: 50,
 
 		}).dxDataGrid("instance");
 
@@ -293,11 +292,24 @@ const dxGrid = {
 				evt.editorOptions.maxLength = maxLength;
 			}
 
+			// 체크박스 (-2) 컬럼엔 이벤트 걸지 않음
+			if (evt.index != -2) {
+				evt.editorOptions.onValueChanged = function (args) {
+					evt.setValue && evt.setValue(args.value, args)
+					let oldData = args.previousValue;
+					let newData = args.value;
+					dxGrid.method.__onCellUpdatEvent(gridID, oldData, newData);
+				}
+			}
 			if (evt.lookup != undefined) {
 				evt.editorOptions.onValueChanged = function (args) {
-					evt.setValue(args.value);
-					evt.component.refresh();
-				};
+					evt.setValue && evt.setValue(args.value, args);
+					evt.component.refresh(true).done(function () {
+						let oldData = args.previousValue;
+						let newData = args.value;
+						dxGrid.method.__onCellUpdatEvent(gridID, oldData, newData);
+					});
+				}
 				evt.editorOptions.placeholder = "";
 				evt.editorOptions.searchEnabled = false;
 
@@ -384,7 +396,7 @@ const dxGrid = {
 	getGridData: function (gridID) {
 		let instance = dxGrid.getGridInstance(gridID);
 		instance.saveEditData();
-		return instance._controllers.data._dataSource._items;
+		return instance.getDataSource().store()._array;
 	},
 
 	/**
@@ -504,7 +516,7 @@ const dxGrid = {
 
 		for (let j = 0 ; j < checkedData.length ; j++) {
 			instance.deleteRow(checkedData[j].__rowIndex);
-			instance.refresh();
+			instance.refresh(true);
 		}
 		instance.deselectAll();
 		instance.option("focusedRowEnabled", true);
@@ -516,7 +528,7 @@ const dxGrid = {
 		instance.option("focusedRowEnabled", false);
 
 		instance.deleteRow(rowIndex);
-		instance.refresh();
+		instance.refresh(true);
 
 		instance.option("focusedRowEnabled", true);
 		dxGrid.saveEditData(gridID);
@@ -539,12 +551,7 @@ const dxGrid = {
 		let instance = dxGrid.getGridInstance(gridID);
 		dxGrid.setGridData(gridID, []);
 		instance.refresh().done(function () {
-			Logger.info("onInitialized", {gridID: gridID});
-			try {
-				Listener.grid.onInitialized(gridID);
-			} catch (err) {
-				Logger.error("onInitialized", err);
-			}
+			dxGrid.method.__executeListener("onInitialized", {gridID: gridID}, gridID);
 		});
 	},
 
@@ -625,57 +632,12 @@ const dxGrid = {
 				eventObject.rowData = eventObject.data;
 				eventObject.instance = eventObject.component;
 
-				dxGrid.method.__executeListener("onCellClick", eventObject, [gridID, eventObject.text, eventObject.value, eventObject.rowIndex, eventObject.dataField, eventObject.rowData, eventObject.row, eventObject.column, eventObject.instance, eventObject.event]);
+				dxGrid.method.__executeListener("onCellClick", eventObject, gridID, eventObject.text, eventObject.value, eventObject.rowIndex, eventObject.dataField, eventObject.rowData, eventObject.row, eventObject.column, eventObject.instance, eventObject.event);
 			});
 			instance.option("onContentReady", function (eventObject) {
 				eventObject.instance = eventObject.component;
 
-				dxGrid.method.__executeListener("onContentReady", eventObject, [gridID, eventObject.instance]);
-
-				let $el = eventObject.element;
-				let $input = $el.find("div.dx-editor-outlined input.dx-texteditor-input");
-				if ($input.length == 1) {
-					$input = $input[0];
-					let column = __currentEditingColumn.column;
-					let rowIndex = __currentEditingColumn.rowIndex;
-					let dataField = __currentEditingColumn.column.dataField;
-					let newData;
-					let oldData = dxGrid.getCellValue(gridID, rowIndex, dataField);
-
-					$input.addEventListener("blur", function (e) {
-						if (newData && oldData !== newData) {
-							dxGrid.method.__executeListener("onCellUpdating", {
-								gridID: gridID,
-								value: oldData,
-								rowIndex: rowIndex,
-								dataField: dataField,
-							}, [gridID, oldData, rowIndex, dataField]);
-
-							const rowData = __currentEditingColumn.data;
-							rowData[column.dataField] = newData;
-							if (column.__codeHelp) {
-								const ds = column.__dataSource;
-								const nt = column.__nameTarget;
-								for (let i = 0 ; i < ds.length ; i++) {
-									if (ds[i]["CODE"] == newData) {
-										rowData[nt] = ds[i]["NAME"];
-									}
-								}
-							}
-							__currentEditingColumn.data = rowData;
-							dxGrid.method.__executeListener("onCellUpdated", {
-								gridID: gridID,
-								rowIndex: rowIndex,
-								dataField: dataField,
-								rowData: rowData
-							}, [gridID, rowIndex, dataField, rowData]);
-						}
-					});
-
-					$input.addEventListener("input", function (e) {
-						newData = e.target.value;
-					});
-				}
+				dxGrid.method.__executeListener("onContentReady", eventObject, gridID, eventObject.instance);
 			});
 			instance.option("onEditingStart", function (eventObject) {
 				eventObject.rowIndex = eventObject.component.getRowIndexByKey(eventObject.key);
@@ -685,7 +647,7 @@ const dxGrid = {
 				eventObject.instance = eventObject.component;
 				__currentEditingColumn = eventObject;
 
-				dxGrid.method.__executeListener("onEditingStart", eventObject, [gridID, eventObject.value, eventObject.rowIndex, eventObject.dataField, eventObject.rowData, eventObject.instance]);
+				dxGrid.method.__executeListener("onEditingStart", eventObject, gridID, eventObject.value, eventObject.rowIndex, eventObject.dataField, eventObject.rowData, eventObject.instance);
 			});
 			instance.option("onFocusedCellChanging", function (eventObject) {
 				const columns = eventObject.columns;
@@ -695,7 +657,7 @@ const dxGrid = {
 				}
 				eventObject.instance = eventObject.component;
 
-				dxGrid.method.__executeListener("onFocusedCellChanging", eventObject, [gridID, eventObject.prevRowIndex, eventObject.prevDataField, eventObject.newRowIndex, eventObject.newDataField, eventObject.instance, eventObject.event]);
+				dxGrid.method.__executeListener("onFocusedCellChanging", eventObject, gridID, eventObject.prevRowIndex, eventObject.prevDataField, eventObject.newRowIndex, eventObject.newDataField, eventObject.instance, eventObject.event);
 			});
 			instance.option("onFocusedCellChanged", function (eventObject) {
 				__focusedCell = {
@@ -707,16 +669,16 @@ const dxGrid = {
 				eventObject.dataField = eventObject.column ? eventObject.column.dataField: undefined;
 				eventObject.instance = eventObject.component;
 
-				dxGrid.method.__executeListener("onFocusedCellChanged", eventObject, [gridID, eventObject.rowIndex, eventObject.dataField, eventObject.instance]);
+				dxGrid.method.__executeListener("onFocusedCellChanged", eventObject, gridID, eventObject.rowIndex, eventObject.dataField, eventObject.instance);
 			});
 			instance.option("onFocusedRowChanged", function (eventObject) {
 				__focusedRow = eventObject.row;
 				eventObject.rowData = eventObject.row ? eventObject.row.data: undefined;
 
-				dxGrid.method.__executeListener("onFocusedRowChanged", eventObject, [gridID, eventObject.rowIndex, eventObject.rowData]);
+				dxGrid.method.__executeListener("onFocusedRowChanged", eventObject, gridID, eventObject.rowIndex, eventObject.rowData);
 			});
 			instance.option("onInitialized", function (eventObject) {
-				dxGrid.method.__executeListener("onInitialized", eventObject, [gridID]);
+				dxGrid.method.__executeListener("onInitialized", eventObject, gridID);
 			});
 			instance.option("onKeyDown", function (eventObject) {
 				if (eventObject.event.key == "F2") {
@@ -730,33 +692,33 @@ const dxGrid = {
 				eventObject.keyCode = eventObject.event.keyCode;
 				eventObject.rowData = __focusedRow.data;
 
-				dxGrid.method.__executeListener("onKeyDown", eventObject, [gridID, eventObject.keyCode, eventObject.event]);
+				dxGrid.method.__executeListener("onKeyDown", eventObject, gridID, eventObject.keyCode, eventObject.event);
 			});
 			instance.option("onRowClick", function (eventObject) {
 				eventObject.rowData = eventObject.data;
 				eventObject.rowKey = eventObject.key;
 				eventObject.columns = eventObject.columns;
 
-				dxGrid.method.__executeListener("onRowClick", eventObject, [gridID, eventObject.rowIndex, eventObject.rowData, eventObject.rowKey, eventObject.columns]);
+				dxGrid.method.__executeListener("onRowClick", eventObject, gridID, eventObject.rowIndex, eventObject.rowData, eventObject.rowKey, eventObject.columns);
 			});
 			instance.option("onRowInserted", function (eventObject) {
 				eventObject.rowData = eventObject.data;
 
-				dxGrid.method.__executeListener("onRowInserted", eventObject, [gridID, eventObject.rowIndex, eventObject.rowData]);
+				dxGrid.method.__executeListener("onRowInserted", eventObject, gridID, eventObject.rowIndex, eventObject.rowData);
 			});
 			instance.option("onCellUpdating", function (eventObject) {
-				dxGrid.method.__executeListener("onCellUpdating", eventObject, [gridID, eventObject.value, eventObject.rowIndex, eventObject.dataField]);
+				dxGrid.method.__executeListener("onCellUpdating", eventObject, gridID, eventObject.value, eventObject.rowIndex, eventObject.dataField);
 			});
 			instance.option("onCellUpdated", function (eventObject) {
-				dxGrid.method.__executeListener("onCellUpdated", eventObject, [gridID, eventObject.rowIndex, eventObject.dataField, eventObject.rowData]);
+				dxGrid.method.__executeListener("onCellUpdated", eventObject, gridID, eventObject.rowIndex, eventObject.dataField, eventObject.rowData);
 			});
 			instance.option("onSelectionChanged", function (eventObject) {
-				dxGrid.method.__executeListener("onSelectionChanged", eventObject, [gridID, eventObject.currentSelectedRowKeys, eventObject.currentDeselectedRowKeys, eventObject.selectedRowsData]);
+				dxGrid.method.__executeListener("onSelectionChanged", eventObject, gridID, eventObject.currentSelectedRowKeys, eventObject.currentDeselectedRowKeys, eventObject.selectedRowsData);
 			});
 		},
 
-		__executeListener: function (fncName, pobj, args) {
-			Logger.info(fncName, pobj);
+		__executeListener: function (fncName, eventObject, ...args) {
+			Logger.info(fncName, eventObject);
 			try {
 				Listener.grid[fncName](args);
 			} catch (err) {
@@ -892,8 +854,12 @@ const dxGrid = {
 				let parentCellTextBox = $("<div>").dxTextBox({
 					value: options.text,
 					valueChangeEvent: "keyup",
-					onValueChanged: function (evt) {
-						options.setValue(evt.value);
+					onValueChanged: function (args) {
+						options.setValue(args.value);
+						let oldData = args.previousValue;
+						let newData = args.value;
+
+						dxGrid.method.__onCellUpdatEvent(gridID, oldData, newData);
 					},
 					maxLength: maxLength,
 					onKeyDown: function(evt) {
@@ -933,7 +899,7 @@ const dxGrid = {
 						const btnId = "__popupButton";
 
 						// 폼 만들기
-						let $form = Form.create(Form.Type.Code(dataSource, tbxId, grdId, btnId));
+						let $form = Form.create(Form.Code(dataSource, tbxId, grdId, btnId));
 
 						let focusedCode = "";
 						let focusedName = "";
@@ -966,7 +932,13 @@ const dxGrid = {
 						btnInstance.option("onClick", function () {
 							gridInstance.cellValue(rowIndex, target, focusedCode);
 							gridInstance.cellValue(rowIndex, nameTarget, focusedName);
-							// gridInstance.saveEditData();  // saveEditData() 실행시 parent 그리드 깜빡임
+
+							gridInstance.refresh(true).done(function () {
+								let oldData = options.text;
+								let newData = focusedCode;
+								dxGrid.method.__onCellUpdatEvent(gridID, oldData, newData);
+							});
+
 							Popup.hide(popupID);
 						});
 
@@ -1051,6 +1023,35 @@ const dxGrid = {
 					}
 			}
 		},
+
+		__onCellUpdatEvent: function (gridID, oldData, newData) {
+			if (Object.keys(__currentEditingColumn).length === 0) {
+				return;
+			}
+			let rowIndex = __currentEditingColumn.rowIndex;
+			let dataField = __currentEditingColumn.column.dataField;
+			let rowData = __currentEditingColumn.data;
+
+			dxGrid.method.__executeListener("onCellUpdating", {
+				gridID: gridID,
+				value: oldData,
+				rowIndex: rowIndex,
+				dataField: dataField,
+			}, gridID, oldData, rowIndex, dataField);
+
+			if (oldData != newData) {
+				rowData = dxGrid.getRowData(gridID, rowIndex);
+				rowData[dataField] = newData;
+
+				dxGrid.method.__executeListener("onCellUpdated", {
+					gridID: gridID,
+					rowIndex: rowIndex,
+					dataField: dataField,
+					rowData: rowData
+				}, gridID, rowIndex, dataField, rowData);
+			}
+		}
+
 	},
 	/**
 	 * SelectBox 객체. parentCode 가 상위 코드
@@ -1096,8 +1097,8 @@ const Form = {
 		return form;
 	},
 
-	__Field: {
-		create: function (id, label) {
+	method: {
+		__create: function (id, label) {
 			let $field = $("<div class='dx-field'></div>");
 
 			if (label != undefined) {
@@ -1110,7 +1111,7 @@ const Form = {
 			return $field
 		},
 
-		mergeFields: function (args) {
+		__mergeFields: function (args) {
 			let $fieldSet = $("<div class='dx-fieldset'></div>");
 
 			for (let i = 0 ; i < args.length ; i++) {
@@ -1123,53 +1124,29 @@ const Form = {
 
 	},
 
-	Type: {
-		Code: function (dataSource, tbxId, grdId, btnId) {
-			let $tbx = Form.__Field.create(tbxId, "코드/명");
-			let $grd = Form.__Field.create(grdId);
-			let $btn = Form.__Field.create(btnId);
+	Code: function (dataSource, tbxId, grdId, btnId) {
+		let $tbx = Form.method.__create(tbxId, "코드/명");
+		let $grd = Form.method.__create(grdId);
+		let $btn = Form.method.__create(btnId);
 
-			$tbx.find("#" + tbxId).dxTextBox({});
-			$grd.find("#" + grdId).dxDataGrid({
-				dataSource: dataSource,
-				keyExpr: "CODE",
-				columns: [
-					{caption: "코드", dataField: "CODE"},
-					{caption: "명", dataField: "NAME"},
-				],
-				width: "100%",
-				height: 250,
-				focusedRowEnabled: true,
-				paging: {enabled: false, pageSize: 0},
-			});
-			$btn.find("#" + btnId).dxButton({
-				text: "선택",
-			});
+		$tbx.find("#" + tbxId).dxTextBox({});
+		$grd.find("#" + grdId).dxDataGrid({
+			dataSource: dataSource,
+			keyExpr: "CODE",
+			columns: [
+				{caption: "코드", dataField: "CODE"},
+				{caption: "명", dataField: "NAME"},
+			],
+			width: "100%",
+			height: 250,
+			focusedRowEnabled: true,
+			paging: {enabled: false, pageSize: 0},
+		});
+		$btn.find("#" + btnId).dxButton({
+			text: "선택",
+		});
 
-			return Form.__Field.mergeFields([$tbx, $grd, $btn]);
-		},
-
-		Warn: function (popupID, text) {
-			let txtId = "__warnTxt";
-			let btnId = "__warnBtn";
-			let $text = Form.__Field.create(txtId);
-			let $btn = Form.__Field.create(btnId);
-
-			$text.find("#" + txtId)
-				.css("text-align", "center")
-				.css("vertical-align", "center")
-				.html(text);
-
-			$btn.find("#" + btnId).dxButton({
-				text: "확인",
-				onClick: function () {
-					Popup.hide(popupID);
-				}
-			});
-			$btn.css("text-align", "center");
-
-			return Form.__Field.mergeFields([$text, $btn]);
-		},
+		return Form.method.__mergeFields([$tbx, $grd, $btn]);
 	}
 };
 
