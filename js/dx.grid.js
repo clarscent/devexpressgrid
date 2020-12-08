@@ -61,6 +61,7 @@ let Listener = {
 		onRowInserted: function (gridID, rowIndex, rowData) {}, // addRow 호출 시 발생
 		onCellUpdating: function (gridID, value, rowIndex, dataField) {}, // input change
 		onCellUpdated: function (gridID, rowIndex, dataField, rowData) {}, // input blur시
+		onRowValidating: function (gridID, instance, brokenRules, isValid, key, newData, oldData, errorText) {},
 		onSelectionChanged: function (gridID, currentSelectedRowKeys, currentDeselectedRowKeys, selectedRowsData) {},
 	},
 };
@@ -115,6 +116,7 @@ const Column = function (caption, dataField, width, dataType, options) {
 		let maxLength = options.maxLength;
 		let alignment = options.align;
 		let visible = options.visible;
+		let required = options.required;
 
 		if (readonly) {
 			this.allowEditing = !readonly;
@@ -187,6 +189,10 @@ const Column = function (caption, dataField, width, dataType, options) {
 
 		if (visible !== undefined) {
 			this.visible = visible;
+		}
+
+		if (required) {
+			this.validationRules = [{ type: "required" }];
 		}
 	}
 
@@ -262,11 +268,16 @@ const dxGrid = {
 				if (sortable !== true) {
 					instance.option("sorting", {mode: sortable});
 				}
+			} else {
+				instance.option("sorting", {mode: "none"});
 			}
 		}
 
 		dxGrid.method.__addEventListener(gridID);
-		dxGrid.method.__executeListener("onInitialized", {gridID: gridID}, gridID);
+
+		dxGrid.method.__executeListener("onInitialized", {gridID: gridID}, function () {
+			Listener.grid.onInitialized(gridID);
+		});
 	},
 
 	setColumn: function (gridID, columns, band) {
@@ -351,23 +362,27 @@ const dxGrid = {
 		let instance = dxGrid.getGridInstance(gridID);
 		let columns = instance.option("columns");
 
-		if (!(data instanceof Array)) {
-			data.__rowKey = dxGrid.method.__getKeyString();
-			data = [data];
-		} else {
-			for (let j = 0 ; j < data.length ; j++) {
-				data[j].__rowKey = dxGrid.method.__getKeyString();
-			}
-		}
-
-		// codehelp 코드명
-		for (let i = 0 ; i < columns.length ; i++) {
-			if (columns[i].__codeHelp && data && data.length > 0) {
-				let nameTarget = columns[i].__nameTarget;
-				if (!data[0].nameTarget) {
-					Logger.warn("<codeHelp>", "dataSource에 " + nameTarget + "에 대한 데이터가 없습니다. join 을 통해 값을 가져오십시오.");
+		if (data) {
+			if (!(data instanceof Array)) {
+				data.__rowKey = dxGrid.method.__getKeyString();
+				data = [data];
+			} else {
+				for (let j = 0 ; j < data.length ; j++) {
+					data[j].__rowKey = dxGrid.method.__getKeyString();
 				}
 			}
+
+			// codehelp 코드명
+			for (let i = 0 ; i < columns.length ; i++) {
+				if (columns[i].__codeHelp && data && data.length > 0) {
+					let nameTarget = columns[i].__nameTarget;
+					if (!data[0].nameTarget) {
+						Logger.warn("<codeHelp>", "dataSource에 " + nameTarget + "에 대한 데이터가 없습니다. join 을 통해 값을 가져오십시오.");
+					}
+				}
+			}
+		} else {
+			data = [];
 		}
 
 		instance.option("dataSource", data);
@@ -396,6 +411,7 @@ const dxGrid = {
 	getGridData: function (gridID) {
 		let instance = dxGrid.getGridInstance(gridID);
 		instance.saveEditData();
+
 		return instance.getDataSource().store()._array;
 	},
 
@@ -486,15 +502,21 @@ const dxGrid = {
 		}
 
 		dataSource.store().insert(data, rowIndex).then( function () {
-			dxGrid.method.__executeListener("onRowInserted", {
-				"gridID": gridID,
-				"rowIndex": rowIndex,
-				"rowData": data
-			}, gridID, rowIndex, data);
+			dxGrid.method.__executeListener("onRowInserted", {gridID: gridID, rowIndex: rowIndex, rowData: data}, function () {
+				Listener.grid.onRowInserted(gridID, rowIndex, data);
+			});
 		});
 		instance.refresh().done( function () {
 			instance.option("focusedRowEnabled", true);
 			dxGrid.method.__setFocusOnCell(instance, rowIndex, 1);
+
+			let dataField = instance.option("columns")[0];
+			let firstData = data[dataField];
+
+			if (firstData === undefined) {
+				firstData = ""
+			}
+			instance.cellValue(rowIndex, 1, firstData);
 		});
 
 
@@ -539,6 +561,27 @@ const dxGrid = {
 		instance.saveEditData();
 	},
 
+	validationCheck: function(gridID) {
+		let instance = dxGrid.getGridInstance(gridID);
+		let isValid;
+
+		instance.__isValid = undefined;
+
+		instance.saveEditData();
+
+		isValid = instance.__isValid;
+
+		if (isValid === undefined) {
+			isValid = true;
+		}
+		if (!isValid) {
+			alert("값을 입력하세요");
+			return false;
+		}
+
+		return true;
+	},
+
 	setFocus: function(gridID, rowIndex, dataField) {
 		let instance = dxGrid.getGridInstance(gridID);
 		let $cellEl = instance.getCellElement(rowIndex, dataField);
@@ -551,7 +594,9 @@ const dxGrid = {
 		let instance = dxGrid.getGridInstance(gridID);
 		dxGrid.setGridData(gridID, []);
 		instance.refresh().done(function () {
-			dxGrid.method.__executeListener("onInitialized", {gridID: gridID}, gridID);
+			dxGrid.method.__executeListener("onInitialized", {gridID: gridID}, function () {
+				Listener.grid.onInitialized(gridID);
+			});
 		});
 	},
 
@@ -632,12 +677,16 @@ const dxGrid = {
 				eventObject.rowData = eventObject.data;
 				eventObject.instance = eventObject.component;
 
-				dxGrid.method.__executeListener("onCellClick", eventObject, gridID, eventObject.text, eventObject.value, eventObject.rowIndex, eventObject.dataField, eventObject.rowData, eventObject.row, eventObject.column, eventObject.instance, eventObject.event);
+				dxGrid.method.__executeListener("onCellClick", eventObject, function () {
+					Listener.grid.onCellClick(gridID, eventObject.text, eventObject.value, eventObject.rowIndex, eventObject.dataField, eventObject.rowData, eventObject.row, eventObject.column, eventObject.instance, eventObject.event);
+				});
 			});
 			instance.option("onContentReady", function (eventObject) {
 				eventObject.instance = eventObject.component;
 
-				dxGrid.method.__executeListener("onContentReady", eventObject, gridID, eventObject.instance);
+				dxGrid.method.__executeListener("onContentReady", eventObject, function () {
+					Listener.grid.onContentReady(gridID, eventObject.instance);
+				});
 			});
 			instance.option("onEditingStart", function (eventObject) {
 				eventObject.rowIndex = eventObject.component.getRowIndexByKey(eventObject.key);
@@ -647,17 +696,21 @@ const dxGrid = {
 				eventObject.instance = eventObject.component;
 				__currentEditingColumn = eventObject;
 
-				dxGrid.method.__executeListener("onEditingStart", eventObject, gridID, eventObject.value, eventObject.rowIndex, eventObject.dataField, eventObject.rowData, eventObject.instance);
+				dxGrid.method.__executeListener("onEditingStart", eventObject, function () {
+					Listener.grid.onEditingStart(gridID, eventObject.value, eventObject.rowIndex, eventObject.dataField, eventObject.rowData, eventObject.instance);
+				});
 			});
 			instance.option("onFocusedCellChanging", function (eventObject) {
-				const columns = eventObject.columns;
+				let columns = eventObject.columns;
 				if (columns) {
 					eventObject.prevDataField = columns[eventObject.prevColumnIndex] ? columns[eventObject.prevColumnIndex].dataField: undefined;
 					eventObject.newDataField = columns[eventObject.newColumnIndex] ? columns[eventObject.newColumnIndex].dataField: undefined;
 				}
 				eventObject.instance = eventObject.component;
 
-				dxGrid.method.__executeListener("onFocusedCellChanging", eventObject, gridID, eventObject.prevRowIndex, eventObject.prevDataField, eventObject.newRowIndex, eventObject.newDataField, eventObject.instance, eventObject.event);
+				dxGrid.method.__executeListener("onFocusedCellChanging", eventObject, function () {
+					Listener.grid.onFocusedCellChanging(gridID, eventObject.prevRowIndex, eventObject.prevDataField, eventObject.newRowIndex, eventObject.newDataField, eventObject.instance, eventObject.event);
+				});
 			});
 			instance.option("onFocusedCellChanged", function (eventObject) {
 				__focusedCell = {
@@ -669,16 +722,22 @@ const dxGrid = {
 				eventObject.dataField = eventObject.column ? eventObject.column.dataField: undefined;
 				eventObject.instance = eventObject.component;
 
-				dxGrid.method.__executeListener("onFocusedCellChanged", eventObject, gridID, eventObject.rowIndex, eventObject.dataField, eventObject.instance);
+				dxGrid.method.__executeListener("onFocusedCellChanged", eventObject, function () {
+					Listener.grid.onFocusedCellChanged(gridID, eventObject.rowIndex, eventObject.dataField, eventObject.instance);
+				});
 			});
 			instance.option("onFocusedRowChanged", function (eventObject) {
 				__focusedRow = eventObject.row;
 				eventObject.rowData = eventObject.row ? eventObject.row.data: undefined;
 
-				dxGrid.method.__executeListener("onFocusedRowChanged", eventObject, gridID, eventObject.rowIndex, eventObject.rowData);
+				dxGrid.method.__executeListener("onFocusedRowChanged", eventObject, function () {
+					Listener.grid.onFocusedRowChanged(gridID, eventObject.rowIndex, eventObject.rowData);
+				});
 			});
 			instance.option("onInitialized", function (eventObject) {
-				dxGrid.method.__executeListener("onInitialized", eventObject, gridID);
+				dxGrid.method.__executeListener("onInitialized", eventObject, function () {
+					Listener.grid.onInitialized(gridID);
+				});
 			});
 			instance.option("onKeyDown", function (eventObject) {
 				if (eventObject.event.key == "F2") {
@@ -692,35 +751,62 @@ const dxGrid = {
 				eventObject.keyCode = eventObject.event.keyCode;
 				eventObject.rowData = __focusedRow.data;
 
-				dxGrid.method.__executeListener("onKeyDown", eventObject, gridID, eventObject.keyCode, eventObject.event);
+				dxGrid.method.__executeListener("onKeyDown", eventObject, function () {
+					Listener.grid.onKeyDown(gridID, eventObject.rowIndex, eventObject.columnIndex,eventObject.dataField, eventObject.value, eventObject.keyCode, eventObject.rowData);
+				});
 			});
 			instance.option("onRowClick", function (eventObject) {
 				eventObject.rowData = eventObject.data;
 				eventObject.rowKey = eventObject.key;
 				eventObject.columns = eventObject.columns;
 
-				dxGrid.method.__executeListener("onRowClick", eventObject, gridID, eventObject.rowIndex, eventObject.rowData, eventObject.rowKey, eventObject.columns);
+				dxGrid.method.__executeListener("onRowClick", eventObject, function () {
+					Listener.grid.onRowClick(gridID, eventObject.rowIndex, eventObject.rowData, eventObject.rowKey, eventObject.columns);
+				});
 			});
 			instance.option("onRowInserted", function (eventObject) {
 				eventObject.rowData = eventObject.data;
 
-				dxGrid.method.__executeListener("onRowInserted", eventObject, gridID, eventObject.rowIndex, eventObject.rowData);
+				dxGrid.method.__executeListener("onRowInserted", eventObject, function () {
+					Listener.grid.onRowInserted(gridID, eventObject.rowIndex, eventObject.rowData);
+				});
 			});
 			instance.option("onCellUpdating", function (eventObject) {
-				dxGrid.method.__executeListener("onCellUpdating", eventObject, gridID, eventObject.value, eventObject.rowIndex, eventObject.dataField);
+				dxGrid.method.__executeListener("onCellUpdating", eventObject, function () {
+					Listener.grid.onCellUpdating(gridID, eventObject.value, eventObject.rowIndex, eventObject.dataField);
+				});
 			});
 			instance.option("onCellUpdated", function (eventObject) {
-				dxGrid.method.__executeListener("onCellUpdated", eventObject, gridID, eventObject.rowIndex, eventObject.dataField, eventObject.rowData);
+				dxGrid.method.__executeListener("onCellUpdated", eventObject, function () {
+					Listener.grid.onCellUpdated(gridID, eventObject.rowIndex, eventObject.dataField, eventObject.rowData);
+				});
+			});
+			instance.option("onRowValidating", function (eventObject) {
+				eventObject.instance = eventObject.component
+				let isValid = eventObject.isValid;
+				let bfValid = eventObject.instance.__isValid;
+
+				if (bfValid === false) {
+					eventObject.instance.__isValid = false;
+				} else {
+					eventObject.instance.__isValid = isValid;
+				}
+
+				dxGrid.method.__executeListener("onRowValidating", eventObject, function () {
+					Listener.grid.onRowValidating(gridID, eventObject.instance, eventObject.brokenRules, eventObject.isValid, eventObject.key, eventObject.newData, eventObject.oldData, eventObject.errorText);
+				});
 			});
 			instance.option("onSelectionChanged", function (eventObject) {
-				dxGrid.method.__executeListener("onSelectionChanged", eventObject, gridID, eventObject.currentSelectedRowKeys, eventObject.currentDeselectedRowKeys, eventObject.selectedRowsData);
+				dxGrid.method.__executeListener("onSelectionChanged", eventObject, function () {
+					Listener.grid.onSelectionChanged(gridID, eventObject.currentSelectedRowKeys, eventObject.currentDeselectedRowKeys, eventObject.selectedRowsData);
+				});
 			});
 		},
 
-		__executeListener: function (fncName, eventObject, ...args) {
+		__executeListener: function (fncName, eventObject, callbackFunc) {
 			Logger.info(fncName, eventObject);
 			try {
-				Listener.grid[fncName](args);
+				callbackFunc();
 			} catch (err) {
 				Logger.error(fncName, err);
 			}
@@ -1032,23 +1118,17 @@ const dxGrid = {
 			let dataField = __currentEditingColumn.column.dataField;
 			let rowData = __currentEditingColumn.data;
 
-			dxGrid.method.__executeListener("onCellUpdating", {
-				gridID: gridID,
-				value: oldData,
-				rowIndex: rowIndex,
-				dataField: dataField,
-			}, gridID, oldData, rowIndex, dataField);
+			dxGrid.method.__executeListener("onCellUpdating", {gridID: gridID, value: oldData, rowIndex: rowIndex, dataField: dataField}, function () {
+				Listener.grid.onCellUpdating(gridID, oldData, rowIndex, dataField);
+			});
 
 			if (oldData != newData) {
 				rowData = dxGrid.getRowData(gridID, rowIndex);
 				rowData[dataField] = newData;
 
-				dxGrid.method.__executeListener("onCellUpdated", {
-					gridID: gridID,
-					rowIndex: rowIndex,
-					dataField: dataField,
-					rowData: rowData
-				}, gridID, rowIndex, dataField, rowData);
+				dxGrid.method.__executeListener("onCellUpdated", {gridID: gridID, rowIndex: rowIndex, dataField: dataField, rowData: rowData}, function () {
+					Listener.grid.onCellUpdated(gridID, rowIndex, dataField, rowData);
+				});
 			}
 		}
 

@@ -50,6 +50,12 @@ $(document).ready(function () {
 		let data = dxGrid.getGridData(gridID);
 		console.log("<<<data>>>", data);
 	});
+
+	$("button[data-type='saveEditData']").on("click", function(evt) {
+		$el = $(evt.currentTarget);
+		let gridID = $el.attr("data-grid-id");
+		let data = dxGrid.saveEditData(gridID);
+	});
 });
 
 </script>
@@ -63,6 +69,7 @@ $(document).ready(function () {
 		<button type="button" data-type="deleteCheckedRow" data-grid-id="selectBoxGridContainer">선택행삭제</button>
 		<button type="button" data-type="checkedRow" data-grid-id="selectBoxGridContainer">선택행가져오기(console)</button>
 		<button type="button" data-type="allRows" data-grid-id="selectBoxGridContainer">모든데이터조회(console)</button>
+		<button type="button" data-type="saveEditData" data-grid-id="selectBoxGridContainer">편집 데이터 저장</button>
 	</div>
 	<div class="grid-container" id="selectBoxGridContainer"></div>
 </div>
@@ -200,7 +207,7 @@ $(document).ready(function () {
 	];
 
 	columns = [
-		new Column("성","LastName","auto","text", {maxLength: 10}),
+		new Column("성","LastName","auto","text", {maxLength: 10, required: true}),
 		new Column("이름","FirstName","auto","text"),
 		new Column("직급","Position","auto","text"),
 		new Column("주","StateID","auto","text", {

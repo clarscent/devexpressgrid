@@ -5766,7 +5766,7 @@ body {
 }
 .dx-datagrid-content .dx-datagrid-table .dx-row > td div {
     font-family: Roboto, sans-serif;
-    /*height: 100%;*/
+    height: 100%;
     overflow: hidden;
 }
 .dx-datagrid-content .dx-datagrid-table .dx-row > td {
@@ -5783,9 +5783,7 @@ body {
 .dx-datagrid-rowsview {
     border-top: 0px;
 }
-.dx-datagrid-rowsview .dx-texteditor-input, .dx-datagrid-headers .dx-texteditor-input {
-    min-height: 25px;
-}
+
 .dx-datagrid-headers {
     border-bottom: 0px;
 }
@@ -5817,7 +5815,6 @@ body {
     background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAsAAAAGCAYAAAAVMmT4AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAI5JREFUeNpiDA0N/cDAwMAGxPuBOA2InzIggDQQzwJiRyD+xQQk+ICYE4jtgHgqEMtDFcpD+XZQeT4WIFEMxLFAbAjE/lCFt4FYFYl/HogXgxT3A/E1IK4GYlskBTBwGIhbgXgnE1RgJxDnA/FuIP4DFfsD5edD5RmYkEwAWZUNxGeB+BuUzoaKgwFAgAEAudQbUQ/WMHkAAAAASUVORK5CYII=');
     width: 23px;
     border-radius: 0;
-    height: 23px;
 }
 .dx-dropdowneditor-icon:before {
     content: none;
