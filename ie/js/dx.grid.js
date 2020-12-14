@@ -521,6 +521,7 @@ const dxGrid = {
 		let instance = dxGrid.getGridInstance(gridID);
 		return instance.totalCount();
 	},
+
 	getTotColCount: function(gridID){
 		let instance = dxGrid.getGridInstance(gridID);
 		return instance.columnCount();
@@ -907,16 +908,16 @@ const dxGrid = {
 					Listener.grid.onRowInserted(gridID, eventObject.rowIndex, eventObject.rowData);
 				});
 			});
-			instance.option("onCellUpdating", function (eventObject) {
-				dxGrid.method.__executeListener("onCellUpdating", eventObject, function () {
-					Listener.grid.onCellUpdating(gridID, eventObject.value, eventObject.rowIndex, eventObject.dataField);
-				});
-			});
-			instance.option("onCellUpdated", function (eventObject) {
-				dxGrid.method.__executeListener("onCellUpdated", eventObject, function () {
-					Listener.grid.onCellUpdated(gridID, eventObject.rowIndex, eventObject.dataField, eventObject.rowData);
-				});
-			});
+			// instance.option("onCellUpdating", function (eventObject) {
+			// 	dxGrid.method.__executeListener("onCellUpdating", eventObject, function () {
+			// 		Listener.grid.onCellUpdating(gridID, eventObject.value, eventObject.rowIndex, eventObject.dataField);
+			// 	});
+			// });
+			// instance.option("onCellUpdated", function (eventObject) {
+			// 	dxGrid.method.__executeListener("onCellUpdated", eventObject, function () {
+			// 		Listener.grid.onCellUpdated(gridID, eventObject.rowIndex, eventObject.dataField, eventObject.rowData);
+			// 	});
+			// });
 			instance.option("onSelectionChanged", function (eventObject) {
 				let instance = eventObject.component;
 				let dataSource = instance.getDataSource();

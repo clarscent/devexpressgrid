@@ -488,6 +488,7 @@ const dxGrid = {
 		let instance = dxGrid.getGridInstance(gridID);
 		return instance.totalCount();
 	},
+
 	getTotColCount: function(gridID){
 		let instance = dxGrid.getGridInstance(gridID);
 		return instance.columnCount();
