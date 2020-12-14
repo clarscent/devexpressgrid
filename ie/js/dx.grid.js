@@ -176,14 +176,14 @@ const Column = function (caption, dataField, width, dataType, options) {
 	//options
 	if (options) {
 		let readonly = options.readonly;
-		let cellStyle = options.cellStyle;
-		let headerStyle = options.headerStyle;
-		let columnType = options.columnType;
 		let maxLength = options.maxLength;
 		let alignment = options.align;
 		let visible = options.visible;
+		let cellStyle = options.cellStyle;
+		let headerStyle = options.headerStyle;
 		let fixed = options.fixed;
 		let filter = options.filter;
+		let columnType = options.columnType;
 
 		if (readonly) {
 			this.allowEditing = !readonly;
@@ -517,16 +517,6 @@ const dxGrid = {
 		// return instance._controllers.data._dataSource._items;
 	},
 
-	getTotRowCount: function(gridID){
-		let instance = dxGrid.getGridInstance(gridID);
-		return instance.totalCount();
-	},
-
-	getTotColCount: function(gridID){
-		let instance = dxGrid.getGridInstance(gridID);
-		return instance.columnCount();
-	},
-
 	/**
 	 * 선택한 행들의 데이터와 행의 인덱스를 리턴
 	 *
@@ -555,45 +545,14 @@ const dxGrid = {
 		return rowsData;
 	},
 
-	getRowData: function(gridID, rowIndex) {
+	getTotRowCount: function(gridID){
 		let instance = dxGrid.getGridInstance(gridID);
-		let $rowEl = instance.getRowElement(rowIndex);
-		let rowData = $rowEl.data("options").data;
-
-		return rowData;
+		return instance.totalCount();
 	},
 
-	setRowData: function(gridID, rowIndex, rowData) {
+	getTotColCount: function(gridID){
 		let instance = dxGrid.getGridInstance(gridID);
-		let rowKey = instance.getKeyByRowIndex(rowIndex);
-
-		let store = instance.getDataSource().store();
-
-		store.update(rowKey, rowData).done(function(values) {
-			instance.refresh();
-		}).fail(function(error) {});
-	},
-
-	getCellValue: function(gridID, rowIndex, dataField) {
-		let rowData = dxGrid.getRowData(gridID, rowIndex)
-		return rowData[dataField];
-	},
-
-	setCellValue: function(gridID, rowIndex, dataField, value) {
-		let rowData = dxGrid.getRowData(gridID, rowIndex);
-		rowData[dataField] = value;
-
-		dxGrid.setRowData(gridID, rowIndex, rowData);
-	},
-
-	/**
-	 * 현재 포커스를 가지고 있는 행의 index 반환
-	 *
-	 * @param gridID
-	 */
-	getRowIndex: function(gridID) {
-		const rowIndex = __focusedRow ? __focusedRow.rowIndex : undefined;
-		return rowIndex;
+		return instance.columnCount();
 	},
 
 	/**
@@ -653,6 +612,23 @@ const dxGrid = {
 		});
 	},
 
+	deleteRow: function(gridID, rowIndex) {
+		let instance = dxGrid.getGridInstance(gridID);
+		let allData = dxGrid.getGridData(gridID);
+		let dataSource = instance.getDataSource();
+		let rowKey = allData[rowIndex].__rowKey;
+
+		instance.option("focusedRowEnabled", false);
+
+		dataSource.store().remove(rowKey);
+
+		dxGrid.method.__setRowIndex(gridID, rowIndex);
+
+		instance.refresh();
+		instance.option("focusedRowEnabled", true);
+		instance.saveEditData();
+	},
+
 	/**
 	 * 선택한 행들을 일괄 삭제
 	 *
@@ -681,26 +657,35 @@ const dxGrid = {
 		instance.saveEditData();
 	},
 
-	deleteRow: function(gridID, rowIndex) {
-		let instance = dxGrid.getGridInstance(gridID);
-		let allData = dxGrid.getGridData(gridID);
-		let dataSource = instance.getDataSource();
-		let rowKey = allData[rowIndex].__rowKey;
-
-		instance.option("focusedRowEnabled", false);
-
-		dataSource.store().remove(rowKey);
-
-		dxGrid.method.__setRowIndex(gridID, rowIndex);
-
-		instance.refresh();
-		instance.option("focusedRowEnabled", true);
-		instance.saveEditData();
+	getCellValue: function(gridID, rowIndex, dataField) {
+		let rowData = dxGrid.getRowData(gridID, rowIndex)
+		return rowData[dataField];
 	},
 
-	saveEditData: function (gridID) {
+	setCellValue: function(gridID, rowIndex, dataField, value) {
+		let rowData = dxGrid.getRowData(gridID, rowIndex);
+		rowData[dataField] = value;
+
+		dxGrid.setRowData(gridID, rowIndex, rowData);
+	},
+
+	getRowData: function(gridID, rowIndex) {
 		let instance = dxGrid.getGridInstance(gridID);
-		instance.saveEditData();
+		let $rowEl = instance.getRowElement(rowIndex);
+		let rowData = $rowEl.data("options").data;
+
+		return rowData;
+	},
+
+	setRowData: function(gridID, rowIndex, rowData) {
+		let instance = dxGrid.getGridInstance(gridID);
+		let rowKey = instance.getKeyByRowIndex(rowIndex);
+
+		let store = instance.getDataSource().store();
+
+		store.update(rowKey, rowData).done(function(values) {
+			instance.refresh();
+		}).fail(function(error) {});
 	},
 
 	setFocus: function(gridID, rowIndex, dataField) {
@@ -709,6 +694,16 @@ const dxGrid = {
 		let colIndex = $cellEl.get(0).cellIndex;
 
 		dxGrid.method.__setFocusOnCell(instance, rowIndex, colIndex);
+	},
+
+	/**
+	 * 현재 포커스를 가지고 있는 행의 index 반환
+	 *
+	 * @param gridID
+	 */
+	getRowIndex: function(gridID) {
+		const rowIndex = __focusedRow ? __focusedRow.rowIndex : undefined;
+		return rowIndex;
 	},
 
 	setEmptyGrid: function(gridID) {
@@ -731,6 +726,11 @@ const dxGrid = {
 		}
 
 		instance.exportToExcel(bool);
+	},
+
+	saveEditData: function (gridID) {
+		let instance = dxGrid.getGridInstance(gridID);
+		instance.saveEditData();
 	},
 
 	method: {
