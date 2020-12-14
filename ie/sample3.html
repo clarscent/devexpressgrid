@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CodeHelp 그리드</title>
+<!-- dxDataGrid -->
+<link rel="stylesheet" type="text/css" href="css/dx.common.css"/>
+<link rel="stylesheet" type="text/css" href="css/dx.grid.custom.css"/>
+<script src="js/jquery-3.5.1.js"></script>
+<script src="js/lodash-4.17.15.min.js"></script>
+<script src="js/jszip.min.js"></script>
+<script src="js/dx.custom.js"></script>
+<script src="js/dx.grid.js"></script>
+
+<!-- data -->
+<script src="sample3Data.js"></script>
+<script>
+
+let gridInit = function () {
+	const gridID = "grid1";
+
+	/**
+	 * new Column (caption, dataField, width, dataType, [options])
+	 * => [options] : readonly, cellStyle, headerStyle, columnType, maxLength, align, visible, fixed
+	 *
+	 * 	*** dataType 이 "selectBox" 일 때,
+	 * => [options] : dataSource(필수), parentDataField(옵션)
+	 */
+	let columns = [
+		new Column("아이디","ID","150","text"							,{align: "center", maxLength:"20"}),
+		new Column("이름","FirstName","150","text"						,{align: "center", maxLength:"20"}),
+		new Column("성","LastName","250","text"							,{align: "center", maxLength:"15"}),
+		new Column("성별","Prefix","250","text"							,{align: "center", maxLength:"20"}),
+		new Column("직위","Position","180","text"						,{align: "center", maxLength:"15"}),
+		new Column("코드헬프(코드)","DayCode","180","codeHelp"			,{align: "center", maxLength:"20", dataSource: sb1, codeNameField: "DayName"}), // sb1 의 json object 들의 키 값은 반드시 "NAME", "CODE" 이어야 합니다.
+		new Column("코드헬프(코드명)","DayName","180","text"			,{align: "center", maxLength:"15"}),
+	];
+
+
+	dxGrid.initGrid(gridID, "", "800", {checkbox: true, editable: true, sortable: false, showRowIndex: true});
+	dxGrid.setColumn(gridID, columns);
+	dxGrid.setGridData(gridID, sample3);
+};
+
+$(document).ready(function () {
+
+	gridInit();
+
+	$("button[data-type='addRow']").on("click", function (evt) {
+		$el = $(evt.currentTarget);
+		let gridID = $el.attr("data-grid-id");
+
+		dxGrid.addRow(gridID);
+	});
+
+	$("button[data-type='deleteRow']").on("click", function (evt) {
+		$el = $(evt.currentTarget);
+		let gridID = $el.attr("data-grid-id");
+
+		dxGrid.deleteCheckedRow(gridID);
+	});
+
+	$("button[data-type='listData']").on("click", function (evt) {
+		$el = $(evt.currentTarget);
+		let gridID = $el.attr("data-grid-id");
+
+		console.log("전체 데이터", dxGrid.getGridData(gridID));
+	});
+
+	$("button[data-type='listCheckData']").on("click", function (evt) {
+		$el = $(evt.currentTarget);
+		let gridID = $el.attr("data-grid-id");
+
+		console.log("체크 데이터", dxGrid.getCheckedData(gridID));
+	});
+
+});
+</script>
+</head>
+<body>
+<br><br>
+<h2>CodeHelp 그리드</h2>
+<div>
+	<button type="button" data-type="addRow" data-grid-id="grid1">신규</button>
+	<button type="button" data-type="deleteRow" data-grid-id="grid1">삭제</button>
+	<button type="button" data-type="listData" data-grid-id="grid1">전체 조회(콘솔)</button>
+	<button type="button" data-type="listCheckData" data-grid-id="grid1">체크된 행만 조회(콘솔)</button>
+</div>
+<br><br>
+<div class="form-content">
+	<div class="grid-container" id="grid1"></div>
+</div>
+
+</body>
+</html>

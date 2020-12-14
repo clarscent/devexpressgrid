@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>조회 그리드 / 헤더 Band</title>
+<!-- dxDataGrid -->
+<link rel="stylesheet" type="text/css" href="css/dx.common.css"/>
+<link rel="stylesheet" type="text/css" href="css/dx.grid.custom.css"/>
+<script src="js/jquery-3.5.1.js"></script>
+<script src="js/lodash-4.17.15.min.js"></script>
+<script src="js/jszip.min.js"></script>
+<script src="js/dx.custom.js"></script>
+<script src="js/dx.grid.js"></script>
+
+<!-- data -->
+<script src="sample1Data.js"></script>
+<script>
+
+let gridInit = function () {
+	const gridID = "grid1";
+
+	// 헤더 band
+	let band = [
+		new Band("밴드1",[
+			new Band("BRD_GRP1_NM"),
+			new Band("BRD_GRP2_NM"),
+			new Band("밴드2",[
+				new Band("PROD_CD"),
+				new Band("PROD_NAME"),
+			]),
+		]),
+		new Band("밴드3", [
+			new Band("STK_QTY"),
+			new Band("STORE_STK_QTY"),
+			new Band("WT_QTY"),
+			new Band("OUT_QTY"),
+			new Band("REQ_WT_QTY"),
+			new Band("OUT_WT_QTY"),
+			new Band("STK_AMT1"),
+			new Band("STK_AMT2"),
+			new Band("STK_AMT3"),
+			new Band("TAG_PRICE"),
+			new Band("COST_PRICE"),
+			new Band("AVG_PRICE"),
+		]),
+	];
+
+	/**
+	 * new Column (caption, dataField, width, dataType, [options])
+	 * => [options] : readonly, cellStyle, headerStyle, columnType, maxLength, align, visible, fixed
+	 *
+	 */
+	let columns = [
+		new Column("대분류","BRD_GRP1_NM","150","text"											,{align: "center", maxLength:"20", fixed:"left"	, headerStyle:"background-color: red"}), // CSS 1개만 적용할 때
+		new Column("중분류","BRD_GRP2_NM","150","text"											,{align: "center", maxLength:"20", fixed:"right", headerStyle:"cssClassName"}), // CSS 여러개 적용할 때, (css 클래스 이름)
+		new Column("상품코드","PROD_CD","250","text"											,{align: "center", maxLength:"15"				, headerStyle:"cssClassName"}),
+		new Column("상품명","PROD_NAME","250","text"											,{align: "left", maxLength:"20"					, headerStyle:"cssClassName"}),
+		new Column("재고수량","STK_QTY","180",{type: "number", precision: 2}					,{align: "right", maxLength:"15"}),
+		new Column("매장수량","STORE_STK_QTY","180",{type: "number", precision: 3}				,{align: "right", maxLength:"20"}),
+		new Column("택배수량","WT_QTY","180",{type: "number", precision: 2}						,{align: "right", maxLength:"15"}),
+		new Column("출고확정","OUT_QTY","180",{type: "number", precision: 2}					,{align: "right", maxLength:"15"}),
+		new Column("지시대기","REQ_WT_QTY","180",{type: "number", precision: 2}					,{align: "right", maxLength:"15"}),
+		new Column("출고대기","OUT_WT_QTY","180",{type: "number", precision: 2}					,{align: "right", maxLength:"15"}),
+		new Column("재고금액(소비자가)","STK_AMT1","180",{type: "number", precision: 2}			,{align: "right", maxLength:"15"}),
+		new Column("재고금액(평균단가)","STK_AMT2","180",{type: "number", precision: 2}			,{align: "right", maxLength:"15"}),
+		new Column("재고금액(매입단가)","STK_AMT3","180",{type: "number", precision: 2}			,{align: "center", maxLength:"15"}),
+		new Column("소비자가","TAG_PRICE","180",{type: "number", precision: 2}					,{align: "right", maxLength:"15"}),
+		new Column("매입단가","COST_PRICE","180",{type: "number", precision: 2}					,{align: "right", maxLength:"15"}),
+		new Column("평균단가","AVG_PRICE","180",{type: "number", precision: 2}					,{align: "right", maxLength:"15"}),
+	];
+
+
+	dxGrid.initGrid(gridID, "", "800", {checkbox: true, editable: false, sortable: false, showRowIndex: true});
+	dxGrid.setColumn(gridID, columns, band);
+	dxGrid.setGridData(gridID, testData);
+
+
+	// Footer 추가
+
+	let footer = [
+		new Footer("STK_QTY", "sum"),
+		new Footer("STORE_STK_QTY", "sum"),
+		new Footer("WT_QTY", "sum"),
+		new Footer("OUT_QTY", "sum"),
+		new Footer("REQ_WT_QTY", "sum"),
+		new Footer("OUT_WT_QTY", "sum"),
+		new Footer("STK_AMT1", "sum"),
+		new Footer("STK_AMT2", "sum"),
+		new Footer("STK_AMT3", "sum"),
+		new Footer("COST_PRICE", "sum"),
+		new Footer("AVG_PRICE", "sum", "합계: ", {type:"number", precision: 0}, "center"),
+	];
+
+	dxGrid.setFooter(gridID, footer);
+
+};
+
+$(document).ready(function () {
+
+	gridInit();
+
+	$("button[data-type='addRow']").on("click", function (evt) {
+		$el = $(evt.currentTarget);
+		let gridID = $el.attr("data-grid-id");
+
+		dxGrid.addRow(gridID);
+	});
+
+	$("button[data-type='deleteRow']").on("click", function (evt) {
+		$el = $(evt.currentTarget);
+		let gridID = $el.attr("data-grid-id");
+
+		dxGrid.deleteCheckedRow(gridID);
+	});
+
+	$("button[data-type='listData']").on("click", function (evt) {
+		$el = $(evt.currentTarget);
+		let gridID = $el.attr("data-grid-id");
+
+		console.log("전체 데이터", dxGrid.getGridData(gridID));
+	});
+
+	$("button[data-type='listCheckData']").on("click", function (evt) {
+		$el = $(evt.currentTarget);
+		let gridID = $el.attr("data-grid-id");
+
+		console.log("체크 데이터", dxGrid.getCheckedData(gridID));
+	});
+
+});
+</script>
+</head>
+<body>
+<br><br>
+<h2>조회 그리드 / 헤더 Band / Footer</h2>
+<div>
+	<button type="button" data-type="addRow" data-grid-id="grid1">신규</button>
+	<button type="button" data-type="deleteRow" data-grid-id="grid1">삭제</button>
+	<button type="button" data-type="listData" data-grid-id="grid1">전체 조회(콘솔)</button>
+	<button type="button" data-type="listCheckData" data-grid-id="grid1">체크된 행만 조회(콘솔)</button>
+</div>
+<br><br>
+<div class="form-content">
+	<div class="grid-container" id="grid1"></div>
+</div>
+
+</body>
+</html>

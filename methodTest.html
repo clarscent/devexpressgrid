@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Method Test</title>
+<!-- dxDataGrid -->
+<link rel="stylesheet" type="text/css" href="css/dx.common.css"/>
+<link rel="stylesheet" type="text/css" href="css/dx.grid.custom.css"/>
+<script src="js/jquery-3.5.1.js"></script>
+<script src="js/lodash-4.17.15.min.js"></script>
+<script src="js/jszip.min.js"></script>
+<script src="js/dx.custom.js"></script>
+<script src="js/dx.grid.js"></script>
+
+<script src="sample.js"></script>
+<style>
+/**
+ *	CSS가 적용되지 않을 때 !important를 주시면 됩니다.
+ */
+.cssClassName {
+	color: blue !important;
+	background-color: #3d8b3d !important;
+}
+</style>
+<script type="text/javascript">
+/**
+ * 	Listener Test
+ */
+// Listener = {
+// 	grid: {
+// 		onCellClick: function (gridID, text, value, rowIndex, dataField, rowData, row, column, columnIndex, instance, event) {
+// 			console.log(">>>>>>>>> onCellClick <<<<<<<<<<<");
+// 			console.log(">>>>>>>>> gridID", gridID);
+// 			console.log(">>>>>>>>> text", text);
+// 			console.log(">>>>>>>>> value", value);
+// 			console.log(">>>>>>>>> rowIndex", rowIndex);
+// 			console.log(">>>>>>>>> dataField", dataField);
+// 			console.log(">>>>>>>>> rowData", rowData);
+// 			console.log(">>>>>>>>> row", row);
+// 			console.log(">>>>>>>>> column", column);
+// 			console.log(">>>>>>>>> columnIndex", columnIndex);
+// 			console.log(">>>>>>>>> instance", instance);
+// 			console.log(">>>>>>>>> event", event);
+// 		},
+// 		onContentReady: function (gridID, instance) {
+// 			console.log(">>>>>>>>> onContentReady <<<<<<<<<<<");
+// 			console.log(">>>>>>>>> gridID", gridID);
+// 			console.log(">>>>>>>>> instance", instance);
+// 		},
+// 		onEditingStart: function (gridID, value, rowIndex, dataField, rowData, instance) {
+// 			console.log(">>>>>>>>> onEditingStart <<<<<<<<<<<");
+// 			console.log(">>>>>>>>> gridID", gridID);
+// 			console.log(">>>>>>>>> value", value);
+// 			console.log(">>>>>>>>> rowIndex", rowIndex);
+// 			console.log(">>>>>>>>> dataField", dataField);
+// 			console.log(">>>>>>>>> rowData", rowData);
+// 			console.log(">>>>>>>>> instance", instance);
+// 		},
+// 		onFocusedCellChanging: function (gridID, prevRowIndex, prevDataField, newRowIndex, newDataField, instance, event) {
+// 			console.log(">>>>>>>>> onFocusedCellChanging <<<<<<<<<<<");
+// 			console.log(">>>>>>>>> gridID", gridID);
+// 			console.log(">>>>>>>>> prevRowIndex", prevRowIndex);
+// 			console.log(">>>>>>>>> prevDataField", prevDataField);
+// 			console.log(">>>>>>>>> newRowIndex", newRowIndex);
+// 			console.log(">>>>>>>>> newRowIndex", newRowIndex);
+// 			console.log(">>>>>>>>> newDataField", newDataField);
+// 			console.log(">>>>>>>>> instance", instance);
+// 			console.log(">>>>>>>>> event", event);
+// 		},
+// 		onFocusedCellChanged: function (gridID, rowIndex, dataField, instance) {
+// 			console.log(">>>>>>>>> onFocusedCellChanged <<<<<<<<<<<");
+// 			console.log(">>>>>>>>> gridID", gridID);
+// 			console.log(">>>>>>>>> rowIndex", rowIndex);
+// 			console.log(">>>>>>>>> dataField", dataField);
+// 			console.log(">>>>>>>>> instance", instance);
+// 		},
+// 		onFocusedRowChanged: function (gridID, rowIndex, rowData) {
+// 			console.log(">>>>>>>>> onFocusedRowChanged <<<<<<<<<<<");
+// 			console.log(">>>>>>>>> gridID", gridID);
+// 			console.log(">>>>>>>>> rowIndex", rowIndex);
+// 			console.log(">>>>>>>>> rowData", rowData);
+// 		},
+// 		onInitialized: function (gridID) {
+// 			console.log(">>>>>>>>> onInitialized <<<<<<<<<<<");
+// 			console.log(">>>>>>>>> gridID", gridID);
+// 		},
+// 		onKeyDown: function (gridID, rowIndex, columnIndex, dataField, value, keyCode, rowData) {
+// 			console.log(">>>>>>>>> onKeyDown <<<<<<<<<<<");
+// 			console.log(">>>>>>>>> gridID", gridID);
+// 			console.log(">>>>>>>>> rowIndex", rowIndex);
+// 			console.log(">>>>>>>>> columnIndex", columnIndex);
+// 			console.log(">>>>>>>>> dataField", dataField);
+// 			console.log(">>>>>>>>> value", value);
+// 			console.log(">>>>>>>>> keyCode", keyCode);
+// 			console.log(">>>>>>>>> rowData", rowData);
+// 		},
+// 		onRowClick: function (gridID, rowIndex, rowData, rowKey, columns, rowType) {
+// 			console.log(">>>>>>>>> onRowClick <<<<<<<<<<<");
+// 			console.log(">>>>>>>>> gridID", gridID);
+// 			console.log(">>>>>>>>> rowIndex", rowIndex);
+// 			console.log(">>>>>>>>> rowData", rowData);
+// 			console.log(">>>>>>>>> rowKey", rowKey);
+// 			console.log(">>>>>>>>> rowKey", rowKey);
+// 			console.log(">>>>>>>>> columns", columns);
+// 			console.log(">>>>>>>>> rowType", rowType);
+// 		},
+// 		onRowInserted: function (gridID, rowIndex, rowData) {
+// 			console.log(">>>>>>>>> onRowInserted <<<<<<<<<<<");
+// 			console.log(">>>>>>>>> gridID", gridID);
+// 			console.log(">>>>>>>>> rowIndex", rowIndex);
+// 			console.log(">>>>>>>>> rowData", rowData);
+// 		},
+// 		onCellUpdating: function (gridID, value, rowIndex, dataField) {
+// 			console.log(">>>>>>>>> onCellUpdating <<<<<<<<<<<");
+// 			console.log(">>>>>>>>> gridID", gridID);
+// 			console.log(">>>>>>>>> value", value);
+// 			console.log(">>>>>>>>> rowIndex", rowIndex);
+// 			console.log(">>>>>>>>> dataField", dataField);
+// 		},
+// 		onCellUpdated: function (gridID, rowIndex, ColumnIndex, dataField, ColumnValue, rowData) {
+// 			console.log(">>>>>>>>> onCellUpdated <<<<<<<<<<<");
+// 			console.log(">>>>>>>>> gridID,", gridID);
+// 			console.log(">>>>>>>>> rowIndex", rowIndex);
+// 			console.log(">>>>>>>>> ColumnIndex", ColumnIndex);
+// 			console.log(">>>>>>>>> dataField", dataField);
+// 			console.log(">>>>>>>>> ColumnValue", ColumnValue);
+// 			console.log(">>>>>>>>> rowData", rowData);
+// 		},
+// 		onSelectionChanged: function (gridID, currentSelectedRowKeys, currentDeselectedRowKeys, selectedRowsData) {
+// 			console.log(">>>>>>>>> onSelectionChanged <<<<<<<<<<<");
+// 			console.log(">>>>>>>>> gridID,", gridID);
+// 			console.log(">>>>>>>>> currentSelectedRowKeys", currentSelectedRowKeys);
+// 			console.log(">>>>>>>>> currentDeselectedRowKeys", currentDeselectedRowKeys);
+// 			console.log(">>>>>>>>> selectedRowsData", selectedRowsData);
+// 		},
+// 	},
+// };
+
+Listener.grid.onCellUpdated = function (gridID, rowIndex, ColumnIndex, dataField, ColumnValue, rowData) {
+	console.log(">>>>>>>>> onCellUpdated <<<<<<<<<<<");
+	console.log(">>>>>>>>> gridID,", gridID);
+	console.log(">>>>>>>>> rowIndex", rowIndex);
+	console.log(">>>>>>>>> ColumnIndex", ColumnIndex);
+	console.log(">>>>>>>>> dataField", dataField);
+	console.log(">>>>>>>>> ColumnValue", ColumnValue);
+	console.log(">>>>>>>>> rowData", rowData);
+};
+Listener.grid.onSelectionChanged = function (gridID, currentSelectedRowKeys, currentDeselectedRowKeys, selectedRowsData) {
+	console.log(">>>>>>>>> onSelectionChanged <<<<<<<<<<<");
+	console.log(">>>>>>>>> gridID,", gridID);
+	console.log(">>>>>>>>> currentSelectedRowKeys", currentSelectedRowKeys);
+	console.log(">>>>>>>>> currentDeselectedRowKeys", currentDeselectedRowKeys);
+	console.log(">>>>>>>>> selectedRowsData", selectedRowsData);
+},
+
+$(document).ready(function () {
+
+	gridInit();
+
+	$("button[data-type='addRow']").on("click", function (evt) {
+		$el = $(evt.currentTarget);
+		let gridID = $el.attr("data-grid-id");
+
+		dxGrid.addRow(gridID, {ORG_ID: "AAAA"});
+	});
+
+	$("button[data-type='deleteRow']").on("click", function (evt) {
+		$el = $(evt.currentTarget);
+		let gridID = $el.attr("data-grid-id");
+
+		dxGrid.deleteCheckedRow(gridID);
+	});
+
+	$("button[data-type='list']").on("click", function (evt) {
+		$el = $(evt.currentTarget);
+		let gridID = $el.attr("data-grid-id");
+
+		console.log("전체 데이터", dxGrid.getGridData(gridID));
+	});
+
+	$("button[data-type='listCheckData']").on("click", function (evt) {
+		$el = $(evt.currentTarget);
+		let gridID = $el.attr("data-grid-id");
+
+		console.log("체크 데이터", dxGrid.getCheckedData(gridID));
+	});
+
+	$("button[data-type='getRowIndex']").on("click", function (evt) {
+		$el = $(evt.currentTarget);
+		let gridID = $el.attr("data-grid-id");
+
+		console.log("3번 row Index", dxGrid.getRowIndex(gridID, 3));
+	});
+
+	$("button[data-type='setFocus']").on("click", function (evt) {
+		$el = $(evt.currentTarget);
+		let gridID = $el.attr("data-grid-id");
+
+		dxGrid.setFocus(gridID, 4, "ADM_ID");
+	});
+
+	$("button[data-type='setRowData']").on("click", function (evt) {
+		$el = $(evt.currentTarget);
+		let gridID = $el.attr("data-grid-id");
+
+		dxGrid.setRowData(gridID, 5, { ORG_ID: "aaa", NODE_TYPE: "ssss", NODE_IP: "3dd", ADM_ID: "fff", ADM_PWD: "gg", SRV_ID: "sxc", SRV_PWD: "aa"});
+	});
+
+	$("button[data-type='getRowData']").on("click", function (evt) {
+		$el = $(evt.currentTarget);
+		let gridID = $el.attr("data-grid-id");
+
+		console.log("6번 Row Data", dxGrid.getRowData(gridID, 6));
+	});
+
+	$("button[data-type='setCellValue']").on("click", function (evt) {
+		$el = $(evt.currentTarget);
+		let gridID = $el.attr("data-grid-id");
+
+		dxGrid.setCellValue(gridID, 3, "ADM_ID", "aaa");
+	});
+
+	$("button[data-type='getCellValue']").on("click", function (evt) {
+		$el = $(evt.currentTarget);
+		let gridID = $el.attr("data-grid-id");
+
+		console.log("7, NODE_IP CellValue", dxGrid.getCellValue(gridID, 7, "NODE_IP"));
+	});
+
+});
+
+let gridInit = function () {
+	const gridID = "grid1";
+	let nodeType = [
+		{"CODE": "1", "NAME": "Orderer"},
+		{"CODE": "2", "NAME": "Peer"},
+		{"CODE": "3", "NAME": "CA"},
+	];
+
+	/**
+	 * 헤더 CSS 적용
+	 */
+	let columns = [
+		new Column("대분류","BRD_GRP1_NM","150","check"								,{align: "center", maxLength:"20"}),
+		new Column("중분류","BRD_GRP2_NM","150","text"								,{align: "center", maxLength:"20", filter: true}), // 필터 옵션
+		new Column("상품코드","PROD_CD","70","button"								,{align: "center", maxLength:"15", btnText: "상세"}), // 버튼 컬럼
+		new Column("상품명","PROD_NAME","250","textarea"							,{align: "left", maxLength:"200"}),
+		new Column("재고수량","STK_QTY","80",{type: "number", precision: 2}			,{align: "right", maxLength:"15"}),
+		new Column("매장수량","STORE_STK_QTY","80",{type: "number", precision: 3}	,{align: "center", maxLength:"20"}),
+		new Column("택배수량","WT_QTY","80",{type: "number", precision: 2}			,{align: "center", maxLength:"15"}),
+	];
+
+	dxGrid.initGrid(gridID, 1200, "600", {checkbox: true, editable: true, sortable: false, showRowIndex: true}); // Row Number 보이기
+	dxGrid.setColumn(gridID, columns);
+	dxGrid.setGridData(gridID, testData);
+
+	let footer = [
+		new Footer("ORG_ID", "text", "텍스트"),
+		new Footer("NODE_TYPE", "sum"),
+		new Footer("NODE_IP", "avg", "평균: ", ""),
+		new Footer("ADM_ID", "min", "", {type:"percent", precision: 2}, "center"),
+		new Footer("ADM_PWD", "max"),
+	]
+
+	// dxGrid.setFooter(gridID, footer);
+
+
+};
+</script>
+</head>
+<body>
+<h1>로우 클릭 이벤트 샘플 / 헤더 CSS 설정</h1>
+<div>
+	<button type="button" data-type="addRow" data-grid-id="grid1">신규</button>
+	<button type="button" data-type="deleteRow" data-grid-id="grid1">삭제</button>
+	<button type="button" data-type="list" data-grid-id="grid1">전체 조회</button>
+	<button type="button" data-type="listCheckData" data-grid-id="grid1">체크된 행만 조회</button>
+</div>
+<div>
+	<button type="button" data-type="getRowIndex" data-grid-id="grid1">getRowIndex</button>
+	<button type="button" data-type="setFocus" data-grid-id="grid1">setFocus</button>
+	<button type="button" data-type="setRowData" data-grid-id="grid1">setRowData</button>
+	<button type="button" data-type="getRowData" data-grid-id="grid1">getRowData</button>
+	<button type="button" data-type="setCellValue" data-grid-id="grid1">setCellValue</button>
+	<button type="button" data-type="getCellValue" data-grid-id="grid1">getCellValue</button>
+</div>
+<div class="form-content">
+	<div class="grid-container" id="grid1"></div>
+</div>
+</body>
+</html>

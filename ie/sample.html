@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>헤더 필터 / 컬럼 버튼 / textarea 적용</title>
+<link rel="stylesheet" type="text/css" href="css/dx.common.css"/>
+<link rel="stylesheet" type="text/css" href="css/dx.grid.custom.css"/>
+<script src="js/jquery-3.5.1.js"></script>
+<script src="js/lodash-4.17.15.min.js"></script>
+<script src="js/jszip.min.js"></script>
+<script src="js/dx.custom.js"></script>
+<script src="js/dx.grid.js"></script>
+
+<!-- data -->
+<script src="sample.js"></script>
+
+<script type="text/javascript">
+let gridInit = function () {
+	const gridID = "grid1";
+
+	// 버튼 콜백 함수
+	// 디폴트 파라미터: element(해당 셀의 element), info(해당 셀의 정보)
+	// 예시
+	let btnFn = function (element, info) {
+		console.log("element", element);
+		console.log("info", info);
+		alert(info.value);
+	};
+
+	/**
+	 * 헤더 필터
+	 * -> options: {filter: true}
+	 *
+	 * 컬럼 버튼
+	 * -> dataType: "button"
+	 *    options:  {btnText: "상세", callBackFn: btnFn}
+	 *    // btnText	: 버튼에 들어갈 텍스트
+	 *    // callBackFn	: 버튼 콜백 함수
+	 *
+	 * textarea 적용
+	 * -> dataType: "textarea"
+	 *
+	 */
+	let columns = [
+		new Column("대분류","BRD_GRP1_NM","150","text"								,{align: "center", maxLength:"20"}),
+		new Column("중분류(헤더필터)","BRD_GRP2_NM","150","text"								,{align: "center", maxLength:"20", filter: true}), // 헤더 필터
+		new Column("상품코드(버튼컬럼)","PROD_CD","80","button"								,{align: "center", maxLength:"15", btnText: "상세", callBackFn: btnFn}), // 컬럼 버튼
+		new Column("상품명(textarea)","PROD_NAME","250","textarea"							,{align: "left", maxLength:"200"}), // textarea 적용
+		new Column("재고수량","STK_QTY","80",{type: "number", precision: 2}			,{align: "right", maxLength:"15"}),
+		new Column("매장수량","STORE_STK_QTY","80",{type: "number", precision: 3}	,{align: "center", maxLength:"20"}),
+		new Column("택배수량","WT_QTY","80",{type: "number", precision: 2}			,{align: "center", maxLength:"15"}),
+	];
+
+	/**
+	 *  Row Number 적용
+	 */
+	dxGrid.initGrid(gridID, 800, "600", {checkbox: true, editable: true, sortable: false, showRowIndex: true}); // Row Number 보이기
+	dxGrid.setColumn(gridID, columns);
+	dxGrid.setGridData(gridID, testData);
+
+};
+
+$(document).ready(function () {
+
+	gridInit();
+
+	$("button[data-type='addRow']").on("click", function (evt) {
+		$el = $(evt.currentTarget);
+		let gridID = $el.attr("data-grid-id");
+
+		dxGrid.addRow(gridID);
+	});
+
+	$("button[data-type='deleteRow']").on("click", function (evt) {
+		$el = $(evt.currentTarget);
+		let gridID = $el.attr("data-grid-id");
+
+		dxGrid.deleteCheckedRow(gridID);
+	});
+
+	$("button[data-type='list']").on("click", function (evt) {
+		$el = $(evt.currentTarget);
+		let gridID = $el.attr("data-grid-id");
+
+		console.log("전체 데이터", dxGrid.getGridData(gridID));
+	});
+
+	$("button[data-type='listCheckData']").on("click", function (evt) {
+		$el = $(evt.currentTarget);
+		let gridID = $el.attr("data-grid-id");
+
+		console.log("체크 데이터", dxGrid.getCheckedData(gridID));
+	});
+
+});
+</script>
+</head>
+<body>
+<h1>헤더 필터 / 컬럼 버튼 / textarea 적용</h1>
+<div>
+	<button type="button" data-type="addRow" data-grid-id="grid1">신규</button>
+	<button type="button" data-type="deleteRow" data-grid-id="grid1">삭제</button>
+	<button type="button" data-type="list" data-grid-id="grid1">전체 조회(콘솔)</button>
+	<button type="button" data-type="listCheckData" data-grid-id="grid1">체크된 행만 조회(콘솔)</button>
+</div><br><br>
+<div class="form-content">
+	<div class="grid-container" id="grid1"></div>
+</div>
+</body>
+</html>

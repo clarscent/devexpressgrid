@@ -64,6 +64,10 @@ Listener.grid.onInitialized = function (gridID) {
 		// console.log("dddddd");
 	}
 }
+Listener.grid.onCellClick = function (gridID, text, value, rowIndex, dataField, rowData, row, column, instance, event) {
+	console.log("gridID", gridID);
+	console.log("text", text);
+}
 
 $(document).ready(function () {
 	let columns, gridID = "helpPopUpGridContainer";

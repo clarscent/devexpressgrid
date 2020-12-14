@@ -44,12 +44,12 @@ const Logger = {
 // 필수 변수
 let __focusedCell = {};
 let __focusedRow = {};
-let __currentEditingColumn = {};
+let __clickedCell = {};
 
 // Event listener
 let Listener = {
 	grid: {
-		onCellClick: function (gridID, text, value, rowIndex, dataField, rowData, row, column, instance, event) {},
+		onCellClick: function (gridID, text, value, rowIndex, dataField, rowData, row, column, columnIndex, instance, event) {},
 		onContentReady: function (gridID, instance) {},
 		onEditingStart: function (gridID, value, rowIndex, dataField, rowData, instance) {},
 		onFocusedCellChanging: function (gridID, prevRowIndex, prevDataField, newRowIndex, newDataField, instance, event) {},
@@ -57,11 +57,10 @@ let Listener = {
 		onFocusedRowChanged: function (gridID, rowIndex, rowData) {},
 		onInitialized: function (gridID) {},
 		onKeyDown: function (gridID, rowIndex, columnIndex, dataField, value, keyCode, rowData) {},
-		onRowClick: function (gridID, rowIndex, rowData, rowKey, columns) {},
-		onRowInserted: function (gridID, rowIndex, rowData) {}, // addRow 호출 시 발생
-		onCellUpdating: function (gridID, value, rowIndex, dataField) {}, // input change
-		onCellUpdated: function (gridID, rowIndex, dataField, rowData) {}, // input blur시
-		onRowValidating: function (gridID, instance, brokenRules, isValid, key, newData, oldData, errorText) {},
+		onRowClick: function (gridID, rowIndex, rowData, rowKey, columns, rowType) {},
+		onRowInserted: function (gridID, rowIndex, rowData) {},
+		onCellUpdating: function (gridID, value, rowIndex, dataField) {},
+		onCellUpdated: function (gridID, rowIndex, ColumnIndex, dataField, ColumnValue, rowData) {},
 		onSelectionChanged: function (gridID, currentSelectedRowKeys, currentDeselectedRowKeys, selectedRowsData) {},
 	},
 };
@@ -87,6 +86,7 @@ const Column = function (caption, dataField, width, dataType, options) {
 	this.caption = caption;
 	this.dataField = dataField;
 	this.width = width;
+	this.allowHeaderFiltering = false;
 	this.headerCellTemplate = function (header, info) {
 		header.append(
 			$("<div>").html(caption.replace(/\n/g, "<br/>")).css("text-align", "center")
@@ -99,6 +99,43 @@ const Column = function (caption, dataField, width, dataType, options) {
 	} else if (dataType === "selectBox") {
 		dataType = "text";
 		options.columnType = new dxGrid.SelectBox(options.dataSource, options.parentDataField);
+	} else if (dataType === "rowIndex") {
+		this.cellTemplate = function(cellElement, cellInfo) {
+			cellElement.text(cellInfo.data.__rowIndex + 1);
+		}
+	} else if (dataType === "textarea") {
+		this.__textarea = true;
+		this.cellTemplate = function (container, options) { // 개행 가능.
+			container.append($("<div>").html(options.text.replace(/\n/g, "<br/>")));
+		}
+		this.editorOptions = {
+			onKeyDown: function(args){
+				if(args.event.keyCode == 13){
+					args.event.stopPropagation();
+				}
+			}
+		}
+	} else if (dataType === "button") {
+		this.cellTemplate = function (element, info) { // 개행 가능.
+			let $btn, btnTxt;
+
+			if (options && options.btnText) {
+				btnTxt = options.btnText;
+			} else {
+				btnTxt = info.text;
+			}
+
+			$btn = $("<button>").html(btnTxt);
+
+			$btn.on("click", function () {
+				if (options && options.callBackFn) {
+					options.callBackFn(element, info);
+				}
+			});
+
+			element.append($btn);
+		}
+		this.allowEditing = false;
 	}
 
 	this.options = options;
@@ -116,7 +153,8 @@ const Column = function (caption, dataField, width, dataType, options) {
 		let maxLength = options.maxLength;
 		let alignment = options.align;
 		let visible = options.visible;
-		let required = options.required;
+		let fixed = options.fixed;
+		let filter = options.filter;
 
 		if (readonly) {
 			this.allowEditing = !readonly;
@@ -191,8 +229,13 @@ const Column = function (caption, dataField, width, dataType, options) {
 			this.visible = visible;
 		}
 
-		if (required) {
-			this.validationRules = [{ type: "required" }];
+		if (fixed) {
+			this.fixed = true;
+			this.fixedPosition = fixed;
+		}
+
+		if (filter) {
+			this.allowHeaderFiltering = true;
 		}
 	}
 
@@ -239,6 +282,7 @@ const dxGrid = {
 			allowColumnResizing: true,
 			columnResizingMode: "nextColumn",
 			errorRowEnabled: false,
+			headerFilter: { visible: true },
 
 		}).dxDataGrid("instance");
 
@@ -247,6 +291,7 @@ const dxGrid = {
 			const checkbox = option.checkbox;
 			const editable = option.editable;
 			const sortable = option.sortable;
+			const showRowIndex = option.showRowIndex;
 
 			if (checkbox) {
 				instance.option("selection.showCheckBoxesMode", "always");
@@ -271,6 +316,10 @@ const dxGrid = {
 			} else {
 				instance.option("sorting", {mode: "none"});
 			}
+
+			if (showRowIndex) {
+				instance.__showRowIndex = true;
+			}
 		}
 
 		dxGrid.method.__addEventListener(gridID);
@@ -283,6 +332,14 @@ const dxGrid = {
 	setColumn: function (gridID, columns, band) {
 		let instance = dxGrid.getGridInstance(gridID);
 
+		// rowIndex 추가
+		if (instance.__showRowIndex) {
+			columns.unshift(new Column("","","50px","rowIndex",{align: "right", fixed:"left", readonly:"true"}));
+			if (band) {
+				band.unshift(new Band(""));
+			}
+		}
+
 		columns = dxGrid.method.__configColumnType(gridID, columns);
 
 		if (band) {
@@ -293,6 +350,12 @@ const dxGrid = {
 		instance.option("onEditorPreparing", function(evt) {
 			let maxLength = -1;
 
+			// textarea
+			if (evt.__textarea) {
+				evt.editorName = "dxTextArea";
+			}
+
+			// maxLength 설정
 			for (let i = 0; i < columns.length; i++) {
 				if (columns[i].dataField === evt.dataField && columns[i].options && columns[i].options.maxLength) {
 					maxLength = columns[i].options.maxLength;
@@ -302,6 +365,9 @@ const dxGrid = {
 			if (maxLength && maxLength > 0) {
 				evt.editorOptions.maxLength = maxLength;
 			}
+
+			// 마우스 휠 할 때, 숫자 증감 해제
+			evt.editorOptions.step = 0;
 
 			// 체크박스 (-2) 컬럼엔 이벤트 걸지 않음
 			if (evt.index != -2) {
@@ -364,10 +430,13 @@ const dxGrid = {
 
 		if (data) {
 			if (!(data instanceof Array)) {
+				data.check = false;
 				data.__rowKey = dxGrid.method.__getKeyString();
 				data = [data];
 			} else {
 				for (let j = 0 ; j < data.length ; j++) {
+					data[j].check = false;
+					data[j].__rowIndex = j;
 					data[j].__rowKey = dxGrid.method.__getKeyString();
 				}
 			}
@@ -415,6 +484,15 @@ const dxGrid = {
 		return instance.getDataSource().store()._array;
 	},
 
+	getTotRowCount: function(gridID){
+		let instance = dxGrid.getGridInstance(gridID);
+		return instance.totalCount();
+	},
+	getTotColCount: function(gridID){
+		let instance = dxGrid.getGridInstance(gridID);
+		return instance.columnCount();
+	},
+
 	/**
 	 * 선택한 행들의 데이터와 행의 인덱스를 리턴
 	 *
@@ -424,13 +502,20 @@ const dxGrid = {
 	 */
 	getCheckedData: function (gridID) {
 		let instance = dxGrid.getGridInstance(gridID);
-		instance.saveEditData();
+		let allData = dxGrid.getGridData(gridID);
 		let rowsData = instance.getSelectedRowsData();
-		let rowIndex;
+		let rowIndex = [];
+
+		for(let i = 0 ; i < rowsData.length ; i++) {
+			let index = allData.indexOf(allData.filter(function (item) {
+				return item.__rowKey === rowsData[i].__rowKey;
+			})[0]);
+
+			rowIndex.push(index);
+		}
 
 		for (let j = 0 ; j < rowsData.length ; j++) {
-			rowIndex = instance.getRowIndexByKey(rowsData[j]["__rowKey"]);
-			_.merge(rowsData[j], {__rowIndex: rowIndex});
+			_.merge(rowsData[j], {__rowIndex: rowIndex[j]});
 		}
 
 		return rowsData;
@@ -488,6 +573,7 @@ const dxGrid = {
 	addRow: function (gridID, data, rowIndex) {
 		let instance = dxGrid.getGridInstance(gridID);
 		let dataSource = instance.getDataSource();
+		let firstColumnIndex = 1;
 		instance.option("focusedRowEnabled", false);
 
 		if (data == undefined) {
@@ -505,21 +591,32 @@ const dxGrid = {
 			dxGrid.method.__executeListener("onRowInserted", {gridID: gridID, rowIndex: rowIndex, rowData: data}, function () {
 				Listener.grid.onRowInserted(gridID, rowIndex, data);
 			});
+
+			dxGrid.method.__setRowIndex(gridID, rowIndex);
 		});
+
 		instance.refresh().done( function () {
 			instance.option("focusedRowEnabled", true);
-			dxGrid.method.__setFocusOnCell(instance, rowIndex, 1);
 
-			let dataField = instance.option("columns")[0];
-			let firstData = data[dataField];
+			let columns = instance.option("columns");
 
-			if (firstData === undefined) {
-				firstData = ""
+			for (let i = 0 ; i < columns.length ; i++) {
+				if (!columns[i].fixed) {
+					firstColumnIndex = i;
+					break;
+				}
 			}
-			instance.cellValue(rowIndex, 1, firstData);
+
+			// fixed Column 이 없을 때
+			if (firstColumnIndex === 0) {
+				firstColumnIndex = 1;
+				if (instance.__showRowIndex) {
+					firstColumnIndex++;
+				}
+			}
+
+			dxGrid.method.__setFocusOnCell(instance, rowIndex, firstColumnIndex);
 		});
-
-
 	},
 
 	/**
@@ -534,52 +631,42 @@ const dxGrid = {
 	deleteCheckedRow: function (gridID) {
 		let instance = dxGrid.getGridInstance(gridID);
 		let checkedData = dxGrid.getCheckedData(gridID);
+		let dataSource = instance.getDataSource();
+
 		instance.option("focusedRowEnabled", false);
 
 		for (let j = 0 ; j < checkedData.length ; j++) {
-			instance.deleteRow(checkedData[j].__rowIndex);
-			instance.refresh(true);
+			dataSource.store().remove(checkedData[j].__rowKey);
+			instance.refresh();
 		}
+
+		dxGrid.method.__setRowIndex(gridID, 0);
+
 		instance.deselectAll();
 		instance.option("focusedRowEnabled", true);
-		dxGrid.saveEditData(gridID);
+		instance.saveEditData();
 	},
 
 	deleteRow: function(gridID, rowIndex) {
 		let instance = dxGrid.getGridInstance(gridID);
+		let allData = dxGrid.getGridData(gridID);
+		let dataSource = instance.getDataSource();
+		let rowKey = allData[rowIndex].__rowKey;
+
 		instance.option("focusedRowEnabled", false);
 
-		instance.deleteRow(rowIndex);
-		instance.refresh(true);
+		dataSource.store().remove(rowKey);
 
+		dxGrid.method.__setRowIndex(gridID, rowIndex);
+
+		instance.refresh();
 		instance.option("focusedRowEnabled", true);
-		dxGrid.saveEditData(gridID);
+		instance.saveEditData();
 	},
 
 	saveEditData: function (gridID) {
 		let instance = dxGrid.getGridInstance(gridID);
 		instance.saveEditData();
-	},
-
-	validationCheck: function(gridID) {
-		let instance = dxGrid.getGridInstance(gridID);
-		let isValid;
-
-		instance.__isValid = undefined;
-
-		instance.saveEditData();
-
-		isValid = instance.__isValid;
-
-		if (isValid === undefined) {
-			isValid = true;
-		}
-		if (!isValid) {
-			alert("값을 입력하세요");
-			return false;
-		}
-
-		return true;
 	},
 
 	setFocus: function(gridID, rowIndex, dataField) {
@@ -677,8 +764,10 @@ const dxGrid = {
 				eventObject.rowData = eventObject.data;
 				eventObject.instance = eventObject.component;
 
+				__clickedCell = eventObject;
+
 				dxGrid.method.__executeListener("onCellClick", eventObject, function () {
-					Listener.grid.onCellClick(gridID, eventObject.text, eventObject.value, eventObject.rowIndex, eventObject.dataField, eventObject.rowData, eventObject.row, eventObject.column, eventObject.instance, eventObject.event);
+					Listener.grid.onCellClick(gridID, eventObject.text, eventObject.value, eventObject.rowIndex, eventObject.dataField, eventObject.rowData, eventObject.row, eventObject.column, eventObject.columnIndex, eventObject.instance, eventObject.event);
 				});
 			});
 			instance.option("onContentReady", function (eventObject) {
@@ -694,7 +783,6 @@ const dxGrid = {
 				eventObject.rowData = eventObject.data;
 				eventObject.value = eventObject.component.cellValue(eventObject.rowIndex, eventObject.column.dataField);
 				eventObject.instance = eventObject.component;
-				__currentEditingColumn = eventObject;
 
 				dxGrid.method.__executeListener("onEditingStart", eventObject, function () {
 					Listener.grid.onEditingStart(gridID, eventObject.value, eventObject.rowIndex, eventObject.dataField, eventObject.rowData, eventObject.instance);
@@ -758,10 +846,9 @@ const dxGrid = {
 			instance.option("onRowClick", function (eventObject) {
 				eventObject.rowData = eventObject.data;
 				eventObject.rowKey = eventObject.key;
-				eventObject.columns = eventObject.columns;
 
 				dxGrid.method.__executeListener("onRowClick", eventObject, function () {
-					Listener.grid.onRowClick(gridID, eventObject.rowIndex, eventObject.rowData, eventObject.rowKey, eventObject.columns);
+					Listener.grid.onRowClick(gridID, eventObject.rowIndex, eventObject.rowData, eventObject.rowKey, eventObject.columns, eventObject.rowType);
 				});
 			});
 			instance.option("onRowInserted", function (eventObject) {
@@ -781,22 +868,23 @@ const dxGrid = {
 					Listener.grid.onCellUpdated(gridID, eventObject.rowIndex, eventObject.dataField, eventObject.rowData);
 				});
 			});
-			instance.option("onRowValidating", function (eventObject) {
-				eventObject.instance = eventObject.component
-				let isValid = eventObject.isValid;
-				let bfValid = eventObject.instance.__isValid;
-
-				if (bfValid === false) {
-					eventObject.instance.__isValid = false;
-				} else {
-					eventObject.instance.__isValid = isValid;
-				}
-
-				dxGrid.method.__executeListener("onRowValidating", eventObject, function () {
-					Listener.grid.onRowValidating(gridID, eventObject.instance, eventObject.brokenRules, eventObject.isValid, eventObject.key, eventObject.newData, eventObject.oldData, eventObject.errorText);
-				});
-			});
 			instance.option("onSelectionChanged", function (eventObject) {
+				let instance = eventObject.component;
+				let dataSource = instance.getDataSource();
+				let selectedRowKey = eventObject.currentSelectedRowKeys[0];
+				let deselectRowKey = eventObject.currentDeselectedRowKeys[0];
+
+				dataSource.store().load().done(function (allData) {
+					let row = allData.filter(function (item) {
+						return (item.__rowKey === selectedRowKey || item.__rowKey === deselectRowKey);
+					});
+					if (row) {
+						row = row[0];
+						row.check = !row.check;
+						dataSource.store().update(row.__rowKey, row);
+					}
+				});
+
 				dxGrid.method.__executeListener("onSelectionChanged", eventObject, function () {
 					Listener.grid.onSelectionChanged(gridID, eventObject.currentSelectedRowKeys, eventObject.currentDeselectedRowKeys, eventObject.selectedRowsData);
 				});
@@ -958,8 +1046,6 @@ const dxGrid = {
 							}
 						}
 					},
-					onFocusIn: function (evt) {
-					},
 					onFocusOut: function (evt) {
 						let relatedTarget = evt.event.relatedTarget;
 
@@ -1039,6 +1125,7 @@ const dxGrid = {
 			}
 		},
 
+		// cascading value change event
 		__configSelectBox: function (key, __keyMap) {
 			this.setCellValue = function (rowData, value) {
 				rowData[key] = value;
@@ -1094,7 +1181,7 @@ const dxGrid = {
 						format: {type: "percent", precision: precision}
 					};
 				case "date":
-					return {dataType: "date", format: "yyyy-mm-dd"};
+					return {dataType: "date", format: "yyyy-MM-dd"};
 				case "check":
 					return {dataType: "boolean", alignment: "center"};
 				case "password":
@@ -1111,13 +1198,13 @@ const dxGrid = {
 		},
 
 		__onCellUpdatEvent: function (gridID, oldData, newData) {
-			if (Object.keys(__currentEditingColumn).length === 0) {
+			if (Object.keys(__clickedCell).length === 0) {
 				return;
 			}
-			let rowIndex = __currentEditingColumn.rowIndex;
-			let dataField = __currentEditingColumn.column.dataField;
-			let rowData = __currentEditingColumn.data;
-
+			let rowIndex = __clickedCell.rowIndex;
+			let dataField = __clickedCell.column.dataField;
+			let rowData = __clickedCell.data;
+			let ColumnIndex = __focusedCell.columnIndex;
 			dxGrid.method.__executeListener("onCellUpdating", {gridID: gridID, value: oldData, rowIndex: rowIndex, dataField: dataField}, function () {
 				Listener.grid.onCellUpdating(gridID, oldData, rowIndex, dataField);
 			});
@@ -1126,12 +1213,20 @@ const dxGrid = {
 				rowData = dxGrid.getRowData(gridID, rowIndex);
 				rowData[dataField] = newData;
 
-				dxGrid.method.__executeListener("onCellUpdated", {gridID: gridID, rowIndex: rowIndex, dataField: dataField, rowData: rowData}, function () {
-					Listener.grid.onCellUpdated(gridID, rowIndex, dataField, rowData);
+				dxGrid.method.__executeListener("onCellUpdated", {gridID: gridID, rowIndex: rowIndex, ColumnIndex: ColumnIndex, dataField: dataField, ColumnValue : newData, rowData: rowData}, function () {
+					Listener.grid.onCellUpdated(gridID, rowIndex, ColumnIndex, dataField, newData, rowData);
 				});
 			}
-		}
+		},
 
+		__setRowIndex: function (gridID, rowIndex) {
+			let instance = dxGrid.getGridInstance(gridID);
+			let allData = instance.getDataSource().store()._array;
+
+			for(let i = rowIndex ; i < allData.length ; i++) {
+				allData[i].__rowIndex = i;
+			}
+		},
 	},
 	/**
 	 * SelectBox 객체. parentCode 가 상위 코드
