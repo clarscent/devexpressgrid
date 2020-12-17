@@ -170,7 +170,7 @@ $(document).ready(function () {
 		$el = $(evt.currentTarget);
 		let gridID = $el.attr("data-grid-id");
 
-		dxGrid.addRow(gridID, {ORG_ID: "AAAA"});
+		dxGrid.addRow(gridID, {BRD_GRP2_NM: "AAAA"});
 	});
 
 	$("button[data-type='deleteRow']").on("click", function (evt) {
@@ -205,14 +205,14 @@ $(document).ready(function () {
 		$el = $(evt.currentTarget);
 		let gridID = $el.attr("data-grid-id");
 
-		dxGrid.setFocus(gridID, 4, "ADM_ID");
+		dxGrid.setFocus(gridID, 4, "STK_QTY");
 	});
 
 	$("button[data-type='setRowData']").on("click", function (evt) {
 		$el = $(evt.currentTarget);
 		let gridID = $el.attr("data-grid-id");
 
-		dxGrid.setRowData(gridID, 5, { ORG_ID: "aaa", NODE_TYPE: "ssss", NODE_IP: "3dd", ADM_ID: "fff", ADM_PWD: "gg", SRV_ID: "sxc", SRV_PWD: "aa"});
+		dxGrid.setRowData(gridID, 5, { BRD_GRP1_NM: "aaa", BRD_GRP2_NM: "ssss", PROD_CD: "3dd", PROD_NAME: "fff", STK_QTY: 1, STORE_STK_QTY: 2, WT_QTY: 3});
 	});
 
 	$("button[data-type='getRowData']").on("click", function (evt) {
@@ -226,14 +226,14 @@ $(document).ready(function () {
 		$el = $(evt.currentTarget);
 		let gridID = $el.attr("data-grid-id");
 
-		dxGrid.setCellValue(gridID, 3, "ADM_ID", "aaa");
+		dxGrid.setCellValue(gridID, 3, "PROD_NAME", "aaasdasdaa");
 	});
 
 	$("button[data-type='getCellValue']").on("click", function (evt) {
 		$el = $(evt.currentTarget);
 		let gridID = $el.attr("data-grid-id");
 
-		console.log("7, NODE_IP CellValue", dxGrid.getCellValue(gridID, 7, "NODE_IP"));
+		console.log("7, PROD_NAME 상품명", dxGrid.getCellValue(gridID, 7, "PROD_NAME"));
 	});
 
 	$("button[data-type='getTotRowCount']").on("click", function (evt) {

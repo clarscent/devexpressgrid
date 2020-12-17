@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" type="text/css" href="css/dx.common.css"/>
+<link rel="stylesheet" type="text/css" href="css/dx.grid.custom.css"/>
+<script src="js/jquery-3.5.1.js"></script>
+<script src="js/lodash-4.17.15.min.js"></script>
+<script src="js/jszip.min.js"></script>
+<script src="js/dx.custom.js"></script>
+<script src="js/dx.grid.js"></script>
+</head>
+
+<body class="dx-viewport">
+<h1>그리드 포커스 샘플 (CHK 건너뛰기)</h1>
+<div class="form-content">
+	<div class="grid-container" id="gridObj1"></div>
+</div>
+
+<script>
+function fn_checkbox(gridID,rowIndex){
+	console.log("fn_checkbox________________________ row idx:"+rowIndex);
+	// undefined === false
+	console.log("check before:"+dxGrid.getCellValue(gridID,rowIndex,"CHK"));
+	dxGrid.setCellValue(gridID,rowIndex,"CHK",true);
+	console.log("check__________________________________"+rowIndex);
+}
+
+////////////////////////////////////////////// 수정한 부분 시작 //////////////////////////////////////////////////////////////
+// 편집 그리드에서 첫 번째 "선택" row 로 포커스 가지 않게 함
+Listener.grid.onKeyDown = function (gridID, rowIndex, columnIndex, dataField, value, keyCode, rowData, event) {
+	if (gridID === "gridObj1" && keyCode == "13") {
+		let flag;
+		let columnArr = dxGrid.getGridInstance(gridID).option("columns");
+		let lastRowIndex = dxGrid.getTotRowCount(gridID) - 1;
+		let lastColIndex = columnArr.length - 1;
+		let nextRowIndex = rowIndex;
+		let nextColIndex, nextColName;
+
+		// 다음 포커스가 될 dataField 찾기
+		for ( nextColIndex = columnIndex ; ; ) {
+			nextColIndex = getNextColumnIndex(columnArr, nextColIndex);
+
+			if (nextColIndex > lastColIndex) {
+				nextColIndex = 0;
+			}
+
+			nextColName = columnArr[nextColIndex].dataField;
+
+			if (nextColName === "CHK") {
+				flag = true;
+				continue;
+			} else {
+				break;
+			}
+		}
+
+		// 개행 시, 행 추가
+		if (columnIndex === lastColIndex) {
+			nextRowIndex++;
+
+			if (rowIndex === lastRowIndex) {
+				dxGrid.addRow(gridID).done(function () {
+					event.preventDefault();
+					dxGrid.setFocus(gridID, nextRowIndex, nextColName);
+				});
+			}
+		}
+
+		if (flag) {
+			event.preventDefault();
+			dxGrid.setFocus(gridID, nextRowIndex, nextColName);
+		}
+	}
+};
+
+function getNextColumnIndex (columns, columnIndex) {
+	// 마지막 컬럼일 때
+	if (columnIndex === columns.length - 1) {
+		return 0;
+	} else {
+		return columnIndex + 1;
+	}
+};
+////////////////////////////////////////////// 수정한 부분 끝 //////////////////////////////////////////////////////////////
+
+Listener.grid.onCellUpdating= function (gridID, value, rowIndex, dataField) {
+	console.log("onCellUpdating >> ");
+	console.log(gridID, value, rowIndex, dataField);
+	fn_checkbox(gridID,rowIndex);
+};
+
+$(document).ready(function () {
+	let band, columns, footer, gridID = "gridObj1";
+
+	let BIRTH_YEAR ;
+	var returnValue = new Array();
+	var i = 1980;
+	for (i; i > 1900; i--)
+		returnValue.push({"CODE":i, "NAME":i});
+
+	if (returnValue != null && returnValue.length > 0) {
+		BIRTH_YEAR = returnValue;
+	}
+
+	let SEX_GB_CD = [{"CODE":"남","NAME":"남"},{"CODE":"여","NAME":"여"}];
+
+	columns = [
+		new Column("선택"             , "CHK"             , "50px"       , "check"          , {"readOnly":false , "align":"center"}),
+		new Column("출생년도"         , "BIRTH_YEAR"      , "90px"       , "selectBox"      , {"readOnly":false , "align":"center" , dataSource:BIRTH_YEAR}),
+		new Column("성별"             , "SEX_GB_CD"       , "90px"       , "selectBox"      , {"readOnly":false , "align":"center" , dataSource:SEX_GB_CD}),
+	]
+
+	dxGrid.initGrid(gridID, "300", "500", { checkbox: false, editable: true, sortable: true } );
+	dxGrid.setColumn(gridID, columns);
+
+	////////////////////////////////////////////// 수정한 부분 시작 //////////////////////////////////////////////////////////////
+
+	// addRow() 시, setFocus를 사용하려면 아래와 같이 사용 //
+	dxGrid.addRow("gridObj1").done(function () {
+		dxGrid.setFocus("gridObj1", 0, "BIRTH_YEAR");
+	});
+
+	////////////////////////////////////////////// 수정한 부분 끝 //////////////////////////////////////////////////////////////
+});
+
+</script>
+<button type="button" data-type="setFocus" data-grid-id="grid1">좌표이동</button>
+</body>
+</html>

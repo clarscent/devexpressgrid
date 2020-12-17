@@ -10,7 +10,8 @@
 <script src="js/lodash-4.17.15.min.js"></script>
 <script src="js/jszip.min.js"></script>
 <script src="js/dx.custom.js"></script>
-<script src="js/dx.grid.js"></script>
+<script src="../test2/js/dx.grid.js"></script>
+<!--<script src="js/dx.grid.js"></script>-->
 
 <!-- data -->
 <script src="sample3Data.js"></script>
@@ -31,7 +32,7 @@ let gridInit = function () {
 		new Column("이름","FirstName","150","text"						,{align: "center", maxLength:"20"}),
 		new Column("성","LastName","250","text"							,{align: "center", maxLength:"15"}),
 		new Column("성별","Prefix","250","text"							,{align: "center", maxLength:"20"}),
-		new Column("직위","Position","180","text"						,{align: "center", maxLength:"15"}),
+		new Column("직위","Position","180","text"						,{align: "center", maxLength:"15", filter: true}),
 		new Column("코드헬프(코드)","DayCode","180","codeHelp"			,{align: "center", maxLength:"20", dataSource: sb1, codeNameField: "DayName"}), // sb1 의 json object 들의 키 값은 반드시 "NAME", "CODE" 이어야 합니다.
 		new Column("코드헬프(코드명)","DayName","180","text"			,{align: "center", maxLength:"15"}),
 	];
@@ -74,6 +75,13 @@ $(document).ready(function () {
 		console.log("체크 데이터", dxGrid.getCheckedData(gridID));
 	});
 
+	$("button[data-type='empty']").on("click", function (evt) {
+		$el = $(evt.currentTarget);
+		let gridID = $el.attr("data-grid-id");
+
+		dxGrid.setEmptyGrid(gridID);
+	});
+
 });
 </script>
 </head>
@@ -85,6 +93,7 @@ $(document).ready(function () {
 	<button type="button" data-type="deleteRow" data-grid-id="grid1">삭제</button>
 	<button type="button" data-type="listData" data-grid-id="grid1">전체 조회(콘솔)</button>
 	<button type="button" data-type="listCheckData" data-grid-id="grid1">체크된 행만 조회(콘솔)</button>
+	<button type="button" data-type="empty" data-grid-id="grid1">빈 그리드 만들기</button>
 </div>
 <br><br>
 <div class="form-content">

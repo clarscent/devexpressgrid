@@ -73,7 +73,7 @@ const Logger = {
 // 필수 변수
 let __focusedCell = {};
 let __focusedRow = {};
-let __clickedCell = {};
+let __editingCell = {};
 
 // Event listener
 let Listener = {
@@ -85,7 +85,7 @@ let Listener = {
 		onFocusedCellChanged: function (gridID, rowIndex, dataField, instance) {},
 		onFocusedRowChanged: function (gridID, rowIndex, rowData) {},
 		onInitialized: function (gridID) {},
-		onKeyDown: function (gridID, rowIndex, columnIndex, dataField, value, keyCode, rowData) {},
+		onKeyDown: function (gridID, rowIndex, columnIndex, dataField, value, keyCode, rowData, event) {},
 		onRowClick: function (gridID, rowIndex, rowData, rowKey, columns, rowType) {},
 		onRowInserted: function (gridID, rowIndex, rowData) {},
 		onCellUpdating: function (gridID, value, rowIndex, dataField) {},
@@ -158,7 +158,9 @@ const Column = function (caption, dataField, width, dataType, options) {
 
 			$btn.on("click", function () {
 				if (options && options.callBackFn) {
-					options.callBackFn(element, info);
+					let gridID = info.component._$element[0].attributes["id"].value;
+
+					options.callBackFn(gridID, element, info);
 				}
 			});
 
@@ -326,6 +328,7 @@ const dxGrid = {
 			const showRowIndex = option.showRowIndex;
 
 			if (checkbox) {
+				instance.__checkBoxMode = true;
 				instance.option("selection.showCheckBoxesMode", "always");
 			} else {
 				instance.option("selection.showCheckBoxesMode", "none");
@@ -404,10 +407,10 @@ const dxGrid = {
 			// 체크박스 (-2) 컬럼엔 이벤트 걸지 않음
 			if (evt.index != -2) { 
 				evt.editorOptions.onValueChanged = function (args) {
-					evt.setValue && evt.setValue(args.value, args)
+					evt.setValue && evt.setValue(args.value, args);
 					let oldData = args.previousValue;
 					let newData = args.value;
-					dxGrid.method.__onCellUpdatEvent(gridID, oldData, newData);
+					dxGrid.method.__onCellUpdatEvent(gridID, oldData, newData, evt.row.rowIndex, evt.dataField, evt.row.data, evt.index);
 				}
 			}
 			if (evt.lookup != undefined) {
@@ -416,7 +419,7 @@ const dxGrid = {
 					evt.component.refresh(true).done(function () {
 						let oldData = args.previousValue;
 						let newData = args.value;
-						dxGrid.method.__onCellUpdatEvent(gridID, oldData, newData);
+						dxGrid.method.__onCellUpdatEvent(gridID, oldData, newData, evt.row.rowIndex, evt.dataField, evt.row.data, evt.index);
 					});
 				}
 				evt.editorOptions.placeholder = "";
@@ -566,7 +569,7 @@ const dxGrid = {
 	addRow: function (gridID, data, rowIndex) {
 		let instance = dxGrid.getGridInstance(gridID);
 		let dataSource = instance.getDataSource();
-		let firstColumnIndex = 1;
+
 		instance.option("focusedRowEnabled", false);
 
 		if (data == undefined) {
@@ -588,24 +591,16 @@ const dxGrid = {
 			dxGrid.method.__setRowIndex(gridID, rowIndex);
 		});
 
-		instance.refresh().done( function () {
+		return instance.refresh().done( function () {
 			instance.option("focusedRowEnabled", true);
 
-			let columns = instance.option("columns");
-
-			for (let i = 0 ; i < columns.length ; i++) {
-				if (!columns[i].fixed) {
-					firstColumnIndex = i;
-					break;
-				}
+			let firstColumnIndex = 0
+			if (instance.__checkBoxMode) {
+				firstColumnIndex = 1;
 			}
 
-			// fixed Column 이 없을 때
-			if (firstColumnIndex === 0) {
-				firstColumnIndex = 1;
-				if (instance.__showRowIndex) {
-					firstColumnIndex++;
-				}
+			if (instance.__showRowIndex) {
+				firstColumnIndex++;
 			}
 
 			dxGrid.method.__setFocusOnCell(instance, rowIndex, firstColumnIndex);
@@ -691,9 +686,10 @@ const dxGrid = {
 	setFocus: function(gridID, rowIndex, dataField) {
 		let instance = dxGrid.getGridInstance(gridID);
 		let $cellEl = instance.getCellElement(rowIndex, dataField);
-		let colIndex = $cellEl.get(0).cellIndex;
-
-		dxGrid.method.__setFocusOnCell(instance, rowIndex, colIndex);
+		if ($cellEl) {
+			let colIndex = $cellEl.get(0).cellIndex;
+			dxGrid.method.__setFocusOnCell(instance, rowIndex, colIndex);
+		}
 	},
 
 	/**
@@ -708,7 +704,13 @@ const dxGrid = {
 
 	setEmptyGrid: function(gridID) {
 		let instance = dxGrid.getGridInstance(gridID);
+		let columns = instance.option("columns");
+
 		dxGrid.setGridData(gridID, []);
+		for (let i = 0 ; i < columns.length ; i++) {
+			instance.columnOption(columns[i].dataField, "filterValues", []);
+		}
+
 		instance.refresh().done(function () {
 			dxGrid.method.__executeListener("onInitialized", {gridID: gridID}, function () {
 				Listener.grid.onInitialized(gridID);
@@ -746,16 +748,10 @@ const dxGrid = {
 		},
 
 		__setFocusOnCell: function (instance, rowIndex, colIndex) {
-			let columnCount = instance.columnCount();
-
-			if (colIndex > columnCount) {
-				colIndex = 1;
-				rowIndex += 1;
-			}
-
 			let currentCellElement = instance.getCellElement(rowIndex, colIndex);
 			instance.focus(currentCellElement);
 			$(currentCellElement).trigger("click");
+			instance.editCell(rowIndex, colIndex);
 		},
 
 		/**
@@ -798,10 +794,8 @@ const dxGrid = {
 				eventObject.rowData = eventObject.data;
 				eventObject.instance = eventObject.component;
 
-				__clickedCell = eventObject;
-
 				dxGrid.method.__executeListener("onCellClick", eventObject, function () {
-					Listener.grid.onCellClick(gridID, eventObject.text, eventObject.value, eventObject.rowIndex, eventObject.dataField, eventObject.rowData, eventObject.row, eventObject.column, eventObject.columnIndex, eventObject.instance, eventObject.event);
+					Listener.grid.onCellClick(gridID, eventObject.text, eventObject.value, eventObject.rowIndex, eventObject.dataField, eventObject.rowData, eventObject.row, eventObject.column, eventObject.column.index, eventObject.instance, eventObject.event);
 				});
 			});
 			instance.option("onContentReady", function (eventObject) {
@@ -814,9 +808,9 @@ const dxGrid = {
 				// 셀 클릭했을 때, value 앞에 포커스 설정 (IE버그)
 				let $el = eventObject.element;
 				let $input = $el.find("div.dx-editor-outlined input.dx-texteditor-input");
-				if (__clickedCell && $input.length == 1) {
-					let column = __clickedCell.column;
-					let rowIndex = __clickedCell.rowIndex;
+				if (__editingCell.key && $input.length == 1) {
+					let column = __editingCell.column;
+					let rowIndex = __editingCell.rowIndex;
 
 					if (column) {
 						if (!column.__selectBox) {
@@ -828,6 +822,11 @@ const dxGrid = {
 				}
 			});
 			instance.option("onEditingStart", function (eventObject) {
+
+				if (eventObject.column.dataTypes !== "check") {
+					__editingCell = eventObject;
+				}
+
 				eventObject.rowIndex = eventObject.component.getRowIndexByKey(eventObject.key);
 				eventObject.dataField = eventObject.column ? eventObject.column.dataField: undefined;
 				eventObject.rowData = eventObject.data;
@@ -855,7 +854,7 @@ const dxGrid = {
 					row: eventObject.row,
 					column: eventObject.column,
 					rowIndex: eventObject.rowIndex,
-					columnIndex: eventObject.columnIndex,
+					columnIndex: eventObject.column ? eventObject.column.index: undefined
 				}
 				eventObject.dataField = eventObject.column ? eventObject.column.dataField: undefined;
 				eventObject.instance = eventObject.component;
@@ -890,7 +889,7 @@ const dxGrid = {
 				eventObject.rowData = __focusedRow.data;
 
 				dxGrid.method.__executeListener("onKeyDown", eventObject, function () {
-					Listener.grid.onKeyDown(gridID, eventObject.rowIndex, eventObject.columnIndex,eventObject.dataField, eventObject.value, eventObject.keyCode, eventObject.rowData);
+					Listener.grid.onKeyDown(gridID, eventObject.rowIndex, eventObject.columnIndex,eventObject.dataField, eventObject.value, eventObject.keyCode, eventObject.rowData, eventObject.event);
 				});
 			});
 			instance.option("onRowClick", function (eventObject) {
@@ -908,16 +907,6 @@ const dxGrid = {
 					Listener.grid.onRowInserted(gridID, eventObject.rowIndex, eventObject.rowData);
 				});
 			});
-			instance.option("onCellUpdating", function (eventObject) {
-				dxGrid.method.__executeListener("onCellUpdating", eventObject, function () {
-					Listener.grid.onCellUpdating(gridID, eventObject.value, eventObject.rowIndex, eventObject.dataField);
-				});
-			});
-			instance.option("onCellUpdated", function (eventObject) {
-				dxGrid.method.__executeListener("onCellUpdated", eventObject, function () {
-					Listener.grid.onCellUpdated(gridID, eventObject.rowIndex, eventObject.dataField, eventObject.rowData);
-				});
-			});
 			instance.option("onSelectionChanged", function (eventObject) {
 				let instance = eventObject.component;
 				let dataSource = instance.getDataSource();
@@ -928,7 +917,7 @@ const dxGrid = {
 					let row = allData.filter(function (item) {
 						return (item.__rowKey === selectedRowKey || item.__rowKey === deselectRowKey);
 					});
-					if (row) {
+					if (row && row.length > 0) {
 						row = row[0];
 						row.check = !row.check;
 						dataSource.store().update(row.__rowKey, row);
@@ -1046,6 +1035,11 @@ const dxGrid = {
 				let colIndex = options.columnIndex;
 				let target = options.column.dataField;
 				let isExist = false;
+				let oldTargetData = options.text;
+				let oldNameTargetData = dxGrid.getCellValue(gridID, rowIndex, nameTarget);
+				let rowData = dxGrid.getRowData(gridID, rowIndex);
+				let targetIndex = gridInstance.columnOption(target).index;
+				let nameTargetIndex = gridInstance.columnOption(nameTarget).index;
 
 				const __codeHelpCellCallBack = function () {
 					let value = options.value;
@@ -1083,7 +1077,7 @@ const dxGrid = {
 						let oldData = args.previousValue;
 						let newData = args.value;
 
-						dxGrid.method.__onCellUpdatEvent(gridID, oldData, newData);
+						dxGrid.method.__onCellUpdatEvent(gridID, oldData, newData, rowIndex, target, rowData, targetIndex);
 					},
 					maxLength: maxLength,
 					onKeyDown: function(evt) {
@@ -1156,9 +1150,11 @@ const dxGrid = {
 							gridInstance.cellValue(rowIndex, nameTarget, focusedName);
 
 							gridInstance.refresh(true).done(function () {
-								let oldData = options.text;
-								let newData = focusedCode;
-								dxGrid.method.__onCellUpdatEvent(gridID, oldData, newData);
+								let newTargetData = focusedCode;
+								let newNameTargetData = focusedName;
+
+								dxGrid.method.__onCellUpdatEvent(gridID, oldTargetData, newTargetData, rowIndex, target, rowData, targetIndex);
+								dxGrid.method.__onCellUpdatEvent(gridID, oldNameTargetData, newNameTargetData, rowIndex, nameTarget, rowData, nameTargetIndex);
 							});
 
 							Popup.hide(popupID);
@@ -1247,14 +1243,7 @@ const dxGrid = {
 			}
 		},
 
-		__onCellUpdatEvent: function (gridID, oldData, newData) {
-			if (Object.keys(__clickedCell).length === 0) {
-				return;
-			}
-			let rowIndex = __clickedCell.rowIndex;
-			let dataField = __clickedCell.column.dataField;
-			let rowData = __clickedCell.data;
-			let ColumnIndex = __focusedCell.columnIndex;
+		__onCellUpdatEvent: function (gridID, oldData, newData, rowIndex, dataField, rowData, ColumnIndex) {
 			dxGrid.method.__executeListener("onCellUpdating", {gridID: gridID, value: oldData, rowIndex: rowIndex, dataField: dataField}, function () {
 				Listener.grid.onCellUpdating(gridID, oldData, rowIndex, dataField);
 			});
