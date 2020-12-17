@@ -675,9 +675,8 @@ const dxGrid = {
 		let columns = instance.option("columns");
 
 		dxGrid.setGridData(gridID, []);
-		for (let i = 0 ; i < columns.length ; i++) {
-			instance.columnOption(columns[i].dataField, "filterValues", []);
-		}
+		instance.clearFilter();
+		instance.clearSorting();
 
 		instance.refresh().done(function () {
 			dxGrid.method.__executeListener("onInitialized", {gridID: gridID}, function () {
@@ -926,7 +925,7 @@ const dxGrid = {
 						"Help Popup 컬럼 DataSource의 키 값은 CODE, NAME 이어야 합니다.";
 					dxGrid.method.__checkDataSourceJsonKey(dataSource, text, ["CODE", "NAME"]);
 
-					_.merge(col, new dxGrid.method.__configCodeHelp(gridID, col.__dataSource, col.__nameTarget, col))
+					_.merge(col, new dxGrid.method.__configCodeHelp(gridID, col.__dataSource, col.__nameTarget, col));
 				} else if (col.__selectBox) {
 					let dataSource = col.__dataSource;
 
