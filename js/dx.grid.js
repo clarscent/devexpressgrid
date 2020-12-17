@@ -374,15 +374,16 @@ const dxGrid = {
 			// 체크박스 (-2) 컬럼엔 이벤트 걸지 않음
 			if (evt.index != -2) {
 				evt.editorOptions.onValueChanged = function (args) {
-					evt.setValue && evt.setValue(args.value, args);
+					evt.setValue(args.value);
 					let oldData = args.previousValue;
 					let newData = args.value;
 					dxGrid.method.__onCellUpdatEvent(gridID, oldData, newData, evt.row.rowIndex, evt.dataField, evt.row.data, evt.index);
 				}
 			}
+
 			if (evt.lookup != undefined) {
 				evt.editorOptions.onValueChanged = function (args) {
-					evt.setValue && evt.setValue(args.value, args);
+					evt.setValue(args.value);
 					evt.component.refresh(true).done(function () {
 						let oldData = args.previousValue;
 						let newData = args.value;
@@ -760,6 +761,10 @@ const dxGrid = {
 				eventObject.rowData = eventObject.data;
 				eventObject.instance = eventObject.component;
 
+				if (eventObject.column === undefined) {
+					return;
+				}
+
 				dxGrid.method.__executeListener("onCellClick", eventObject, function () {
 					Listener.grid.onCellClick(gridID, eventObject.text, eventObject.value, eventObject.rowIndex, eventObject.dataField, eventObject.rowData, eventObject.row, eventObject.column, eventObject.column.index, eventObject.instance, eventObject.event);
 				});
@@ -834,7 +839,7 @@ const dxGrid = {
 				eventObject.rowData = __focusedRow.data;
 
 				dxGrid.method.__executeListener("onKeyDown", eventObject, function () {
-					Listener.grid.onKeyDown(gridID, eventObject.rowIndex, eventObject.columnIndex,eventObject.dataField, eventObject.value, eventObject.keyCode, eventObject.rowData);
+					Listener.grid.onKeyDown(gridID, eventObject.rowIndex, eventObject.columnIndex,eventObject.dataField, eventObject.value, eventObject.keyCode, eventObject.rowData, eventObject.event);
 				});
 			});
 			instance.option("onRowClick", function (eventObject) {
