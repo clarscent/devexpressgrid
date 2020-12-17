@@ -674,13 +674,14 @@ const dxGrid = {
 
 	setRowData: function(gridID, rowIndex, rowData) {
 		let instance = dxGrid.getGridInstance(gridID);
+		instance.saveEditData();
+
 		let rowKey = instance.getKeyByRowIndex(rowIndex);
+		let dataSource = instance.getDataSource();
 
-		let store = instance.getDataSource().store();
-
-		store.update(rowKey, rowData).done(function(values) {
-			instance.refresh();
-		}).fail(function(error) {});
+		dataSource.store().update(rowKey, rowData).then(function () {
+			dataSource.load();
+		});
 	},
 
 	setFocus: function(gridID, rowIndex, dataField) {
