@@ -6,12 +6,10 @@
 <!-- dxDataGrid -->
 <link rel="stylesheet" type="text/css" href="css/dx.common.css"/>
 <link rel="stylesheet" type="text/css" href="css/dx.grid.custom.css"/>
-<script src="js/jquery-3.5.1.js"></script>
-<script src="js/lodash-4.17.15.min.js"></script>
+<script src="js/jquery-3.5.1.min.js"></script>
 <script src="js/jszip.min.js"></script>
 <script src="js/dx.custom.js"></script>
-<script src="../test2/js/dx.grid.js"></script>
-<!--<script src="js/dx.grid.js"></script>-->
+<script src="js/dx.grid.js"></script>
 
 <!-- data -->
 <script src="sample3Data.js"></script>
@@ -34,7 +32,7 @@ let gridInit = function () {
 		new Column("성별","Prefix","250","text"							,{align: "center", maxLength:"20"}),
 		new Column("직위","Position","180","text"						,{align: "center", maxLength:"15", filter: true}),
 		new Column("코드헬프(코드)","DayCode","180","codeHelp"			,{align: "center", maxLength:"20", dataSource: sb1, codeNameField: "DayName"}), // sb1 의 json object 들의 키 값은 반드시 "NAME", "CODE" 이어야 합니다.
-		new Column("코드헬프(코드명)","DayName","180","text"			,{align: "center", maxLength:"15"}),
+		new Column("코드헬프(코드명)","DayName","180","text"			,{align: "center", maxLength:"15", readonly: true}),
 	];
 
 

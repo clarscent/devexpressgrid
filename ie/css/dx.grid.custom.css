@@ -5715,7 +5715,6 @@ body {
     min-height: 100%;
 }
 
-/* Edit ��� */
 .dx-datagrid-focus-overlay {
     border: transparent;
 }
@@ -5727,7 +5726,6 @@ body {
     border: 1px solid #dedede;
 }
 
-/* �÷��� ���� �� ����� �� �� ���� */
 .dx-freespace-row td {
     border-color: transparent!important
 }

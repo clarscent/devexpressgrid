@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>헤더 필터 초기화 / 컬럼 버튼 그리드 아이디</title>
+<link rel="stylesheet" type="text/css" href="css/dx.common.css"/>
+<link rel="stylesheet" type="text/css" href="css/dx.grid.custom.css"/>
+<script src="js/jquery-3.5.1.min.js"></script>
+<script src="js/jszip.min.js"></script>
+<script src="js/dx.custom.js"></script>
+<script src="js/dx.grid.js"></script>
+
+<!-- data -->
+<script src="sample.js"></script>
+
+<script type="text/javascript">
+let gridInit = function (gridID) {
+	////////////////////////////////////////////// 추가한 부분 시작 //////////////////////////////////////////////////////////////
+	// gridID 들어오도록 수정
+	let btnFn = function (gridID, element, info) {
+		console.log("gridID", gridID);
+		console.log("element", element);
+		console.log("info", info);
+		alert(gridID);
+	};
+	////////////////////////////////////////////// 추가한 부분 끝 //////////////////////////////////////////////////////////////
+
+	let columns = [
+		new Column("대분류","BRD_GRP1_NM","150","text"								,{align: "center", maxLength:"20"}),
+		new Column("상품코드(버튼컬럼)","PROD_CD","80","button"								,{align: "center", maxLength:"15", btnText: "상세", callBackFn: btnFn}), // 컬럼 버튼
+		new Column("중분류(헤더필터)","BRD_GRP2_NM","150","text"								,{align: "center", maxLength:"20", filter: true}), // 헤더 필터
+		new Column("택배수량","WT_QTY","80",{type: "number", precision: 2}			,{align: "center", maxLength:"15"}),
+	];
+
+	dxGrid.initGrid(gridID, 500, "600", {checkbox: true, editable: true, sortable: true});
+	dxGrid.setColumn(gridID, columns);
+	dxGrid.setGridData(gridID, testData);
+};
+
+$(document).ready(function () {
+
+	gridInit("grid1");
+
+	gridInit("grid2");
+
+	$("button[data-type='addRow']").on("click", function (evt) {
+		$el = $(evt.currentTarget);
+		let gridID = $el.attr("data-grid-id");
+
+		dxGrid.addRow(gridID);
+	});
+
+	$("button[data-type='deleteRow']").on("click", function (evt) {
+		$el = $(evt.currentTarget);
+		let gridID = $el.attr("data-grid-id");
+
+		dxGrid.deleteCheckedRow(gridID);
+	});
+
+	$("button[data-type='list']").on("click", function (evt) {
+		$el = $(evt.currentTarget);
+		let gridID = $el.attr("data-grid-id");
+
+		console.log("전체 데이터", dxGrid.getGridData(gridID));
+	});
+
+	$("button[data-type='listCheckData']").on("click", function (evt) {
+		$el = $(evt.currentTarget);
+		let gridID = $el.attr("data-grid-id");
+
+		console.log("체크 데이터", dxGrid.getCheckedData(gridID));
+	});
+
+	$("button[data-type='empty']").on("click", function (evt) {
+		$el = $(evt.currentTarget);
+		let gridID = $el.attr("data-grid-id");
+
+		dxGrid.setEmptyGrid(gridID);
+	});
+
+});
+</script>
+</head>
+<body>
+<h1>헤더 필터 초기화 / 컬럼 버튼 그리드 아이디</h1>
+<div>
+	<button type="button" data-type="addRow" data-grid-id="grid1">grid1 신규</button>
+	<button type="button" data-type="deleteRow" data-grid-id="grid1">grid1 삭제</button>
+	<button type="button" data-type="list" data-grid-id="grid1">grid1 전체 조회(콘솔)</button>
+	<button type="button" data-type="listCheckData" data-grid-id="grid1">grid1 체크된 행만 조회(콘솔)</button>
+	<button type="button" data-type="empty" data-grid-id="grid1">grid1 빈 그리드 만들기(필터 초기화)</button>
+</div><br><br>
+<div class="form-content">
+	<div class="grid-container" id="grid1" style="display: inline-block"></div>
+	<div style="display: inline-block"></div>
+	<div class="grid-container" id="grid2" style="display: inline-block"></div>
+</div>
+</body>
+</html>

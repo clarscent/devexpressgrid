@@ -89,7 +89,7 @@ let Listener = {
 		onRowClick: function (gridID, rowIndex, rowData, rowKey, columns, rowType) {},
 		onRowInserted: function (gridID, rowIndex, rowData) {},
 		onCellUpdating: function (gridID, value, rowIndex, dataField) {},
-		onCellUpdated: function (gridID, rowIndex, ColumnIndex, dataField, ColumnValue, rowData) {},
+		onCellUpdated: function (gridID, rowIndex, columnIndex, dataField, columnValue, rowData) {},
 		onSelectionChanged: function (gridID, currentSelectedRowKeys, currentDeselectedRowKeys, selectedRowsData) {},
 	},
 };
@@ -112,6 +112,7 @@ const Band = function (dataField, columns) {
 
 // 처음 컬럼 셋팅할 때 쓰는 객체
 const Column = function (caption, dataField, width, dataType, options) {
+	let btn;
 	this.caption = caption;
 	this.dataField = dataField;
 	this.width = width;
@@ -129,13 +130,13 @@ const Column = function (caption, dataField, width, dataType, options) {
 		dataType = "text";
 		options.columnType = new dxGrid.SelectBox(options.dataSource, options.parentDataField);
 	} else if (dataType === "rowIndex") {
-		this.cellTemplate = function(cellElement, cellInfo) {
-			cellElement.text(cellInfo.data.__rowIndex + 1);
+		this.cellTemplate = function($el, info) {
+			$el.text(info.data.__rowIndex + 1);
 		}
 	} else if (dataType === "textarea") {
 		this.__textarea = true;
-		this.cellTemplate = function (container, options) { // 개행 가능.
-			container.append($("<div>").html(options.text.replace(/\n/g, "<br/>")));
+		this.cellTemplate = function ($el, info) { // 개행 가능.
+			$el.append($("<div>").html(info.text.replace(/\n/g, "<br/>")));
 		}
 		this.editorOptions = {
 			onKeyDown: function(args){
@@ -145,7 +146,7 @@ const Column = function (caption, dataField, width, dataType, options) {
 			}
 		}
 	} else if (dataType === "button") {
-		this.cellTemplate = function (element, info) { // 개행 가능.
+		btn = function ($el, info) {
 			let $btn, btnTxt;
 
 			if (options && options.btnText) {
@@ -160,12 +161,16 @@ const Column = function (caption, dataField, width, dataType, options) {
 				if (options && options.callBackFn) {
 					let gridID = info.component._$element[0].attributes["id"].value;
 
-					options.callBackFn(gridID, element, info);
+					options.callBackFn(gridID, $el, info);
 				}
 			});
 
-			element.append($btn);
+			return $btn;
 		}
+
+		this.cellTemplate = function ($el, info) {
+			$el.append(btn($el, info));
+		};
 		this.allowEditing = false;
 	}
 
@@ -173,7 +178,7 @@ const Column = function (caption, dataField, width, dataType, options) {
 	this.dataTypes = dataType;
 
 	let dataTypeObj = dxGrid.method.__getDataFormat(dataType);
-	_.merge(this, dataTypeObj);
+	$.extend(true, this, dataTypeObj);
 
 	//options
 	if (options) {
@@ -187,35 +192,58 @@ const Column = function (caption, dataField, width, dataType, options) {
 		let filter = options.filter;
 		let columnType = options.columnType;
 
+		let div = function ($el, info, aStyle) {
+			let $div = $("<div>");
+
+			let style = "";
+
+			if (typeof aStyle == "function") {
+				style = aStyle(info.data);
+			} else {
+				style = aStyle;
+			}
+
+			if (style) {
+				const index = style.indexOf(":");
+
+				if (index > 0) {
+					const attribute = style.substr(0, index).trim();
+					const value = style.substr(index+1).trim();
+					$div.css(attribute, value);
+				} else {
+					$div.addClass(style);
+				}
+			}
+
+			return $div;
+		};
+
 		if (readonly) {
 			this.allowEditing = !readonly;
 		}
 
 		if (cellStyle) {
-			this.cellTemplate = function ($el, info) {
-				let $div = $("<div>").html(info.text);
+			if (dataType === "rowIndex") {
+				this.cellTemplate = function($el, info) {
+					let $div = div($el, info, cellStyle);
 
-				let style = "";
+					$div.html(info.data.__rowIndex + 1);
 
-				if (typeof cellStyle == "function") {
-					style = cellStyle(info.data);
-				} else {
-					style = cellStyle;
+					$el.append($div);
 				}
+			} else {
+				this.cellTemplate = function ($el, info) {
+					let $div = div($el, info, cellStyle);
 
-				if (style) {
-					const index = style.indexOf(":");
-
-					if (index > 0) {
-						const attribute = style.substr(0, index).trim();
-						const value = style.substr(index+1).trim();
-						$div.css(attribute, value);
+					if (dataType === "button") {
+						$div.append(btn($el, info));
 					} else {
-						$div.addClass(style);
+						$div.html(info.text.replace(/\n/g, "<br/>"));
 					}
-				}
-				$el.append($div);
-			};
+
+					$el.append($div);
+				};
+			}
 		}
 
 		if (headerStyle) {
@@ -249,7 +277,7 @@ const Column = function (caption, dataField, width, dataType, options) {
 		}
 
 		if (typeof columnType === "object") {
-			_.merge(this, columnType);
+			$.extend(true, this, columnType);
 		}
 
 		if (alignment) {
@@ -352,8 +380,9 @@ const dxGrid = {
 				instance.option("sorting", {mode: "none"});
 			}
 
-			if (showRowIndex) {
+			if (showRowIndex || typeof showRowIndex === "object") {
 				instance.__showRowIndex = true;
+				instance.__rowIndexStyle = showRowIndex;
 			}
 		}
 
@@ -369,7 +398,15 @@ const dxGrid = {
 
 		// rowIndex 추가
 		if (instance.__showRowIndex) {
-			columns.unshift(new Column("","","50px","rowIndex",{align: "right", fixed:"left", readonly:"true"}));
+			let rowIndex;
+
+			if (typeof instance.__rowIndexStyle === "object") {
+				rowIndex = new Column("","","50px","rowIndex",{align: "right", fixed:"left", readonly:"true", cellStyle:instance.__rowIndexStyle.cellStyle, headerStyle:instance.__rowIndexStyle.headerStyle});
+			} else {
+				rowIndex = new Column("","","50px","rowIndex",{align: "right", fixed:"left", readonly:"true"});
+			}
+			columns.unshift(rowIndex);
+
 			if (band) {
 				band.unshift(new Band(""));
 			}
@@ -399,13 +436,14 @@ const dxGrid = {
 
 			if (maxLength && maxLength > 0) {
 				evt.editorOptions.maxLength = maxLength;
+				evt.editorOptions.max = Math.pow(10, maxLength) - 1;
 			}
 
 			// 마우스 휠 할 때, 숫자 증감 해제
 			evt.editorOptions.step = 0;
 
 			// 체크박스 (-2) 컬럼엔 이벤트 걸지 않음
-			if (evt.index != -2) { 
+			if (evt.index != -2) {
 				evt.editorOptions.onValueChanged = function (args) {
 					evt.setValue(args.value);
 					let oldData = args.previousValue;
@@ -493,6 +531,8 @@ const dxGrid = {
 		instance.option("dataSource", data);
 		instance.option("focusedRowEnabled", true);
 		instance.option("focusedRowKey", false);
+
+		return instance.refresh();
 	},
 
 	setGridDataByUrl: function (gridID, url) {
@@ -542,7 +582,7 @@ const dxGrid = {
 		}
 
 		for (let j = 0 ; j < rowsData.length ; j++) {
-			_.merge(rowsData[j], {__rowIndex: rowIndex[j]});
+			$.extend(true, rowsData[j], {__rowIndex: rowIndex[j]});
 		}
 
 		return rowsData;
@@ -750,8 +790,9 @@ const dxGrid = {
 		__setFocusOnCell: function (instance, rowIndex, colIndex) {
 			let currentCellElement = instance.getCellElement(rowIndex, colIndex);
 			instance.focus(currentCellElement);
-			$(currentCellElement).trigger("click");
-			instance.editCell(rowIndex, colIndex);
+			if (instance.columnOption(colIndex).allowEditing) {
+				instance.editCell(rowIndex, colIndex);
+			}
 		},
 
 		/**
@@ -979,7 +1020,7 @@ const dxGrid = {
 						"Help Popup 컬럼 DataSource의 키 값은 CODE, NAME 이어야 합니다.";
 					dxGrid.method.__checkDataSourceJsonKey(dataSource, text, ["CODE", "NAME"]);
 
-					_.merge(col, new dxGrid.method.__configCodeHelp(gridID, col.__dataSource, col.__nameTarget, col));
+					$.extend(true, col, new dxGrid.method.__configCodeHelp(gridID, col.__dataSource, col.__nameTarget, col));
 				} else if (col.__selectBox) {
 					let dataSource = col.__dataSource;
 
@@ -998,7 +1039,7 @@ const dxGrid = {
 				for (let i = 0 ; i < __keys.length ; i++) {
 					let key = __keys[i];
 					if (key == col.dataField) {
-						_.merge(col, new dxGrid.method.__configSelectBox(key, __keyMap));
+						$.extend(true,col, new dxGrid.method.__configSelectBox(key, __keyMap));
 						break;
 					}
 				}
@@ -1195,7 +1236,7 @@ const dxGrid = {
 		__mergeBandAndColumn: function (band, columns) {
 			for (let k = 0 ; k < columns.length ; k++) {
 				if (band.dataField === columns[k].dataField) {
-					_.merge(band, columns[k]);
+					$.extend(true, band, columns[k]);
 					return band;
 				}
 			}
@@ -1222,7 +1263,7 @@ const dxGrid = {
 						dataType: "number"
 					}
 					if (precision != null) {
-						_.merge(obj, {format: {type: "fixedPoint", precision: precision}});
+						$.extend(true, obj, {format: {type: "fixedPoint", precision: precision}});
 					}
 					return obj;
 				case "percent":
@@ -1247,7 +1288,7 @@ const dxGrid = {
 			}
 		},
 
-		__onCellUpdatEvent: function (gridID, oldData, newData, rowIndex, dataField, rowData, ColumnIndex) {
+		__onCellUpdatEvent: function (gridID, oldData, newData, rowIndex, dataField, rowData, columnIndex) {
 			dxGrid.method.__executeListener("onCellUpdating", {gridID: gridID, value: oldData, rowIndex: rowIndex, dataField: dataField}, function () {
 				Listener.grid.onCellUpdating(gridID, oldData, rowIndex, dataField);
 			});
@@ -1256,8 +1297,8 @@ const dxGrid = {
 				rowData = dxGrid.getRowData(gridID, rowIndex);
 				rowData[dataField] = newData;
 
-				dxGrid.method.__executeListener("onCellUpdated", {gridID: gridID, rowIndex: rowIndex, ColumnIndex: ColumnIndex, dataField: dataField, ColumnValue : newData, rowData: rowData}, function () {
-					Listener.grid.onCellUpdated(gridID, rowIndex, ColumnIndex, dataField, newData, rowData);
+				dxGrid.method.__executeListener("onCellUpdated", {gridID: gridID, rowIndex: rowIndex, columnIndex: columnIndex, dataField: dataField, columnValue : newData, rowData: rowData}, function () {
+					Listener.grid.onCellUpdated(gridID, rowIndex, columnIndex, dataField, newData, rowData);
 				});
 			}
 		},

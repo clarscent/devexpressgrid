@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SEL_CHK true 인 부분만 데이터 가져오기</title>
+<link rel="stylesheet" type="text/css" href="css/dx.common.css"/>
+<link rel="stylesheet" type="text/css" href="css/dx.grid.custom.css"/>
+<script src="js/jquery-3.5.1.min.js"></script>
+<script src="js/jszip.min.js"></script>
+<script src="js/dx.custom.js"></script>
+<script src="js/dx.grid.js"></script>
+
+<!-- data -->
+<script src="sample.js"></script>
+<style>
+/*************************** 4번 예제 부분 시작 ***************************/
+/** footer 전체 css 적용하는 부분 **/
+.dx-datagrid-total-footer.dx-datagrid-nowrap {
+	background-color: red;
+}
+/*************************** 4번 예제 부분 끝 ***************************/
+
+.rowIndexData {
+	background-color: cornflowerblue;
+	color: papayawhip;
+}
+</style>
+<script>
+$(document).ready(function () {
+	gridInit("grid1");
+
+	$("button[data-type='addRow']").on("click", function (evt) {
+		$el = $(evt.currentTarget);
+		let gridID = $el.attr("data-grid-id");
+
+		dxGrid.addRow(gridID);
+	});
+
+	$("button[data-type='deleteRow']").on("click", function (evt) {
+		$el = $(evt.currentTarget);
+		let gridID = $el.attr("data-grid-id");
+
+		dxGrid.deleteCheckedRow(gridID);
+	});
+
+	$("button[data-type='setGridData']").on("click", function (evt) {
+		$el = $(evt.currentTarget);
+		let gridID = $el.attr("data-grid-id");
+
+		//////////////////////////// 3번 예제 부분 시작 ////////////////////////////
+
+		// setGridData() 호출 후, 첫번 째 row 에 포커스
+		dxGrid.setGridData(gridID, testData).done(function () {
+			dxGrid.setFocus(gridID, 0, "BRD_GRP1_NM");
+		});
+
+		//////////////////////////// 3번 예제 부분 끝 ////////////////////////////
+	});
+
+	$("button[data-type='list']").on("click", function (evt) {
+		$el = $(evt.currentTarget);
+		let gridID = $el.attr("data-grid-id");
+
+		let data = dxGrid.getGridData(gridID);
+		console.log("그리드 데이터", data);
+	});
+
+	//////////////////////////// 5번 예제 부분 시작 ////////////////////////////
+	// SEL_CHK 가 true 인 값을 가지고 오기
+	$("button[data-type='listCheckedData']").on("click", function (evt) {
+		$el = $(evt.currentTarget);
+		let gridID = $el.attr("data-grid-id");
+
+		let data = dxGrid.getGridData(gridID);
+		let checkedData = data.filter(function (item) {
+			return item["SEL_CHK"] === true;
+		});
+
+		console.log("체크된 데이터", checkedData);
+	});
+	//////////////////////////// 5번 예제 부분 끝 ////////////////////////////
+
+});
+
+let gridInit = function (gridID) {
+
+	let columns = [
+		new Column( "선택","SEL_CHK","50","check",{"readonly":false,"align":"center","fixed":"left"}),
+		new Column( "대분류","BRD_GRP1_NM","110","text",{"readonly":true,"align":"center","filter": true,"fixed":"left"}),
+		new Column( "중분류","BRD_GRP2_NM","110","text",{"readonly":true,"align":"center","filter": true,"fixed":"left"}),
+		new Column( "상품코드","PROD_CD","100","text",{"readonly":true,"align":"center","filter": true,"fixed":"left"}),
+		new Column( "상품명","PROD_NAME","270","text",{"readonly":true,"align":"left","filter": true,"fixed":"left"}),
+		new Column( "재고수량","STK_QTY","80","number",{"readonly":true,"align":"right","filter": true}),
+		new Column( "매장수량","STORE_STK_QTY","80","number",{"readonly":true,"align":"right","filter": true}),
+		new Column( "택배수량","WT_QTY","80","number",{"readonly":true,"align":"right","filter": true}),
+		new Column( "출고확정","OUT_QTY","80","number",{"readonly":true,"align":"right","filter": true}),
+		new Column( "지시대기","REQ_WT_QTY","80","number",{"readonly":true,"align":"right","filter": true}),
+		new Column( "출고대기","OUT_WT_QTY","80","number",{"readonly":true,"align":"right","filter": true}),
+		new Column( "재고금액(소비자가)","STK_AMT1","150","number",{"readonly":true,"align":"right","filter": true}),
+		new Column( "재고금액(평균단가)","STK_AMT2","150","number",{"readonly":true,"align":"right","filter": true}),
+		new Column( "재고금액(매입단가)","STK_AMT3","150","number",{"readonly":true,"align":"right","filter": true}),
+		new Column( "소비자가","TAG_PRICE","90","number",{"readonly":true,"align":"right","filter": true}),
+		new Column( "매입단가","COST_PRICE","80","number",{"readonly":true,"align":"right","filter": true}),
+		new Column( "평균단가","AVG_PRICE","100","number",{"readonly":true,"align":"right","filter": true}),
+	];
+
+	//////////////////////////// 4번 예제 부분 시작 ////////////////////////////
+	// showRowIndex 부분에 css 넣기 //
+	dxGrid.initGrid(gridID, "", "300", {checkbox: false, editable: true, sortable: false, showRowIndex:{cellStyle:"rowIndexData", headerStyle:"background-color:blue"}});
+	//////////////////////////// 4번 예제 부분 끝 ////////////////////////////
+
+	dxGrid.setColumn(gridID, columns);
+
+
+	let footer = [
+		new Footer( "BRD_GRP1_NM","text", "합계"),
+		new Footer( "STK_QTY","sum"),
+		new Footer( "STORE_STK_QTY","sum"),
+		new Footer( "WT_QTY","sum"),
+		new Footer( "OUT_QTY","sum"),
+		new Footer( "REQ_WT_QTY","sum"),
+		new Footer( "OUT_WT_QTY","sum"),
+		new Footer( "STK_AMT1","sum"),
+		new Footer( "STK_AMT2","sum"),
+		new Footer( "STK_AMT3","sum"),
+		new Footer( "COST_PRICE","sum"),
+		new Footer( "AVG_PRICE","sum")
+	]
+
+
+	// Footer 설정
+	dxGrid.setFooter(gridID, footer);
+};
+
+</script>
+</head>
+<h1>SEL_CHK true 인 부분만 데이터 가져오기</h1>
+<body>
+<button data-type="addRow" data-grid-id="grid1">행 추가</button>
+<button data-type="deleteRow" data-grid-id="grid1">행 삭제</button>
+<button data-type="setGridData" data-grid-id="grid1">조회(setGridData())</button>
+<button data-type="list" data-grid-id="grid1">데이터 조회(콘솔)</button>
+<button data-type="listCheckedData" data-grid-id="grid1">[SEL_CHK] 체크된 데이터 조회(콘솔)</button>
+<div id="grid1"></div>
+</body>
+</html>
