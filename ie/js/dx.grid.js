@@ -74,6 +74,7 @@ const Logger = {
 let __focusedCell = {};
 let __focusedRow = {};
 let __editingCell = {};
+let __clickedCell = {};
 
 // Event listener
 let Listener = {
@@ -87,6 +88,7 @@ let Listener = {
 		onInitialized: function (gridID) {},
 		onKeyDown: function (gridID, rowIndex, columnIndex, dataField, value, keyCode, rowData, event) {},
 		onRowClick: function (gridID, rowIndex, rowData, rowKey, columns, rowType) {},
+		onRowDblClick: function (gridID, rowIndex, rowData, columnIndex, dataField) {},
 		onRowInserted: function (gridID, rowIndex, rowData) {},
 		onCellUpdating: function (gridID, value, rowIndex, dataField) {},
 		onCellUpdated: function (gridID, rowIndex, columnIndex, dataField, columnValue, rowData) {},
@@ -131,7 +133,8 @@ const Column = function (caption, dataField, width, dataType, options) {
 		options.columnType = new dxGrid.SelectBox(options.dataSource, options.parentDataField);
 	} else if (dataType === "rowIndex") {
 		this.cellTemplate = function($el, info) {
-			$el.text(info.data.__rowIndex + 1);
+			let str = $el.parent().attr("aria-rowindex");
+			$el.text(str);
 		}
 	} else if (dataType === "textarea") {
 		this.__textarea = true;
@@ -209,7 +212,11 @@ const Column = function (caption, dataField, width, dataType, options) {
 				if (index > 0) {
 					const attribute = style.substr(0, index).trim();
 					const value = style.substr(index+1).trim();
-					$div.css(attribute, value);
+					if (dataType === "rowIndex") {
+						$el.css(attribute, value);
+					} else {
+						$div.css(attribute, value);
+					}
 				} else {
 					$div.addClass(style);
 				}
@@ -354,6 +361,7 @@ const dxGrid = {
 			const editable = option.editable;
 			const sortable = option.sortable;
 			const showRowIndex = option.showRowIndex;
+			const showHeader = option.showHeader;
 
 			if (checkbox) {
 				instance.__checkBoxMode = true;
@@ -383,6 +391,10 @@ const dxGrid = {
 			if (showRowIndex || typeof showRowIndex === "object") {
 				instance.__showRowIndex = true;
 				instance.__rowIndexStyle = showRowIndex;
+			}
+
+			if (showHeader === false) {
+				instance.option("showColumnHeaders", false);
 			}
 		}
 
@@ -705,9 +717,10 @@ const dxGrid = {
 	},
 
 	getRowData: function(gridID, rowIndex) {
-		let instance = dxGrid.getGridInstance(gridID);
-		let $rowEl = instance.getRowElement(rowIndex);
-		let rowData = $rowEl.data("options").data;
+		let allData = dxGrid.getGridData(gridID);
+		let rowData = allData.filter(function (item) {
+			return item.__rowIndex == rowIndex;
+		})[0];
 
 		return rowData;
 	},
@@ -739,7 +752,7 @@ const dxGrid = {
 	 * @param gridID
 	 */
 	getRowIndex: function(gridID) {
-		const rowIndex = __focusedRow ? __focusedRow.rowIndex : undefined;
+		const rowIndex = __focusedRow ? __focusedRow.data.__rowIndex : undefined;
 		return rowIndex;
 	},
 
@@ -835,6 +848,8 @@ const dxGrid = {
 				eventObject.rowData = eventObject.data;
 				eventObject.instance = eventObject.component;
 
+				__clickedCell = eventObject;
+
 				if (eventObject.column === undefined) {
 					return;
 				}
@@ -848,6 +863,12 @@ const dxGrid = {
 
 				dxGrid.method.__executeListener("onContentReady", eventObject, function () {
 					Listener.grid.onContentReady(gridID, eventObject.instance);
+				});
+
+				$("div#"+gridID+" tr.dx-data-row").on("dblclick", function (evt) {
+					dxGrid.method.__executeListener("onRowDblClick", __clickedCell, function () {
+						Listener.grid.onRowDblClick(gridID, __clickedCell.rowIndex, __clickedCell.rowData, __clickedCell.column.index, __clickedCell.dataField);
+					});
 				});
 
 				// 셀 클릭했을 때, value 앞에 포커스 설정 (IE버그)
@@ -1159,8 +1180,23 @@ const dxGrid = {
 						const grdId = "__popupGrid";
 						const btnId = "__popupButton";
 
+						let btnFn = function() {
+							gridInstance.cellValue(rowIndex, target, focusedCode);
+							gridInstance.cellValue(rowIndex, nameTarget, focusedName);
+
+							gridInstance.refresh(true).done(function () {
+								let newTargetData = focusedCode;
+								let newNameTargetData = focusedName;
+
+								dxGrid.method.__onCellUpdatEvent(gridID, oldTargetData, newTargetData, rowIndex, target, rowData, targetIndex);
+								dxGrid.method.__onCellUpdatEvent(gridID, oldNameTargetData, newNameTargetData, rowIndex, nameTarget, rowData, nameTargetIndex);
+							});
+
+							Popup.hide(popupID);
+						};
+
 						// 폼 만들기
-						let $form = Form.create(Form.Code(dataSource, tbxId, grdId, btnId));
+						let $form = Form.create(Form.Code(dataSource, tbxId, grdId, btnId, btnFn));
 
 						let focusedCode = "";
 						let focusedName = "";
@@ -1190,20 +1226,7 @@ const dxGrid = {
 							}
 						});
 
-						btnInstance.option("onClick", function () {
-							gridInstance.cellValue(rowIndex, target, focusedCode);
-							gridInstance.cellValue(rowIndex, nameTarget, focusedName);
-
-							gridInstance.refresh(true).done(function () {
-								let newTargetData = focusedCode;
-								let newNameTargetData = focusedName;
-
-								dxGrid.method.__onCellUpdatEvent(gridID, oldTargetData, newTargetData, rowIndex, target, rowData, targetIndex);
-								dxGrid.method.__onCellUpdatEvent(gridID, oldNameTargetData, newNameTargetData, rowIndex, nameTarget, rowData, nameTargetIndex);
-							});
-
-							Popup.hide(popupID);
-						});
+						btnInstance.option("onClick", btnFn);
 
 						// 팝업창 생성
 						Popup.create(popupID, $form, gridID, rowIndex, colIndex).show();
@@ -1383,7 +1406,7 @@ const Form = {
 
 	},
 
-	Code: function (dataSource, tbxId, grdId, btnId) {
+	Code: function (dataSource, tbxId, grdId, btnId, btnFn) {
 		let $tbx = Form.method.__create(tbxId, "코드/명");
 		let $grd = Form.method.__create(grdId);
 		let $btn = Form.method.__create(btnId);
@@ -1400,6 +1423,11 @@ const Form = {
 			height: 250,
 			focusedRowEnabled: true,
 			paging: {enabled: false, pageSize: 0},
+			onContentReady: function () {
+				$("div#__popupGrid tr.dx-data-row").on("dblclick", function (evt) {
+					btnFn();
+				});
+			},
 		});
 		$btn.find("#" + btnId).dxButton({
 			text: "선택",

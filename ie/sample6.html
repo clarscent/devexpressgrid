@@ -106,7 +106,8 @@ let gridInit = function (gridID) {
 
 	//////////////////////////// 4번 예제 부분 시작 ////////////////////////////
 	// showRowIndex 부분에 css 넣기 //
-	dxGrid.initGrid(gridID, "", "300", {checkbox: false, editable: true, sortable: false, showRowIndex:{cellStyle:"rowIndexData", headerStyle:"background-color:blue"}});
+	dxGrid.initGrid(gridID, "", "300", {checkbox: false, editable: true, sortable: false,
+		                                showRowIndex:{cellStyle:"rowIndexData", headerStyle:"background-color:blue"}});
 	//////////////////////////// 4번 예제 부분 끝 ////////////////////////////
 
 	dxGrid.setColumn(gridID, columns);
