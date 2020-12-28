@@ -1,0 +1,29 @@
+.webix_column > div:nth-child(even) {
+	background-color: inherit;
+}
+.webix_column > div.webix_cell_select,
+.webix_column > div.webix_column_select,
+.webix_column > div.webix_row_select {
+	background-size: 100% 100%;
+	background-position: 0 0;
+	color: #1c91fb;
+	background: #f1f8ff;
+}
+.webix_ss_header, .webix_ss_header TD, .webix_ss_vscroll_header, .webix_dd_drag_column {
+	background: rgb(245,245,245);
+	/*background-image: inherit;*/
+}
+.webix_ss_vscroll_header,
+.webix_ss_header {
+	border-top: 1px solid #333
+}
+.webix_view {
+	font-family: Roboto, sans-serif;
+	font-size: 13px;
+	font-weight: 400;
+}
+.webix_dt_editor input, .webix_dt_editor select {
+	border: transparent;
+}
+
+

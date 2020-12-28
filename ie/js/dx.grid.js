@@ -717,10 +717,9 @@ const dxGrid = {
 	},
 
 	getRowData: function(gridID, rowIndex) {
-		let allData = dxGrid.getGridData(gridID);
-		let rowData = allData.filter(function (item) {
-			return item.__rowIndex == rowIndex;
-		})[0];
+		let instance = dxGrid.getGridInstance(gridID);
+		let $rowEl = instance.getRowElement(rowIndex);
+		let rowData = $rowEl.data("options").data;
 
 		return rowData;
 	},
