@@ -8,9 +8,6 @@
 <html>
 <head>
 <style>
-.gridArea {
-	padding: 10px;
-}
 button.btnCodeHelp, button.btnCodeHelpGrid {
 	background-image: url('/img/img_search.png') !important;
 	background-repeat: no-repeat;
@@ -55,11 +52,11 @@ webix.ready(function () {
 		new Column("성별", "Prefix", "150", "", {editable:false, align: "center", maxLength: "20"}),
 		new Column("직위", "Position", "150", "textarea", {align: "center", maxLength: "50", visible:true, cellStyle:"color:blue"}),
 		new Column("직위", "Position", "150", "button", {align: "center", btnTxt:"상 세", callBackFn:function(a,b,c,d){console.log("callback", a,b,c,d)}}),
-		new Column("셀렉트1", "SelectBox1", "150", "selectBox", {align: "center", maxLength: "20", dataSource: sb1}),
+		new Column("셀렉트1", "SelectBox1", "auto", "selectBox", {align: "center", maxLength: "20", dataSource: sb1}),
 	]
 
 	var grid = dxGrid.initGrid("grid1", 800, 300, columns, {
-		checkbox: true,
+		checkbox: false,
 		editable: true,
 		sortable: true,
 		showRowIndex: false,

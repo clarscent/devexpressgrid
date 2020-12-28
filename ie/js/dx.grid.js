@@ -1339,7 +1339,7 @@ const dxGrid = {
 	 *
 	 * @param dataSource - Array	: JSON data가 있는 배열
 	 * @param [parentField]		: 상위 SelectBox의 DataField
-	 *
+	 **
 	 */
 	SelectBox: function (dataSource, parentField) {
 		this.__selectBox = true;
