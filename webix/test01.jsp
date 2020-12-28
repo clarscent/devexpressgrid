@@ -84,13 +84,14 @@ webix.ready(function() {
 				{id : "title", editor : "", header : "Film title", fillspace:true,},
 				{id : "year1", editor : "text", header : "year1", css : "", width : 200},
 				{id : "cat_id", editor: "select", header:"Category" , options: selectData, width:80},
+				{id : "votes", header : "votes", css : "", width : 80, sort:"int", checkValue:'Y', uncheckValue:'N', template:"{common.checkbox()}", footer:{ content:"summColumn", text:"갯수"} },
 				{id : "year2", editor : "text", header : "year2", css : "", width : 80, sort:"int", option : {type : "positiveNumber"}, footer:{ content:"count", desc:"cnt:"}},
 				{id : "year3", editor : "text", header : "year3", css : "", width : 80, sort:"int", option : {type : "positiveNumber"}},
 				{id : "year4", editor : "text", header : "year4", css : "", width : 80, sort:"int", option : {type : "positiveNumber"}},
 				{id : "year5", editor : "text", header : "year5", css : "", width : 80, sort:"int", option : {type : "positiveNumber"}},
 				{id : "year6", editor : "text", header : "year6", css : "", width : 80, sort:"int", option : {type : "positiveNumber"}},
 				{id : "year7", editor : "text", header : "year7", css : "", width : 80, sort:"int", option : {type : "positiveNumber"}, footer:{ content:"sum"}, format:intFormat},
-				{id : "votes", header : "votes", css : "", width : 80, sort:"int", checkValue:'Y', uncheckValue:'N', template:"{common.checkbox()}", footer:{ content:"summColumn", text:"갯수"} },
+
 		],
 		scheme:{
 			$sort:{ by:"votes", as:"int", dir:"desc" }
