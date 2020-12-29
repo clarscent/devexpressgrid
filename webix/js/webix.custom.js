@@ -554,6 +554,12 @@ webix.protoUI({
 				this.hideOverlay();
 			},
 			onBeforeEditStart: function (target) {
+				var evt = event || window.event;
+
+				if (evt.defaultPrevented) {
+					return false;
+				}
+
 				var grid = this;
 				var col = grid.getColumnConfig("cat_id");
 				var record = grid.getItem(target.row);
@@ -640,8 +646,13 @@ webix.protoUI({
 					})
 
 					if (record[targetDataField] === "") {
+						evt.stopPropagation();
+						evt.preventDefault();
+						evt.stopImmediatePropagation();
+
 						alert("값을 확인하세요");
 						editor.focus();
+						this.select(editor.row, false);
 						return false;
 					}
 				}
@@ -841,6 +852,12 @@ webix.protoUI({
 				}
 			},
 			onSelectChange: function () {
+				var evt = event || window.event;
+
+				if (evt && evt.defaultPrevented) {
+					return false;
+				}
+
 				var gridID = this.config.id; //gridID
 				var selectedId = this.getSelectedId(true);
 				var selectedData = this.getSelectedItem(true);
