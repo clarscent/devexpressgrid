@@ -25,4 +25,25 @@
 	border: transparent;
 }
 
+.webix_c_scroll_y div {
+	width: 10px !important;
+	margin-left: -2px;
+}
 
+.webix_c_scroll_y div:hover {
+	width: 12px  !important;
+	margin-left: -4px;
+
+}
+
+.webix_c_scroll_x div {
+	height: 10px !important;
+	margin-top: -2px;
+
+}
+
+.webix_c_scroll_x:hover div {
+	height: 12px !important;
+	margin-top: -4px;
+
+}

@@ -1,6 +1,6 @@
 let sample2 = [
 	{
-		"ID": 1,
+		"ID": 0,
 		"FirstName": "John",
 		"LastName": "Heart",
 		"Prefix": "Mr.",
@@ -10,7 +10,7 @@ let sample2 = [
 		"SelectBox2": 3,
 		"SelectBox3": 5
 	}, {
-		"ID": 2,
+		"ID": 0,
 		"FirstName": "Olivia",
 		"LastName": "Peyton",
 		"Prefix": "Mrs.",
@@ -20,7 +20,7 @@ let sample2 = [
 		"SelectBox2": 4,
 		"SelectBox3": 7
 	}, {
-		"ID": 3,
+		"ID": 0,
 		"FirstName": "Robert",
 		"LastName": "Reagan",
 		"Prefix": "Mr.",

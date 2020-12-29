@@ -1225,11 +1225,11 @@ div.webix_modal_cover {
 /*remove rightmost borders*/
 .webix_hs_right td.webix_last,
 .webix_hs_center td.webix_last {
-  border-right-width: 0px;
+  /*border-right-width: 0px;*/
 }
 /*right inner border*/
 .webix_column.webix_last > div {
-  border-right-width: 0px;
+  /*border-right-width: 0px;*/
 }
 /*borders between split areas*/
 .webix_ss_right .webix_column.webix_first > div,

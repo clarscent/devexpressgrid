@@ -183,6 +183,35 @@ webix.protoUI({
 		}
 		return resultList;
 	},
+	editNext:function(next, from){
+		next = next !== false; //true by default
+		if (this._in_edit_mode == 1 || from) {
+			//only if one editor is active
+			var editor_next = this._find_cell_next((this._last_editor || from), function (id) {
+				if (this._get_editor_type(id))
+					return true;
+				return false;
+			}, next);
+
+			if (this.editStop()) {	//if we was able to close previous editor
+				if (editor_next) {	//and there is a new target
+					this.edit(editor_next);	//init new editor
+					this._after_edit_next(editor_next);
+				} else {
+					var columns = this.config.columns;
+					var emptyObj = {};
+
+					columns.forEach(function(col) {
+						console.log("col", col);
+						emptyObj[col.id] = "";
+					});
+
+					this.addRow(emptyObj);
+				}
+				return false;
+			}
+		}
+	},
 	getCheckedData: function (checkboxId) {
 		var resultList = this.getData();
 		var config = this.getColumnConfig(checkboxId);
@@ -489,7 +518,7 @@ webix.protoUI({
 		editable: true,
 		checkboxRefresh: true,
 		scrollY: true,
-		scrollX: false,
+		scrollX: true,
 		footer: false,
 		blockselect: false,
 		clipboard: false,
@@ -554,36 +583,15 @@ webix.protoUI({
 				this.hideOverlay();
 			},
 			onBeforeEditStart: function (target) {
+				var evt = event || window.event;
+
+				if (evt.defaultPrevented) {
+					return false;
+				}
+
 				var grid = this;
-				var col = grid.getColumnConfig("cat_id");
 				var record = grid.getItem(target.row);
 				var curCol = grid.getColumnConfig(target.column);
-
-				if (curCol.editor == "select") {
-					if (curCol.option && curCol.option.parent_id) {
-						var record = grid.getItem(target.row);
-						var refvalue = record[curCol.option.parent_id]
-
-						curCol.collection.filter(function (item) {
-							if (item.refcd == '*' || item.refcd == refvalue) {
-								return true;
-							} else {
-								return false;
-							}
-						});
-					} else if (curCol.option && curCol.option.relation_1_id) {
-						var record = grid.getItem(obj.row);
-						var refvalue = record[curCol.option.relation_1_id]
-
-						curCol.collection.filter(function (item) {
-							if (item.relation1 == '*' || item.relation1 == refvalue) {
-								return true;
-							} else {
-								return false;
-							}
-						});
-					}
-				}
 
 				var gridID = this.config.id; //gridID
 				var value = record[target.column]; // value
@@ -602,6 +610,7 @@ webix.protoUI({
 				var dataField = target.column; // dataField;
 				var rowData = record; // rowData;
 				var instance = this;
+				var value = record[target.column]; // value
 
 				Listener.grid.onEditingStart(gridID, value, rowIndex, dataField, rowData, instance);
 
@@ -639,9 +648,14 @@ webix.protoUI({
 						}
 					})
 
-					if (record[targetDataField] === "") {
+					if (targetDataField !== undefined && targetDataField !== null && targetDataField !== "" && newVal !== "" && record[targetDataField] === "") {
+						evt.stopPropagation();
+						evt.preventDefault();
+						evt.stopImmediatePropagation();
+
 						alert("값을 확인하세요");
 						editor.focus();
+						this.select(editor.row, false);
 						return false;
 					}
 				}
@@ -683,6 +697,12 @@ webix.protoUI({
 			onLiveEdit: function (state, editor, keyCode) {
 				var grid = this;
 				var evt = event || window.event;
+				var column = grid.getColumnConfig(editor.column);
+
+				if (column.option.readonly === true) {
+					return false;
+				}
+
 				var record = grid.getItem(editor.row);
 
 				var gridID = this.config.id; //gridID
@@ -701,7 +721,7 @@ webix.protoUI({
 				}
 
 				var check = (editor.getValue() != "");
-				var column = grid.getColumnConfig(editor.column);
+
 
 				var option;
 
@@ -714,8 +734,11 @@ webix.protoUI({
 
 				if (column.dataType === "codeHelp") {
 					var targetFieldName = option.codeNameField;
-					record[targetFieldName] = "";
-					grid.updateItem(editor.row, record);
+
+					if (targetFieldName !== undefined && targetFieldName !== null && targetFieldName !== "") {
+						record[targetFieldName] = "";
+						grid.updateItem(editor.row, record);
+					}
 				}
 
 				Listener.grid.onKeyDown(gridID, rowIndex, columnIndex, dataField, value, keyCode, rowData, evt);
@@ -836,11 +859,15 @@ webix.protoUI({
 				var grid = this;
 				var record = this.getItem(row);
 
-				if (record["rowStatus"] != "C") {
-					record["rowStatus"] = "U";
-				}
+				this.select(row);
 			},
 			onSelectChange: function () {
+				var evt = event || window.event;
+
+				if (evt && evt.defaultPrevented) {
+					return false;
+				}
+
 				var gridID = this.config.id; //gridID
 				var selectedId = this.getSelectedId(true);
 				var selectedData = this.getSelectedItem(true);
@@ -999,10 +1026,6 @@ webix.GroupMethods = {
 };
 
 webix.ui.datafilter.summColumn = webix.extend({
-	getValue: function () {
-	},
-	setValue: function () {
-	},
 	refresh: function (master, node, value) {
 		var result = 0;
 		master.mapCells(null, value.columnId, null, 1, function (value) {
@@ -1010,8 +1033,7 @@ webix.ui.datafilter.summColumn = webix.extend({
 			if (!isNaN(value))
 				result += value;
 
-			if (value != 0)
-				return value;
+			return value;
 		});
 
 		if (value.format)
@@ -1020,7 +1042,7 @@ webix.ui.datafilter.summColumn = webix.extend({
 			result = value.template({value: result});
 
 		value.text = result;
-		node.firstChild.innerHTML = '<span style="width:100%;display:block;text-align:right;">' + result + '</span>';
+		node.firstChild.innerHTML = '<span style="width:100%;display:block;text-align:right;">' + value.desc + result + '</span>';
 	},
 	trackCells: true,
 	render: function (master, config) {
@@ -1037,6 +1059,7 @@ webix.ui.datafilter.avgColumn = webix.extend({
 			value = value * 1;
 			if (!isNaN(value))
 				result += value;
+
 			return value;
 		});
 
@@ -1128,7 +1151,7 @@ webix.ui.datafilter.cnt2Column = webix.extend({
 		result = intFormat(result);
 
 		value.text = result + '건';
-		node.firstChild.innerHTML = '<span style="width:100%;display:block;text-align:right">' + result + '건</span>';
+		node.firstChild.innerHTML = '<span style="width:100%;display:block;text-align:right">' + value.desc + result + '건</span>';
 	}
 }, webix.ui.datafilter.summColumn);
 
@@ -1144,8 +1167,14 @@ webix.ui.datafilter.timeColumn = webix.extend({
 		});
 
 		value.text = (result + "").toHHMMSS();
-		node.firstChild.innerHTML = '<span style="width:100%;display:block;text-align:right;">' + (result + "").toHHMMSS();
+		node.firstChild.innerHTML = '<span style="width:100%;display:block;text-align:right;">' + value.desc + (result + "").toHHMMSS();
 		+'</span>';
+	}
+}, webix.ui.datafilter.summColumn);
+
+webix.ui.datafilter.textColumn = webix.extend({
+	refresh: function (master, node, value) {
+		node.firstChild.innerHTML = '<span style="width:100%;display:block;text-align:right">' + value.desc + '</span>';
 	}
 }, webix.ui.datafilter.summColumn);
 
@@ -1158,6 +1187,7 @@ webix.ui.datafilter.max = webix.ui.datafilter.maxColumn;
 webix.ui.datafilter.avg = webix.ui.datafilter.avgColumn;
 webix.ui.datafilter.sum = webix.ui.datafilter.summColumn;
 webix.ui.datafilter.time = webix.ui.datafilter.timeColumn;
+webix.ui.datafilter.text = webix.ui.datafilter.textColumn;
 
 // format method alias
 var intFormat = function (obj) {
@@ -1419,46 +1449,8 @@ webix.ready(function () {
 			isNext = true;
 		}
 
-		if (option.required) {
-			if (!check) {
-				return false;
-			}
-		}
 		if (option.type == "code" && check) {
-
-			var record = view.getItem(editor.row);
-			var param = option.param;
-			var refcd = option.refcd;
-			var tarcd = option.tarcd;
-			var rltcolnm = checkEmpty(option.rltcolnm, "NAME");
-
-			for (var key in refcd) {
-				var sPKey = checkEmpty(refcd[key], key.toUpperCase());
-				param[sPKey] = checkEmpty(record[key], "");
-			}
-
-			param["CODEGB"] = editor.getValue();
-			param["RESINUMBER"] = editor.getValue();
-			param[column.id] = editor.getValue();
-
 			var isPass = false;
-
-			var callback = new Callback(function (result) {
-				if (isEmpty(result)) {
-					isPass = false;
-				} else {
-					record[option.target] = result[0][rltcolnm];
-					for (var key in tarcd) {
-						record[key] = checkEmpty(result[0][tarcd[key]], "");
-					}
-					view.updateItem(editor.row, record);
-
-					isPass = true;
-				}
-			});
-
-			callback.async = false;
-			CodeService.getCodeName("CODE", option.code, param, callback);
 
 			if (!isPass) {
 				editor.focus();
@@ -1475,7 +1467,8 @@ webix.ready(function () {
 		if (isNext) {
 			if (view && view._in_edit_mode) {
 				if (view.editNext) {
-					return view.editNext(true);
+					var result = view.editNext(true);
+					return result;
 				}
 			}
 		}
@@ -1561,10 +1554,17 @@ function getExportData(view, options, scheme) {
 	view.data.each(function (item) {
 		var line = [];
 		for (var i = 0; i < scheme.length; i++) {
-			var cell = scheme[i].template(item, view.type);
+			var value = item[scheme[i].id];
+			var config = view.getColumnConfig(scheme[i].id);
+
+			/*
+			var cell = scheme[i].template(item, view.type, value, config);
 			if (!cell && cell !== 0) cell = "";
 			if (filterHTML && typeof cell === "string")
 				cell = cell.replace(htmlFilter, "");
+			 */
+			// html 로 추출하지 않고 value 만 가져옴
+			var cell = value;
 			line.push(cell);
 		}
 		data.push(line);
@@ -1991,7 +1991,6 @@ function Column(caption, dataField, width, dataType, options) {
 	} else if (dataType === "button") {
 		this.editor = "";
 	} else if (dataType === "check") {
-		this.editor = "checkbox";
 		this.checkValue = "Y";
 		this.uncheckValue = "N";
 		this.template = "{common.checkbox()}";
@@ -2033,18 +2032,11 @@ var dxGrid = {
 				css: "textCenter",
 				width: 40,
 				template: "{common.checkbox()}",
-				tooltip: false
+				tooltip: false,
+				checkValue:"Y",
+				uncheckValue:"N"
 			});
 		}
-
-		cols.push({
-			id: "__CHK3",
-			header: "가나다",
-			css: "textCenter",
-			width: 40,
-			template: "{common.checkbox()}",
-			tooltip: false
-		});
 
 		if (option.showRowIndex === true) {
 			cols.push(new Column("", "", "40", "rowIndex", {align: "center", maxLength: "20"}))
@@ -2078,15 +2070,15 @@ var dxGrid = {
 			cols.push(col);
 		})
 
-		if (leftFixed > 0 && option.showRowIndex) {
+		if (leftFixed > 0 && option.showRowIndex === true) {
 			leftFixed++;
 		}
 
-		var scrollX = false;
-
-		if (leftFixed > 0 || rightFixed > 0) {
-			scrollX = true;
+		if (leftFixed > 0 && option.checkbox === true) {
+			leftFixed++;
 		}
+
+		webix.CustomScroll.init();
 
 		var grid = webix.ui({
 			id: gridID,
@@ -2097,7 +2089,7 @@ var dxGrid = {
 			height: height,
 			leftSplit: leftFixed,
 			rightSplit: rightFixed,
-			scrollX: scrollX,
+			scrollX: true,
 			columns: cols,
 			scheme: {
 				$init: function (obj) {
@@ -2109,6 +2101,17 @@ var dxGrid = {
 		$("#" + gridID).on("contextmenu", function (e) {
 			// 그리드 마우스 우클릭 막기
 			return false;
+		});
+
+		grid.attachEvent("onColumnResize", function (id, newWidth, user_action) {
+			var config = grid.getColumnConfig(id);
+			var $container = $("div.webix_view.webix_window.webix_popup[view_id*=\"$checksuggest\"]:visible");
+			var $inner1 = $("div.webix_view.webix_window.webix_popup[view_id*=\"$checksuggest\"]:visible").find("div[view_id*=\"$checksuggest\"]");
+			var $inner2 = $("div.webix_view.webix_window.webix_popup[view_id*=\"$checksuggest\"]:visible").find("div[view_id*=\"$list\"]");
+
+			$container.width(config.width - 25);
+			$inner1.width(config.width - 45);
+			$inner2.width(config.width - 45);
 		});
 
 		return grid;
@@ -2139,18 +2142,34 @@ var dxGrid = {
 	getGridData: function (gridID) {
 		return $$(gridID).getData();
 	},
-	getCheckedData: function (gridID) {
-		return $$(gridID).getCheckedData("__CHK");
+	getCheckedData: function (gridID, columnName) {
+		console.log("checkedData", columnName);
+
+		if (columnName === null || columnName === undefined || columnName === "") {
+			columnName = "__CHK";
+		}
+
+		return $$(gridID).getCheckedData(columnName);
 	},
 	getTotalRowCount: function (gridID) {
 		return $$(gridID).count();
 	},
 	addRow: function (gridID, data, rowIndex) {
+		var grid = $$(gridID);
+
 		if (data === null || data === undefined) {
-			data = {};
+			var columns = grid.config.columns;
+			var emptyObj = {};
+
+			columns.forEach(function(col) {
+				console.log("col", col);
+				emptyObj[col.id] = "";
+			});
+
+			data = emptyObj;
 		}
 
-		$$(gridID).addRow(data, rowIndex);
+		grid.addRow(data, rowIndex);
 	},
 	deleteRow: function (gridID, rowIndex) {
 		var grid = $$(gridID);
@@ -2177,10 +2196,11 @@ var dxGrid = {
 	},
 	setFocus: function (gridID, rowIndex, dataField) {
 		var grid = $$(gridID);
-
 		var rowId = grid.getIdByIndex(rowIndex);
+		var columnConfig = grid.getColumnConfig(dataField);
 
 		grid.select(rowId);
+
 		grid.edit({
 			row: rowId,
 			column: dataField,

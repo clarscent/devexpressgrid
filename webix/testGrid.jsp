@@ -6,7 +6,7 @@
 <link rel="stylesheet" type="text/css" href="./lib/webix/webix-custom.css" charset="utf-8">
 <script type="text/javascript" src="./lib/jquery/jquery-2.1.4.js"></script>
 <script type="text/javascript" src="./lib/jquery-ui/jquery-ui.js"></script>
-<script type="text/javascript" src="./lib/webix/webix_debug.min.js"></script>
+<script type="text/javascript" src="./lib/webix/webix_debug.js"></script>
 <script type="text/javascript" src="./lib/webix/xlsx.core.min.js"></script>
 <script type="text/javascript" src="./js/webix.custom.js"></script>
 <%@include file="./popup.jsp" %>
@@ -15,14 +15,14 @@
 var selectData = {"1": "11", "2": "22"};
 webix.ready(function () {
 	var columns = [
-		new Column("아이디", "ID", "100", "number", {align: "center", maxLength: "20"}),
-		new Column("셀렉트1", "SelectBox1", "85", "codeHelp", {align: "center", maxLength: "20", dataSource: sb1, codeNameField: "FirstName"}),
-		new Column("이름", "FirstName", "80", "", {align: "left", maxLength: "20"}),
-		new Column("성", "LastName", "auto", "text", {align: "center", maxLength: "20", filter:true}),
-		new Column("성별", "Prefix", "100", "", {editable:false, align: "center", maxLength: "20"}),
-		new Column("직위", "Position", "100", "textarea", {align: "center", maxLength: "50", visible:true, cellStyle:"color:blue"}),
-		new Column("직위", "Position", "auto", "button", {align: "center", btnTxt:"상세", callBackFn:function(a,b,c,d){console.log("callback", a,b,c,d)}}),
+		new Column("아이디", "ID", "100", "number", {align: "center", maxLength: "20", fixed:"left"}),
+		new Column("셀렉트1", "SelectBox1", "85", "codeHelp", {align: "center", maxLength: "20", dataSource: sb1, codeNameField: "FirstName", fixed:"left"}),
+		new Column("이름", "FirstName", "80", "", {align: "left", maxLength: "20", fixed:"left", filter:true}),
+		new Column("성", "LastName", "100", "text", {align: "center", maxLength: "20", filter:true}),
 		new Column("확인", "CHK", "40", "check", {align: "center"}),
+		new Column("성별", "Prefix", "100", "", {editable:false, align: "center", maxLength: "20", readonly:true}),
+		new Column("직위", "Position", "100", "textarea", {align: "center", maxLength: "50", visible:true, cellStyle:"color:blue"}),
+		new Column("상세", "Button", "auto", "button", {align: "center", btnTxt:"상세", callBackFn:function(a,b,c,d){console.log("callback", a,b,c,d)}}),
 	]
 
 	var grid = dxGrid.initGrid("grid1", 800, 300, columns, {checkbox: true, editable: true, sortable: true, showRowIndex: false, footer: false});
@@ -30,8 +30,8 @@ webix.ready(function () {
 	dxGrid.setGridData("grid1", sample2);
 
 	var footer = [
-		new Footer("FirstName", "count", "CNT:"),
-		new Footer("SelectBox1", "count", "갯수: "),
+		new Footer("FirstName", "text", "합계"),
+		new Footer("ID", "sum", "합계: "),
 	];
 
 	dxGrid.setFooter("grid1", footer);
@@ -68,7 +68,7 @@ $(document).ready(function() {
 	});
 
 	$("#setFocus").click(function () {
-		dxGrid.setFocus("grid1", 1, "FirstName");
+		dxGrid.setFocus("grid1", 1, "Prefix");
 	});
 
 	$("#getRowIndex").click(function () {
@@ -88,7 +88,7 @@ $(document).ready(function() {
 	});
 
 	$("#checkedData").click(function () {
-		var data = dxGrid.getCheckedData("grid1");
+		var data = dxGrid.getCheckedData("grid1", "CHK");
 		console.log(data);
 	});
 
