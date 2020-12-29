@@ -18,7 +18,7 @@ webix.ready(function () {
 		new Column("아이디", "ID", "100", "number", {align: "center", maxLength: "20"}),
 		new Column("셀렉트1", "SelectBox1", "85", "codeHelp", {align: "center", maxLength: "20", dataSource: sb1, codeNameField: "FirstName"}),
 		new Column("이름", "FirstName", "80", "", {align: "left", maxLength: "20"}),
-		new Column("성", "LastName", "auto", "text", {align: "center", maxLength: "20"}),
+		new Column("성", "LastName", "auto", "text", {align: "center", maxLength: "20", filter:true}),
 		new Column("성별", "Prefix", "100", "", {editable:false, align: "center", maxLength: "20"}),
 		new Column("직위", "Position", "100", "textarea", {align: "center", maxLength: "50", visible:true, cellStyle:"color:blue"}),
 		new Column("직위", "Position", "auto", "button", {align: "center", btnTxt:"상세", callBackFn:function(a,b,c,d){console.log("callback", a,b,c,d)}}),
