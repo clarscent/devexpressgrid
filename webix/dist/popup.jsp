@@ -142,12 +142,10 @@ var popup = {
 		cnt: 0,
 
 		show: function () {
-			//console.log("show cnt: ", this.cnt, arguments);
 			this.cnt++;
 			$("#loadingPopupWindow").css("display", "block");
 		},
 		hide: function () {
-			//console.log("hide cnt: ", this.cnt);
 			this.cnt--;
 			if (this.cnt <= 0) {
 				this.cnt = 0;
@@ -158,10 +156,12 @@ var popup = {
 
 	help: {
 		callback: null,
+		orgDataSource: null,
 
 		show: function (dataSource, callback) {
 			var that = this;
 			that.callback = callback;
+			that.orgDataSource = dataSource;
 
 			$("#helpPopupWindow").css("display", "block");
 
@@ -203,7 +203,7 @@ var popup = {
 				});
 
 				$("#help_popup_search").click(function () {
-					// filter
+					__helpcode_popup_search();
 				});
 
 				$("#help_popup_select").click(function () {
@@ -223,7 +223,7 @@ var popup = {
 
 			$("#help_popup_code").bind("keydown", function (evt) {
 				if (evt.which == 13) {
-					__helpcode_popup_search(code, param);
+					__helpcode_popup_search();
 				}
 			});
 		},
@@ -234,15 +234,19 @@ var popup = {
 	}
 }
 
-function __helpcode_popup_search(code, param) {
-	param["CODEGB"] = $("#help_popup_code").val();
+function __helpcode_popup_search() {
+	var that = popup.help;
+	var data = $.extend([], that.orgDataSource);
+	var newDataSource = [];
+	var filterValue = $("#help_popup_code").val();
 
-	var helpcode_callback = new Callback(function (result) {
-		$$("help_popup_grid1").setData(result);
+	data.forEach(function(obj) {
+		if (obj["CODE"].indexOf(filterValue) > -1 || obj["NAME"].indexOf(filterValue) > -1) {
+			newDataSource.push(obj);
+		}
 	});
 
-	helpcode_callback.setShowLoading(true);
-	CodeService.getCodeName("HELP", code, param, helpcode_callback);
+	$$("help_popup_grid1").setData(newDataSource);
 }
 
 function _helpcode_reset() {
@@ -422,6 +426,7 @@ $(document).ready(function () {
 	padding-right: 5px;
 	border: 1px solid #c8c8c8;
 	width: 215px;
+	line-height: 24px;
 }
 </style>
 <div id="helpPopupWindow" class="popupBackground" style="">
