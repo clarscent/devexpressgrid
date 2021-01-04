@@ -1238,7 +1238,7 @@ const dxGrid = {
 			}
 		},
 
-		// cascading value change event
+		// cascading value change event.
 		__configSelectBox: function (key, __keyMap) {
 			this.setCellValue = function (rowData, value) {
 				rowData[key] = value;
