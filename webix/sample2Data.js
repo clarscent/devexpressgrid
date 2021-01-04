@@ -1,145 +1,18 @@
 let sample2 = [
-	{
-		"ID": 0,
-		"FirstName": "John",
-		"LastName": "Heart",
-		"Prefix": "Mr.",
-		"Position": "CTO",
-		"CHK": "Y",
-		"SelectBox1": 1,
-		"SelectBox2": 3,
-		"SelectBox3": 5
-	}, {
-		"ID": 0,
-		"FirstName": "Olivia",
-		"LastName": "Peyton",
-		"Prefix": "Mrs.",
-		"Position": "HR Manager",
-		"CHK": "Y",
-		"SelectBox1": 2,
-		"SelectBox2": 4,
-		"SelectBox3": 7
-	}, {
-		"ID": 0,
-		"FirstName": "Robert",
-		"LastName": "Reagan",
-		"Prefix": "Mr.",
-		"Position": "IT Manager",
-		"CHK": "Y",
-		"SelectBox1": 3,
-		"SelectBox2": 7,
-		"SelectBox3": 14
-	}, {
-		"ID": 4,
-		"FirstName": "Greta",
-		"LastName": "Sims",
-		"Prefix": "Ms.",
-		"Position": "Shipping Manager",
-		"CHK": "Y",
-		"SelectBox1": 4,
-		"SelectBox2": 12,
-		"SelectBox3": 23
-	}, {
-		"ID": 5,
-		"FirstName": "Brett",
-		"LastName": "Wade",
-		"Prefix": "Mr.",
-		"Position": "Shipping Manager",
-		"CHK": "Y",
-		"SelectBox1": 5,
-		"SelectBox2": 15,
-		"SelectBox3": 30
-	}, {
-		"ID": 6,
-		"FirstName": "Sandra",
-		"LastName": "Johnson",
-		"Prefix": "Mrs.",
-		"Position": "Network Admin",
-		"CHK": "N",
-		"SelectBox1": 6,
-		"SelectBox2": 16,
-		"SelectBox3": 32
-	}, {
-		"ID": 7,
-		"FirstName": "Kevin",
-		"LastName": "Carter",
-		"Prefix": "Mr.",
-		"Position": "Network Admin",
-		"CHK": "Y",
-		"SelectBox1": 7,
-		"SelectBox2": 19,
-		"SelectBox3": 37
-	}, {
-		"ID": 8,
-		"FirstName": "Cynthia",
-		"LastName": "Stanwick",
-		"Prefix": "Ms.",
-		"Position": "Sales Assistant",
-		"CHK": "Y",
-		"SelectBox1": 1,
-		"SelectBox2": 2,
-		"SelectBox3": 4
-	}, {
-		"ID": 9,
-		"FirstName": "Kent",
-		"LastName": "Samuelson",
-		"Prefix": "Dr.",
-		"Position": "Sales Assistant",
-		"CHK": "Y",
-		"SelectBox1": 2,
-		"SelectBox2": 6,
-		"SelectBox3": 11
-	}, {
-		"ID": 10,
-		"FirstName": "Taylor",
-		"LastName": "Riley",
-		"Prefix": "Mr.",
-		"Position": "Support Assistant",
-		"CHK": "Y",
-		"SelectBox1": 3,
-		"SelectBox2": 9,
-		"SelectBox3": 17
-	}, {
-		"ID": 11,
-		"FirstName": "Sam",
-		"LastName": "Hill",
-		"Prefix": "Mr.",
-		"Position": "Sales Assistant",
-		"CHK": "Y",
-		"SelectBox1": 4,
-		"SelectBox2": 10,
-		"SelectBox3": 20
-	}, {
-		"ID": 12,
-		"FirstName": "Kelly",
-		"LastName": "Rodriguez",
-		"Prefix": "Ms.",
-		"Position": "Sales Assistant",
-		"CHK": "N",
-		"SelectBox1": 5,
-		"SelectBox2": 15,
-		"SelectBox3": 29
-	}, {
-		"ID": 13,
-		"FirstName": "Natalie",
-		"LastName": "Maguirre",
-		"Prefix": "Mrs.",
-		"Position": "Sales Assistant",
-		"CHK": "Y",
-		"SelectBox1": 6,
-		"SelectBox2": 17,
-		"SelectBox3": 33
-	}, {
-		"ID": 14,
-		"FirstName": "Walter",
-		"LastName": "Hobbs",
-		"Prefix": "Mr.",
-		"Position": "Support Assistant",
-		"CHK": "Y",
-		"SelectBox1": 7,
-		"SelectBox2": 21,
-		"SelectBox3": 42
-	}
+	{"ID":0,	"TestDate":"20201110", "FirstName":"John",	"LastName":"Heart",	"Prefix":"Mr.",	"Position":"CTO",	"CHK":"Y",	"SelectBox1":1,	"SelectBox2":3,	"SelectBox3":5},
+	{"ID":0,	"TestDate":"20201110", "FirstName":"Olivia",	"LastName":"Peyton",	"Prefix":"Mrs.",	"Position":"HRManager",	"CHK":"Y",	"SelectBox1":2,	"SelectBox2":4,	"SelectBox3":7},
+	{"ID":0,	"TestDate":"20201110", "FirstName":"Robert",	"LastName":"Reagan",	"Prefix":"Mr.",	"Position":"ITManager",	"CHK":"Y",	"SelectBox1":3,	"SelectBox2":7,	"SelectBox3":14},
+	{"ID":4,	"TestDate":"20201110", "FirstName":"Greta",	"LastName":"Sims",	"Prefix":"Ms.",	"Position":"ShippingManager",	"CHK":"Y",	"SelectBox1":4,	"SelectBox2":12,	"SelectBox3":23},
+	{"ID":5,	"TestDate":"20201110", "FirstName":"Brett",	"LastName":"Wade",	"Prefix":"Mr.",	"Position":"ShippingManager",	"CHK":"Y",	"SelectBox1":5,	"SelectBox2":15,	"SelectBox3":30},
+	{"ID":6,	"TestDate":"20201110", "FirstName":"Sandra",	"LastName":"Johnson",	"Prefix":"Mrs.",	"Position":"NetworkAdmin",	"CHK":"N",	"SelectBox1":6,	"SelectBox2":16,	"SelectBox3":32},
+	{"ID":7,	"TestDate":"20201110", "FirstName":"Kevin",	"LastName":"Carter",	"Prefix":"Mr.",	"Position":"NetworkAdmin",	"CHK":"Y",	"SelectBox1":7,	"SelectBox2":19,	"SelectBox3":37},
+	{"ID":8,	"TestDate":"20201110", "FirstName":"Cynthia",	"LastName":"Stanwick",	"Prefix":"Ms.",	"Position":"SalesAssistant",	"CHK":"Y",	"SelectBox1":1,	"SelectBox2":2,	"SelectBox3":4},
+	{"ID":9,	"TestDate":"20201110", "FirstName":"Kent",	"LastName":"Samuelson",	"Prefix":"Dr.",	"Position":"SalesAssistant",	"CHK":"Y",	"SelectBox1":2,	"SelectBox2":6,	"SelectBox3":11},
+	{"ID":10,	"TestDate":"20201110", "FirstName":"Taylor",	"LastName":"Riley",	"Prefix":"Mr.",	"Position":"SupportAssistant",	"CHK":"Y",	"SelectBox1":3,	"SelectBox2":9,	"SelectBox3":17},
+	{"ID":11,	"TestDate":"20201110", "FirstName":"Sam",	"LastName":"Hill",	"Prefix":"Mr.",	"Position":"SalesAssistant",	"CHK":"Y",	"SelectBox1":4,	"SelectBox2":10,	"SelectBox3":20},
+	{"ID":12,	"TestDate":"20201110", "FirstName":"Kelly",	"LastName":"Rodriguez",	"Prefix":"Ms.",	"Position":"SalesAssistant",	"CHK":"N",	"SelectBox1":5,	"SelectBox2":15,	"SelectBox3":29},
+	{"ID":13,	"TestDate":"20201110", "FirstName":"Natalie",	"LastName":"Maguirre",	"Prefix":"Mrs.",	"Position":"SalesAssistant",	"CHK":"Y",	"SelectBox1":6,	"SelectBox2":17,	"SelectBox3":33},
+	{"ID":14,	"TestDate":"20201110", "FirstName":"Walter",	"LastName":"Hobbs",	"Prefix":"Mr.",	"Position":"SupportAssistant",	"CHK":"Y",	"SelectBox1":7,	"SelectBox2":21,	"SelectBox3":42}
 ];
 
 

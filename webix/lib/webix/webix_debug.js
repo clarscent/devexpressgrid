@@ -16078,7 +16078,15 @@ webix.MapCollection = {
             element.collection = options;
             element.template = element.template || this._bind_accesser(options, element.id, element.optionslist);
             var id = options.data.attachEvent("onStoreUpdated", webix.bind(this.refresh, this));
-            this.attachEvent("onDestruct", function(){ options.data.detachEvent(id); });
+
+            this.attachEvent("onDestruct", function(){
+            	try {
+            		options.data.detachEvent(id);
+				} catch (e) {
+            		
+				}
+            });
+			
         }
     },
     _collection_accesser:function(options, id, multi){
@@ -16350,7 +16358,7 @@ webix.protoUI({
 		if (config.columns && this._dtable_fully_ready)
 			this.refreshColumns();
 	},
-	_define_structure:function(){
+	_define_structure:function(stopEvent){
 		if (this._settings.columns){
 			this._columns = this._settings.columns;
 			this._columns_pull = {};
@@ -16385,7 +16393,9 @@ webix.protoUI({
 			this._normalize_headers("header", this._headers);
 			this._normalize_headers("footer", this._footers);
 
-			this.callEvent("onStructureLoad",[]);
+			if (stopEvent !== true) {
+				this.callEvent("onStructureLoad",[]);
+			}
 		}
 	},
 	_define_structure_and_render:function(){
@@ -21004,7 +21014,7 @@ webix.extend(webix.ui.datatable, {
 		this._dtable_fully_ready = 0;
 		this.callEvent("onStructureUpdate");
 
-		this._define_structure();
+		this._define_structure(true);
 		this._update_scroll();
 		this.render();	
 	},

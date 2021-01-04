@@ -53,9 +53,6 @@ webix.ready(function () {
 			}
 		}
 	})
-
-	//var popOptions = "dialogWidth: 600px; dialogHeight: 500px; center: yes; resizable: yes; status: no; scroll: no;";
-	//var vReturn = window.showModalDialog("./testGrid2.jsp", window,  popOptions );
 });
 </script>
 <script>

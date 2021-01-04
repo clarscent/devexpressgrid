@@ -34,10 +34,10 @@ var Listener = {
 			//console.log("onRowInserted", gridID, rowIndex, rowData);
 		},
 		onCellUpdating: function (gridID, value, rowIndex, dataField) {
-			//console.log("onCellUpdating", gridID, value, rowIndex, dataField);
+			console.log("onCellUpdating", gridID, value, rowIndex, dataField);
 		},
 		onCellUpdated: function (gridID, rowIndex, columnIndex, dataField, columnValue, rowData) {
-			//console.log("onCellUpdated", gridID, rowIndex, columnIndex, dataField, columnValue, rowData);
+			console.log("onCellUpdated", gridID, rowIndex, columnIndex, dataField, columnValue, rowData);
 		},
 		onSelectionChanged: function (gridID, currentSelectedRowKeys, currentDeselectedRowKeys, selectedRowsData) {
 			//console.log("onSelectionChanged", gridID, currentSelectedRowKeys, selectedRowsData)
@@ -530,8 +530,12 @@ webix.protoUI({
 		liveEdit: true,
 
 		on: {
-			onStructureLoad: function () {
+			onStructureLoad: function (a,b,c,d) {
+				console.log("onStructureLoad",a,b,c,d, event, window.event);
 				Listener.grid.onInitialized(this.config.id);
+			},
+			onStructureUpdate: function(a,b,c,d) {
+				console.log("onStructureUpdate",a,b,c,d, event, window.event);
 			},
 			onValidationSuccess: function (id, value, columnNames) {
 				delete this.invalidCellMap[id];
@@ -598,9 +602,10 @@ webix.protoUI({
 				var rowIndex = this.getIndexById(target.row); // rowIndex;
 				var dataField = target.column; // dataField;
 
-				//Listener.grid.onCellUpdating(gridID, value, rowIndex, dataField);
+				Listener.grid.onCellUpdating(gridID, value, rowIndex, dataField);
 			},
 			onAfterEditStart: function (target) {
+				console.log("afterEditStart");
 				var evt = event || window.event;
 				var record = this.getItem(target.row);
 
@@ -621,6 +626,7 @@ webix.protoUI({
 				}
 			},
 			onBeforeEditStop: function (state, editor, ignore) {
+				console.log("beforeEditStop");
 				var grid = this;
 				var evt = event || window.event;
 				var record = grid.getItem(editor.row);
@@ -659,6 +665,25 @@ webix.protoUI({
 						return false;
 					}
 				}
+
+				// var gridID = this.config.id; //gridID
+				// var value = record[target.column]; // value
+				// var rowIndex = this.getIndexById(target.row); // rowIndex;
+				// var dataField = target.column; // dataField;
+				// var rowData = record; // rowData;
+				// var row = record; // row
+				// var column;
+				// var columnIndex;
+				//
+				// for (var i = 0; i < this.config.columns.length; i++) {
+				// 	if (this.config.columns[i].id === editor.column) {
+				// 		columnIndex = i;
+				//
+				// 		break;
+				// 	}
+				// }
+				//
+				// onCellUpdated(gridID, rowIndex, columnIndex, dataField, value, rowData)
 			},
 			onAfterEditStop: function (state, editor, ignore) {
 				var grid = this;
@@ -873,7 +898,23 @@ webix.protoUI({
 				var selectedData = this.getSelectedItem(true);
 
 				Listener.grid.onSelectionChanged(gridID, selectedId, selectedData);
-			}
+			},
+			onEditorChange: function(target, value) {
+				var record = this.getItem(target.row);
+				var gridID = this.config.id;
+				var rowIndex = this.getIndexById(target.row);
+				var columnIndex;
+
+				for (var i = 0; i < this.config.columns.length; i++) {
+					if (this.config.columns[i].id === target.column) {
+						columnIndex = i;
+
+						break;
+					}
+				}
+
+				Listener.grid.onCellUpdated(gridID, rowIndex, columnIndex, target.column, value, record);
+			},
 		},
 
 		rules: {
@@ -892,45 +933,11 @@ webix.protoUI({
 							result = false;
 						}
 
-						if (columns[columnIdx].option.type == 'codelist') {
-							var gridCodeMapping = (columns[columnIdx].option.gridCodeMapping || columns[columnIdx].returnCodeMapping || '').split(',');
-							if (isNull(item[gridCodeMapping[0]]) || item[gridCodeMapping[0]] == '') {
-								result = false;
-							}
-						} else if (columns[columnIdx].option.type == 'positiveNumber') {
+						if (columns[columnIdx].option.type == 'positiveNumber') {
 							result = value > 0;
 						} else if (columns[columnIdx].option.type == 'negativeNumber') {
 							result = value < 0;
-						} else if (!isEmpty(columns[columnIdx].option.strtdt) || !isEmpty(columns[columnIdx].option.enddt)) {
-							var bCk = isEmpty(columns[columnIdx].option.strtdt);
-							var sId = !bCk ? columns[columnIdx].option.strtdt : columns[columnIdx].option.enddt;
-
-							var sStrDt = !bCk ? ((item[sId] instanceof Date) ? item[sId] : checkNull(item[sId], "").replace(/\-|\./g, "")) : ((value instanceof Date) ? value : checkNull(value, "").replace(/\-|\./g, ""));
-							var sEndDt = !bCk ? ((value instanceof Date) ? value : checkNull(value, "").replace(/\-|\./g, "")) : ((item[sId] instanceof Date) ? item[sId] : checkNull(item[sId], "").replace(/\-|\./g, ""));
-
-							if (!isEmpty(sEndDt) && !isEmpty(sStrDt)) {
-								var oSDate, oEDate;
-								if (dateRegExp.test(sStrDt)) {
-									var iSYear = parseInt(sStrDt.substr(0, 4), 10);
-									var iSMnth = parseInt(sStrDt.substr(4, 2), 10);
-									var iSDate = parseInt(sStrDt.substr(6), 10);
-									oSDate = new Date(iSYear, iSMnth - 1, iSDate);
-								} else if (sStrDt instanceof Date) {
-									oSDate = sStrDt;
-								}
-
-								if (dateRegExp.test(sEndDt)) {
-									var iEYear = parseInt(sEndDt.substr(0, 4), 10);
-									var iEMnth = parseInt(sEndDt.substr(4, 2), 10);
-									var iEDate = parseInt(sEndDt.substr(6), 10);
-									oEDate = new Date(iEYear, iEMnth - 1, iEDate);
-								} else if (sEndDt instanceof Date) {
-									oEDate = sEndDt;
-								}
-								result = (!isEmpty(oSDate) && !isEmpty(oEDate)) ? (oSDate <= oEDate) : result;
-							}
 						}
-
 					} else {
 						if (!isEmpty(columns[columnIdx].editor) && columns[columnIdx].required && (isNull(value) || value == "")) {
 							result = false;
@@ -2000,6 +2007,8 @@ function Column(caption, dataField, width, dataType, options) {
 		}
 
 		this.tooltip = false;
+	} else  if (dataType === "date") {
+		this.format = dateFormat;
 	}
 
 
@@ -2128,9 +2137,10 @@ var dxGrid = {
 			});
 		})
 
+		grid.editStop();
 		grid.config.footer = true;
 		grid.refreshColumns();
-		grid.refresh();
+		//grid.refresh();
 	},
 	setGridData: function (gridID, data) {
 		var grid = $$(gridID);
@@ -2227,7 +2237,9 @@ var dxGrid = {
 		}
 	},
 	setEmptyGrid: function (gridID) {
-		$$(gridID).clearAll();
+		var grid = $$(gridID);
+		grid.editStop();
+		grid.clearAll();
 	},
 	exportToExcel: function (gridID) {
 		webix.toExcel($$(gridID));
