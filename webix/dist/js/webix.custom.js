@@ -881,10 +881,26 @@ webix.protoUI({
 				}
 			},
 			onCheck: function (row, column, state) {
+				console.log(row, column, state);
+
 				var grid = this;
 				var record = this.getItem(row);
+				var gridID = this.config.id;
+				var rowIndex = this.getIndexById(row);
+				var columnIndex;
 
-				this.select(row);
+				for (var i = 0; i < this.config.columns.length; i++) {
+					if (this.config.columns[i].id === column) {
+						columnIndex = i;
+
+						break;
+					}
+				}
+
+				//this.select(row);
+
+
+				Listener.grid.onCellUpdated(gridID, rowIndex, columnIndex, column, state, record);
 			},
 			onSelectChange: function () {
 				var evt = event || window.event;
@@ -2011,9 +2027,15 @@ function Column(caption, dataField, width, dataType, options) {
 		this.format = dateFormat;
 	}
 
+	if (options) {
+		if (options.filter === true) {
+			this.header = [caption, {content: "multiComboFilter"}];
+		}
 
-	if (options && options.filter === true) {
-		this.header = [caption, {content: "multiComboFilter"}];
+		if (options.readonly === true) {
+			this.editor = "";
+			this.liveEdit = false;
+		}
 	}
 }
 
@@ -2088,6 +2110,8 @@ var dxGrid = {
 		}
 
 		webix.CustomScroll.init();
+
+		console.log("columns", cols);
 
 		var grid = webix.ui({
 			id: gridID,

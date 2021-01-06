@@ -22,7 +22,7 @@ webix.ready(function () {
 		new Column("셀렉트1", "SelectBox1", "85", "codeHelp", {align: "center", maxLength: "20", dataSource: sb1, codeNameField: "FirstName", fixed:"left"}),
 		new Column("셀렉트2", "SelectBox2", "85", "selectBox", {align: "center", maxLength: "20", dataSource: sb2}),
 		new Column("이름", "FirstName", "80", "", {align: "left", maxLength: "20", filter:true}),
-		new Column("성", "LastName", "100", "text", {align: "center", maxLength: "20", filter:true}),
+		new Column("성", "LastName", "100", "text", {align: "center", maxLength: "20", filter:true, readonly:true}),
 		new Column("확인", "CHK", "40", "check", {align: "center"}),
 		new Column("성별", "Prefix", "100", "", {editable:false, align: "center", maxLength: "20", readonly:true}),
 		new Column("직위", "Position", "100", "textarea", {align: "center", maxLength: "50", visible:true, cellStyle:"color:blue"}),
@@ -129,6 +129,7 @@ $(document).ready(function() {
 <button id="hideFilter">hideFilter</button>
 <button id="setEmptyGrid">setEmptyGrid</button>
 <button id="setFooter">setFooter</button>
+<input type="checkbox" />
 <div class="gridArea">
 	<div id="grid1" style="height:350px"></div>
 </div>
