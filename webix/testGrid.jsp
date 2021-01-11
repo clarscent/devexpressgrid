@@ -18,7 +18,7 @@
 var selectData = {"1": "11", "2": "22"};
 webix.ready(function () {
 	var columns = [
-		new Column("아이디", "ID", "100", "number", {align: "center", maxLength: "20", fixed:"left"}),
+		new Column("아이디", "ID", "100", "number", {align: "center", maxLength: "20", filter: true, fixed:"left"}),
 		new Column("셀렉트1", "SelectBox1", "85", "codeHelp", {align: "center", maxLength: "20", dataSource: sb1, codeNameField: "FirstName", fixed:"left"}),
 		new Column("셀렉트2", "SelectBox2", "85", "selectBox", {align: "center", maxLength: "20", dataSource: sb2}),
 		new Column("이름", "FirstName", "80", "", {align: "left", maxLength: "20", filter:true}),
@@ -61,7 +61,7 @@ webix.ready(function () {
 <script>
 $(document).ready(function() {
 	$("#updateCell").click(function() {
-		$$("grid1").updateCell(1, "FirstName", "kjasdfadfadsfasdfasdfadsfh");
+		dxGrid.setCellValue("grid1", 1, "FirstName", "dsafdfasd");
 	});
 
 	$("#exportToExcel").click(function() {
@@ -113,6 +113,12 @@ $(document).ready(function() {
 
 		dxGrid.setFooter("grid1", footer);
 	});
+
+	$("#textChange").on("keydown", function(evt) {
+		console.log("keydown", evt.keyCode);
+
+		dxGrid.setEmptyGrid("grid1");
+	})
 })
 </script>
 </head>
@@ -133,5 +139,6 @@ $(document).ready(function() {
 <div class="gridArea">
 	<div id="grid1" style="height:350px"></div>
 </div>
+<input type="text" id="textChange" />
 </body>
 </html>

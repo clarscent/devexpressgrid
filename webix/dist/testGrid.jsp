@@ -61,7 +61,7 @@ webix.ready(function () {
 <script>
 $(document).ready(function() {
 	$("#updateCell").click(function() {
-		$$("grid1").updateCell(1, "FirstName", "kjasdfadfadsfasdfasdfadsfh");
+		dxGrid.setCellValue("grid1", 1, "FirstName", "dsafdfasd");
 	});
 
 	$("#exportToExcel").click(function() {
@@ -113,6 +113,12 @@ $(document).ready(function() {
 
 		dxGrid.setFooter("grid1", footer);
 	});
+
+	$("#textChange").on("keydown", function(evt) {
+		console.log("keydown", evt.keyCode);
+
+		dxGrid.setEmptyGrid("grid1");
+	})
 })
 </script>
 </head>
@@ -133,5 +139,6 @@ $(document).ready(function() {
 <div class="gridArea">
 	<div id="grid1" style="height:350px"></div>
 </div>
+<input type="text" id="textChange" />
 </body>
 </html>

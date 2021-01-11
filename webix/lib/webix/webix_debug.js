@@ -11,7 +11,7 @@ if (!window.webix)
 //check some rule, show message as error if rule is not correct
 webix.assert = function(test, message){
 	if (!test){
-		webix.assert_error(message);
+		//webix.assert_error(message);
 	}
 };
 
@@ -2971,7 +2971,7 @@ webix.DataDriver.csv={
 	},
 	idColumn:null,
 	row:"\n",	//default row separator
-	cell:","	//default cell separator
+	cell:"|"	//default cell separator
 };
 
 webix.DataDriver.xml={
@@ -21700,7 +21700,7 @@ webix.ui.datafilter.richSelectFilter = webix.ui.datafilter.controlFilter = {
 		if (!value) return value;
 
 		var hash = {};
-		var parts = value.toString().split(filter.separator || ",");
+		var parts = value.toString().split(filter.separator || "|");
 		for (var i = 0; i < parts.length; i++)
 			hash[parts[i]] = 1;
 
@@ -27078,7 +27078,7 @@ webix.protoUI({
 	name:"multiselect",
 	$cssName:"richselect",
 	defaults:{
-        separator:","
+		separator:"|"
 	},
 	_suggest_config:function(value){
 		var isobj = !webix.isArray(value) && typeof value == "object" && !value.name; 
@@ -27147,7 +27147,7 @@ webix.type(webix.ui.list, {
 webix.protoUI({
 	name:"multisuggest",
 	defaults:{
-		separator:",",
+		separator:"|",
 		type:"layout",
 		button:true,
 		width:0,
@@ -27330,10 +27330,15 @@ webix.protoUI({
 	name:"multicombo",
 	$cssName:"text",
 	defaults:{
-		separator:",",
+		separator:"|",
 		icon: false,
 		iconWidth: 0,
-		template:function(obj,common){
+		tagMode: false,
+		tagTemplate: function (values) {
+			//return (values.length ? values.length + " item(s)" : "");
+			return "";
+		},
+		template: function (obj, common) {
 			return common._render_value_block(obj, common);
 		}
 	},
@@ -27451,11 +27456,13 @@ webix.protoUI({
 
 	},
 	_getValueListBox: function(){
-		return this._getBox().getElementsByTagName("UL")[0];
+		if (this._getBox()) {
+			return this._getBox().getElementsByTagName("UL")[0];
+		}
 	},
 	_set_inner_size: function(){
 		var popup = this.getPopup();
-		if(popup){
+		/*if(popup){
 			var text = (popup ? popup.setValue(this._settings.value) : "");
 			var html = "";
 			var listbox = this._getValueListBox();
@@ -27471,6 +27478,42 @@ webix.protoUI({
 				}
 			}
 			listbox.innerHTML = html;
+		}*/
+		if (popup) {
+			var textArr = (popup ? popup.setValue(this._settings.value) : null);
+			if (popup._toMultiValue)
+				this._settings.value = popup._toMultiValue(this._settings.value);
+			var html = "";
+			var listbox = this._getValueListBox();
+			var text = textArr && textArr.length;
+			if (text) {
+				var height = this._inputHeight - 2 * webix.skin.$active.inputPadding - 8;
+				var values = this._settings.value;
+				if (typeof values == "string")
+					values = values.split(this._settings.separator);
+
+				if (this._settings.tagMode) {
+					for (var i = 0; i < textArr.length; i++) {
+						var content = "<span>" + textArr[i] + "</span><span class='webix_multicombo_delete'>x</span>";
+						html += "<li class='webix_multicombo_value' style='line-height:" + height + "px;' value='" + values[i] + "'>" + content + "</li>";
+					}
+				} else {
+					html += "<li class='webix_multicombo_tag' style='line-height:" + height + "px;'>" + this._settings.tagTemplate(values) + "</li>";
+				}
+
+			}
+
+			if (listbox) {
+				listbox.innerHTML = html;
+			}
+			// reset placeholder
+			if (this._settings.placeholder) {
+				if (text) {
+					this.getInputNode().placeholder = "";
+					if (!this.getInputNode().value && this.getInputNode().offsetWidth > 20)
+						this.getInputNode().style.width = "20px";
+				}
+			}
 		}
 		this._resizeToContent();
 	},
@@ -27496,10 +27539,18 @@ webix.protoUI({
 	},
 	_resizeToContent: function(){
 		var top = this._settings.labelPosition == "top";
-		var inputHeight = Math.max(this._getBox().firstChild.offsetHeight+ 2*webix.skin.$active.inputPadding, this._inputHeight)+ (top?this._labelTopHeight:0);
+		var inputHeight;
+		
+		if (this._getBox()) {
+			inputHeight = Math.max(this._getBox().firstChild.offsetHeight+ 2*webix.skin.$active.inputPadding, this._inputHeight)+ (top?this._labelTopHeight:0);
+		}
+
 		var sizes = this.$getSize(0,0);
 		if(inputHeight != sizes[2]){
-			this._calcHeight = this._getBox().firstChild.offsetHeight + (top?this._labelTopHeight:0);
+			if (this._getBox()) {
+				this._calcHeight = this._getBox().firstChild.offsetHeight + (top?this._labelTopHeight:0);
+			}
+
 			var topView =this.getTopParentView();
 			clearTimeout(topView._template_resize_timer);
 			topView._template_resize_timer = webix.delay(function(){

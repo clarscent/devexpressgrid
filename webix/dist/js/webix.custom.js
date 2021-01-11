@@ -531,11 +531,11 @@ webix.protoUI({
 
 		on: {
 			onStructureLoad: function (a,b,c,d) {
-				console.log("onStructureLoad",a,b,c,d, event, window.event);
+				//console.log("onStructureLoad");
 				Listener.grid.onInitialized(this.config.id);
 			},
 			onStructureUpdate: function(a,b,c,d) {
-				console.log("onStructureUpdate",a,b,c,d, event, window.event);
+				//console.log("onStructureUpdate",a,b,c,d, event, window.event);
 			},
 			onValidationSuccess: function (id, value, columnNames) {
 				delete this.invalidCellMap[id];
@@ -545,7 +545,7 @@ webix.protoUI({
 			},
 			onAfterLoad: function () {
 				if (!this.count() && !this.config.editable) {
-					this.showOverlay("표시할 데이터가 없습니다.");
+					//this.showOverlay("표시할 데이터가 없습니다.");
 				}
 
 				if (window['onGridDataLoaded']) {
@@ -881,7 +881,7 @@ webix.protoUI({
 				}
 			},
 			onCheck: function (row, column, state) {
-				console.log(row, column, state);
+				//console.log(row, column, state);
 
 				var grid = this;
 				var record = this.getItem(row);
@@ -2177,8 +2177,6 @@ var dxGrid = {
 		return $$(gridID).getData();
 	},
 	getCheckedData: function (gridID, columnName) {
-		console.log("checkedData", columnName);
-
 		if (columnName === null || columnName === undefined || columnName === "") {
 			columnName = "__CHK";
 		}
@@ -2207,7 +2205,16 @@ var dxGrid = {
 	},
 	deleteRow: function (gridID, rowIndex) {
 		var grid = $$(gridID);
-		grid.remove(grid.getIdByIndex(rowIndex));
+
+		try {
+			if (grid.data.count() === 0) {
+				return;
+			}
+
+			grid.remove(grid.getIdByIndex(rowIndex));
+		} catch(e) {
+			console.log(e);
+		}
 	},
 	deleteCheckedRow: function (gridID) {
 		var grid = $$(gridID);
@@ -2216,33 +2223,80 @@ var dxGrid = {
 	},
 	getCellValue: function (gridID, rowIndex, dataField) {
 		var grid = $$(gridID);
-		return grid.getItem(grid.getIdByIndex(rowIndex))[dataField];
+
+		try {
+			if (grid.data.count() === 0) {
+				return;
+			}
+
+			return grid.getItem(grid.getIdByIndex(rowIndex))[dataField];
+		} catch (e) {
+			console.log(e);
+		}
 	},
 	setCellValue: function (gridID, rowIndex, dataField, value) {
-		$$(gridID).updateCell(rowIndex, dataField, value);
+		var grid = $$(gridID);
+
+		try {
+			if (grid.data.count() === 0) {
+				return;
+			}
+
+			grid.updateCell(rowIndex, dataField, value);
+		} catch(e) {
+			console.log(e);
+		}
 	},
 	getRowData: function (gridID, rowIndex) {
 		var grid = $$(gridID);
-		return grid.getItem(grid.getIdByIndex(rowIndex));
+
+		try {
+			if (grid.data.count() === 0) {
+				return;
+			}
+
+			return grid.getItem(grid.getIdByIndex(rowIndex));
+		} catch (e) {
+			console.log(e);
+		}
 	},
 	setRowData: function (gridID, rowIndex, rowData) {
-		$$(gridID).updateRow(rowIndex, rowData);
+		var grid = $$(gridID);
+
+		try {
+			if (grid.data.count() === 0) {
+				return;
+			}
+
+			grid.updateRow(rowIndex, rowData);
+		} catch (e) {
+			console.log(e);
+		}
 	},
 	setFocus: function (gridID, rowIndex, dataField) {
 		var grid = $$(gridID);
-		var rowId = grid.getIdByIndex(rowIndex);
-		var columnConfig = grid.getColumnConfig(dataField);
 
-		grid.select(rowId);
+		try {
+			if (grid.data.count() === 0) {
+				return;
+			}
 
-		grid.edit({
-			row: rowId,
-			column: dataField,
-		});
-		grid.focusEditor({
-			row: rowId,
-			column: dataField,
-		});
+			var rowId = grid.getIdByIndex(rowIndex);
+			var columnConfig = grid.getColumnConfig(dataField);
+
+			grid.select(rowId);
+
+			grid.edit({
+				row: rowId,
+				column: dataField,
+			});
+			grid.focusEditor({
+				row: rowId,
+				column: dataField,
+			});
+		} catch (e) {
+			console.log(e);
+		}
 	},
 
 	/**
@@ -2253,17 +2307,36 @@ var dxGrid = {
 	getRowIndex: function (gridID) {
 		try {
 			var grid = $$(gridID);
+
+			if (grid.data.count() === 0) {
+				return;
+			}
+
 			var selectedId = grid.getSelectedId(false);
 
 			return grid.getIndexById(selectedId);
 		} catch (e) {
+			console.log(e);
 			return -1;
 		}
 	},
 	setEmptyGrid: function (gridID) {
 		var grid = $$(gridID);
-		grid.editStop();
-		grid.clearAll();
+
+		var evt = event || window.event;
+
+		try {
+			if (grid.data.count() === 0) {
+				return;
+			}
+
+			grid.editStop();
+			grid.clearAll();
+
+			evt.srcElement.focus();
+		} catch (e) {
+			console.log(e);
+		}
 	},
 	exportToExcel: function (gridID) {
 		webix.toExcel($$(gridID));
@@ -2280,7 +2353,8 @@ var dxGrid = {
 				}
 			} else {
 				if (col.header.length > 1) {
-					col.header = col.header[0].text;
+					var header = col.header[0];
+					col.header = {columnId: header.columnId, text: header.text, content: header.content, contentId: header.contentId};
 				}
 			}
 		});
