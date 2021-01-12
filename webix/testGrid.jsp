@@ -146,5 +146,6 @@ $(document).ready(function() {
 	<div id="grid1" style="height:350px"></div>
 </div>
 <input type="text" id="textChange" />
+<textarea></textarea>
 </body>
 </html>

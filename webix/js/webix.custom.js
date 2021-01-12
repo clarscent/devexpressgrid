@@ -22,7 +22,7 @@ var Listener = {
 			console.log("onInitialized", gridID);
 		},
 		onKeyDown: function (gridID, rowIndex, columnIndex, dataField, value, keyCode, rowData, event) {
-			//console.log("onKeyDown", gridID, rowIndex, columnIndex, dataField, value, keyCode, rowData, event);
+			console.log("onKeyDown", gridID, rowIndex, columnIndex, dataField, value, keyCode, rowData, event);
 		},
 		onRowClick: function (gridID, rowIndex, rowData, rowKey, columns, rowType) {
 			//console.log("onRowClick", gridID, rowIndex, rowData, rowKey, columns, rowType)
@@ -1397,7 +1397,7 @@ var column = {
 webix.ready(function () {
 	webix.UIManager.addHotKey("up", function (view, evt) {
 		if (!view || !view._custom_tab_handler && !view._custom_tab_handler(true, evt)) {
-			return false;
+			return true;
 		}
 
 		var editor = view.getEditor();
@@ -1425,7 +1425,7 @@ webix.ready(function () {
 	});
 	webix.UIManager.addHotKey("down", function (view, evt) {
 		if (!view || !view._custom_tab_handler && !view._custom_tab_handler(true, evt)) {
-			return false;
+			return true;
 		}
 
 		var editor = view.getEditor();
@@ -1454,7 +1454,7 @@ webix.ready(function () {
 	webix.UIManager.removeHotKey("enter");
 	webix.UIManager.addHotKey("enter", function (view, evt) {
 		if (!view || !view._custom_tab_handler) {
-			return false;
+			return true;
 		}
 
 		var isNext = false;
