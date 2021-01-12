@@ -26,7 +26,7 @@ webix.ready(function () {
 		new Column("확인", "CHK", "40", "check", {align: "center"}),
 		new Column("성별", "Prefix", "100", "", {editable:false, align: "center", maxLength: "20", readonly:true}),
 		new Column("직위", "Position", "100", "textarea", {align: "center", maxLength: "50", visible:true, cellStyle:"color:blue"}),
-		new Column("일자", "TestDate", "100", "date", {align: "center", maxLength: "50", visible:true}),
+		new Column("일자", "TestDate", "100", "date", {align: "center", maxLength: "50", visible:false}),
 		new Column("상세", "Button", "auto", "button", {align: "center", btnTxt:"상세", callBackFn:function(a,b,c,d){console.log("callback", a,b,c,d)}}),
 	]
 
@@ -93,6 +93,11 @@ $(document).ready(function() {
 		console.log(data);
 	});
 
+	$("#getGridData").click(function () {
+		var data = dxGrid.getGridData("grid1");
+		console.log(data);
+	});
+
 	$("#showFilter").click(function () {
 		dxGrid.setFilter("grid1", true);
 	});
@@ -131,6 +136,7 @@ $(document).ready(function() {
 <button id="getCellValue">getCellValue</button>
 <button id="addRow">addRow</button>
 <button id="checkedData">checkedData</button>
+<button id="getGridData">getGridData</button>
 <button id="showFilter">showFilter</button>
 <button id="hideFilter">hideFilter</button>
 <button id="setEmptyGrid">setEmptyGrid</button>
@@ -140,5 +146,6 @@ $(document).ready(function() {
 	<div id="grid1" style="height:350px"></div>
 </div>
 <input type="text" id="textChange" />
+<textarea></textarea>
 </body>
 </html>

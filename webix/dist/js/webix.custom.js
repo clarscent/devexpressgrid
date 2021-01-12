@@ -184,6 +184,18 @@ webix.protoUI({
 		}
 		return resultList;
 	},
+	eachColumn:function(handler, all){
+		for (var i in this._columns_pull){
+			var column = this._columns_pull[i];
+			handler.call(this, column.id, column);
+		}
+		if (all){
+			for (var i in this._hidden_column_hash){
+				var column = this._hidden_column_hash[i];
+				handler.call(this, column.id, column);
+			}
+		}
+	},
 	editNext:function(next, from){
 		next = next !== false; //true by default
 		if (this._in_edit_mode == 1 || from) {
@@ -350,12 +362,16 @@ webix.protoUI({
 		this.clearData();
 		var cols = this.config.columns;
 
+		console.log(cols, this.eachColumn);
+
+		var that = this;
+
 		data.forEach(function(item) {
-			cols.forEach(function(col) {
-				if (item[col.id] === undefined) {
-					item[col.id] = "";
+			that.eachColumn(function(col){
+				if (item[col] === undefined) {
+				 	item[col] = "";
 				}
-			})
+			}, true);
 		});
 
 		this.parse(data, 'json');

@@ -1,6 +1,6 @@
 let sample2 = [
-	{"ID":0,	"TestDate":"20201110", "FirstName":"Jo,hn",	"LastName":"Heart",	"Prefix":"Mr.",	"Position":"CTO",	"CHK":"Y",	"SelectBox1":1,	"SelectBox2":3,	"SelectBox3":5},
-	{"ID":0,	"TestDate":"20201110", "FirstName":"Olivia",	"LastName":"Peyton",	"Prefix":"Mrs.",	"Position":"HRManager",	"CHK":"Y",	"SelectBox1":2,	"SelectBox2":4,	"SelectBox3":7},
+	{"ID":0,	"FirstName":"Jo,hn",		"Prefix":"Mr.",	"Position":"CTO",	"CHK":"Y",	"SelectBox1":1,	"SelectBox2":3,	"SelectBox3":5},
+	{"ID":0,	"TestDate":"20201110", "FirstName":"Olivia",	"LastName":"",	"Prefix":"Mrs.",	"Position":"HRManager",	"CHK":"Y",	"SelectBox1":2,	"SelectBox2":4,	"SelectBox3":7},
 	{"ID":0,	"TestDate":"20201110", "FirstName":"Robert",	"LastName":"Reagan",	"Prefix":"Mr.",	"Position":"ITManager",	"CHK":"Y",	"SelectBox1":3,	"SelectBox2":7,	"SelectBox3":14},
 	{"ID":4,	"TestDate":"20201110", "FirstName":"Greta",	"LastName":"Sims",	"Prefix":"Ms.",	"Position":"ShippingManager",	"CHK":"Y",	"SelectBox1":4,	"SelectBox2":12,	"SelectBox3":23},
 	{"ID":5,	"TestDate":"20201110", "FirstName":"Brett",	"LastName":"Wade",	"Prefix":"Mr.",	"Position":"ShippingManager",	"CHK":"Y",	"SelectBox1":5,	"SelectBox2":15,	"SelectBox3":30},

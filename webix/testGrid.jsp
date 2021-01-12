@@ -26,7 +26,7 @@ webix.ready(function () {
 		new Column("확인", "CHK", "40", "check", {align: "center"}),
 		new Column("성별", "Prefix", "100", "", {editable:false, align: "center", maxLength: "20", readonly:true}),
 		new Column("직위", "Position", "100", "textarea", {align: "center", maxLength: "50", visible:true, cellStyle:"color:blue"}),
-		new Column("일자", "TestDate", "100", "date", {align: "center", maxLength: "50", visible:true}),
+		new Column("일자", "TestDate", "100", "date", {align: "center", maxLength: "50", visible:false}),
 		new Column("상세", "Button", "auto", "button", {align: "center", btnTxt:"상세", callBackFn:function(a,b,c,d){console.log("callback", a,b,c,d)}}),
 	]
 
