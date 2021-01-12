@@ -93,6 +93,11 @@ $(document).ready(function() {
 		console.log(data);
 	});
 
+	$("#getGridData").click(function () {
+		var data = dxGrid.getGridData("grid1");
+		console.log(data);
+	});
+
 	$("#showFilter").click(function () {
 		dxGrid.setFilter("grid1", true);
 	});
@@ -131,6 +136,7 @@ $(document).ready(function() {
 <button id="getCellValue">getCellValue</button>
 <button id="addRow">addRow</button>
 <button id="checkedData">checkedData</button>
+<button id="getGridData">getGridData</button>
 <button id="showFilter">showFilter</button>
 <button id="hideFilter">hideFilter</button>
 <button id="setEmptyGrid">setEmptyGrid</button>

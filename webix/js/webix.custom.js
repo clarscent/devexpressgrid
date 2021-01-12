@@ -170,6 +170,7 @@ webix.protoUI({
 	getData: function () {
 		this.editStop();
 		var tmpList = this.serialize();
+
 		var resultList = [];
 		while (tmpList.length != 0) {
 			var item = tmpList.shift();
@@ -202,7 +203,6 @@ webix.protoUI({
 					var emptyObj = {};
 
 					columns.forEach(function(col) {
-						console.log("col", col);
 						emptyObj[col.id] = "";
 					});
 
@@ -348,6 +348,16 @@ webix.protoUI({
 	},
 	setData: function (data) {
 		this.clearData();
+		var cols = this.config.columns;
+
+		data.forEach(function(item) {
+			cols.forEach(function(col) {
+				if (item[col.id] === undefined) {
+					item[col.id] = "";
+				}
+			})
+		});
+
 		this.parse(data, 'json');
 	},
 	showLoadingMsg: function (msg) {
@@ -446,7 +456,7 @@ webix.protoUI({
 			}
 
 			for (var i = 0; i < rows.length; i++) {
-				delete this.invalidCellMap[row[i]["id"]];
+				delete this.invalidCellMap[rows[i]["id"]];
 				this.remove(rows[i]["id"]);
 			}
 
@@ -605,7 +615,6 @@ webix.protoUI({
 				Listener.grid.onCellUpdating(gridID, value, rowIndex, dataField);
 			},
 			onAfterEditStart: function (target) {
-				console.log("afterEditStart");
 				var evt = event || window.event;
 				var record = this.getItem(target.row);
 
@@ -626,7 +635,6 @@ webix.protoUI({
 				}
 			},
 			onBeforeEditStop: function (state, editor, ignore) {
-				console.log("beforeEditStop");
 				var grid = this;
 				var evt = event || window.event;
 				var record = grid.getItem(editor.row);
@@ -881,8 +889,6 @@ webix.protoUI({
 				}
 			},
 			onCheck: function (row, column, state) {
-				//console.log(row, column, state);
-
 				var grid = this;
 				var record = this.getItem(row);
 				var gridID = this.config.id;
@@ -1152,7 +1158,9 @@ webix.ui.datafilter.cntColumn = webix.extend({
 	refresh: function (master, node, value) {
 		var result = 0;
 		master.mapCells(null, value.columnId, null, 1, function (value) {
-			if (value != '') result += 1;
+			//if (value != '') result += 1;
+			result++;
+
 			return value;
 		});
 
@@ -2111,8 +2119,6 @@ var dxGrid = {
 
 		webix.CustomScroll.init();
 
-		console.log("columns", cols);
-
 		var grid = webix.ui({
 			id: gridID,
 			container: gridID,
@@ -2194,7 +2200,6 @@ var dxGrid = {
 			var emptyObj = {};
 
 			columns.forEach(function(col) {
-				console.log("col", col);
 				emptyObj[col.id] = "";
 			});
 
@@ -2347,13 +2352,22 @@ var dxGrid = {
 		grid.config.columns.forEach(function (col) {
 			if (bool && col.option && col.option.filter === true) {
 				if (col.header.length === 1) {
-					col.header.push({content: "multiComboFilter"});
+					if (col.oldFilter) {
+						col.header.push(col.oldFilter);
+					} else {
+						col.header.push({content: "multiComboFilter"});
+					}
 				} else {
-					col.header[1] = {content: "multiComboFilter"};
+					if (col.oldFilter) {
+						col.header[1] =col.oldFilter;
+					} else {
+						col.header[1] = {content: "multiComboFilter"};
+					}
 				}
 			} else {
 				if (col.header.length > 1) {
 					var header = col.header[0];
+					col.oldFilter = col.header[1];
 					col.header = {columnId: header.columnId, text: header.text, content: header.content, contentId: header.contentId};
 				}
 			}
